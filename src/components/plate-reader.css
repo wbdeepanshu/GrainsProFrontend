@@ -1,0 +1,164 @@
+.plate-reader-root {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px;
+  color: #111827;
+}
+
+.plate-title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.plate-subtitle {
+  margin: 8px 0 20px;
+  color: #4b5563;
+}
+
+.plate-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.plate-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 16px;
+  background: #ffffff;
+}
+
+.plate-card-title {
+  margin: 0 0 12px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.plate-reader-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.plate-btn {
+  border: 1px solid #d1d5db;
+  background: #ffffff;
+  color: #111827;
+  border-radius: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.plate-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.plate-btn-primary {
+  background: #111827;
+  color: #ffffff;
+  border-color: #111827;
+}
+
+.plate-hidden-input {
+  display: none;
+}
+
+.plate-webcam-frame {
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+}
+
+.plate-webcam-frame video {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.plate-progress-wrap {
+  margin-top: 8px;
+}
+
+.plate-progress-text {
+  font-size: 12px;
+  color: #4b5563;
+  margin-bottom: 6px;
+}
+
+.plate-progress-bar {
+  width: 100%;
+  height: 8px;
+  background: #e5e7eb;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.plate-progress-fill {
+  height: 100%;
+  background: #111827;
+  transition: width 0.2s ease;
+}
+
+.plate-error {
+  margin-top: 8px;
+  color: #b91c1c;
+  font-size: 13px;
+}
+
+.plate-preview-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.plate-preview-label {
+  font-size: 12px;
+  color: #6b7280;
+  margin-bottom: 6px;
+}
+
+.plate-preview-image {
+  width: 100%;
+  height: 170px;
+  object-fit: contain;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #f9fafb;
+}
+
+.plate-preview-empty {
+  border: 1px dashed #d1d5db;
+  border-radius: 8px;
+  height: 170px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #9ca3af;
+  font-size: 13px;
+}
+
+.plate-result-wrap {
+  margin-top: 14px;
+}
+
+.plate-result {
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #f9fafb;
+  padding: 10px 12px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+}
+
+@media (max-width: 900px) {
+  .plate-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .plate-preview-grid {
+    grid-template-columns: 1fr;
+  }
+}
