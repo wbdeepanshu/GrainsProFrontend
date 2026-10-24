@@ -1111,36 +1111,36 @@ export default function AddUser() {
       {/* Main Content */}
       <div className="app-main-content">
         {/* Top Header */}
-        <header className="app-header bg-white shadow-sm border-b border-gray-200 px-4 py-4 sm:px-6">
+        <header className="app-header bg-white shadow-sm border-b border-gray-200 px-3 py-2.5 sm:px-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center">
+            <div className="flex items-center min-w-0">
               {isMobile && (
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => setIsMobileSidebarOpen(true)}
-                  className="lg:hidden p-2 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 mr-4"
+                  className="lg:hidden p-1.5 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 mr-2"
                 >
-                  <Menu className="h-6 w-6" />
+                  <Menu className="h-5 w-5" />
                 </Button>
               )}
-              <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-2 min-w-0">
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={handleBackToUsers}
-                  className="p-2 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100"
+                  className="p-1.5 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100"
                 >
-                  <ArrowLeft className="h-6 w-6" />
+                  <ArrowLeft className="h-5 w-5" />
                 </Button>
-                <div className="bg-gradient-to-r from-black to-gray-600 p-2 rounded-lg">
-                  <User className="h-6 w-6 text-white" />
+                <div className="bg-gradient-to-r from-black to-gray-600 p-1.5 rounded-md shrink-0">
+                  <User className="h-4 w-4 text-white" />
                 </div>
-                <div>
-                  <h1 className="text-2xl font-bold text-gray-900">
+                <div className="min-w-0">
+                  <h1 className="text-lg font-bold text-gray-900 leading-tight">
                     {isEditMode ? "Edit User" : "Add New User"}
                   </h1>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-xs text-gray-600 truncate">
                     {isEditMode ? "Update user account and permissions" : "Create a new user account with permissions"}
                   </p>
                 </div>
@@ -1150,19 +1150,19 @@ export default function AddUser() {
         </header>
 
         {/* Main Content */}
-        <main className="app-main-scrollable p-4 sm:p-6">
-          <div className="max-w-7xl mx-auto">
-            <div className="space-y-6">
-              <form onSubmit={handleSubmit} className="space-y-6">
+        <main className="app-main-scrollable p-2.5 sm:p-3">
+          <div className="max-w-[1600px] mx-auto">
+            <div className="space-y-1">
+              <form onSubmit={handleSubmit} className="space-y-3">
                 {/* Basic Information */}
                 <Card className="shadow-sm border border-gray-200">
-                  <CardHeader>
-                    <CardTitle className="text-lg font-semibold text-gray-900">Basic Information</CardTitle>
+                  <CardHeader className="p-3 pb-1.5">
+                    <CardTitle className="text-sm font-semibold text-gray-900">Basic Information</CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
-                      <div className="space-y-3">
-                        <Label htmlFor="name" className="text-sm font-medium text-gray-700">Name *</Label>
+                  <CardContent className="p-3 pt-1.5 space-y-2.5">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-2.5">
+                      <div className="space-y-1">
+                        <Label htmlFor="name" className="text-xs font-medium text-gray-700">Name *</Label>
                         <Input
                           id="name"
                           value={formData.name}
@@ -1173,11 +1173,11 @@ export default function AddUser() {
                           placeholder="Enter full name"
                           maxLength={25}
                           required
-                          className="h-11 border-gray-300 focus:border-gray-500 focus:ring-gray-500"
+                          className="h-9 text-sm border-gray-300 focus:border-gray-500 focus:ring-gray-500"
                         />
                       </div>
-                      <div className="space-y-3">
-                        <Label htmlFor="mobile" className="text-sm font-medium text-gray-700">Mobile *</Label>
+                      <div className="space-y-1">
+                        <Label htmlFor="mobile" className="text-xs font-medium text-gray-700">Mobile *</Label>
                         <Input
                           id="mobile"
                           value={formData.mobile}
@@ -1188,11 +1188,11 @@ export default function AddUser() {
                           placeholder="Enter mobile number"
                           maxLength={10}
                           required
-                          className="h-11 border-gray-300 focus:border-gray-500 focus:ring-gray-500"
+                          className="h-9 text-sm border-gray-300 focus:border-gray-500 focus:ring-gray-500"
                         />
                       </div>
-                      <div className="space-y-3">
-                        <Label htmlFor="email" className="text-sm font-medium text-gray-700">Email</Label>
+                      <div className="space-y-1">
+                        <Label htmlFor="email" className="text-xs font-medium text-gray-700">Email</Label>
                         <Input
                           id="email"
                           type="email"
@@ -1200,11 +1200,11 @@ export default function AddUser() {
                           value={formData.email}
                           onChange={(e) => handleInputChange('email', e.target.value)}
                           placeholder="Enter email address"
-                          className="h-11 border-gray-300 focus:border-gray-500 focus:ring-gray-500"
+                          className="h-9 text-sm border-gray-300 focus:border-gray-500 focus:ring-gray-500"
                         />
                       </div>
-                      <div className="space-y-3">
-                        <Label htmlFor="password" className="text-sm font-medium text-gray-700">Password {!isEditMode && "*"}</Label>
+                      <div className="space-y-1">
+                        <Label htmlFor="password" className="text-xs font-medium text-gray-700">Password {!isEditMode && "*"}</Label>
                         <div className="relative">
                           <Input
                             id="password"
@@ -1215,7 +1215,7 @@ export default function AddUser() {
                             placeholder={isEditMode ? "Leave blank to keep current password" : "Enter password"}
                             required={!isEditMode}
                             // disabled={isEditMode}
-                            className="h-11 border-gray-300 focus:border-gray-500 focus:ring-gray-500 pr-10"
+                            className="h-9 text-sm border-gray-300 focus:border-gray-500 focus:ring-gray-500 pr-10"
                           />
                           <button
                             type="button"
@@ -1230,8 +1230,8 @@ export default function AddUser() {
                           </button>
                         </div>
                       </div>
-                      <div className="space-y-3">
-                        <Label htmlFor="role" className="text-sm font-medium text-gray-700">Role *</Label>
+                      <div className="space-y-1">
+                        <Label htmlFor="role" className="text-xs font-medium text-gray-700">Role *</Label>
                         <Popover
                           open={rolePopoverOpen}
                           onOpenChange={setRolePopoverOpen}
@@ -1243,7 +1243,7 @@ export default function AddUser() {
                               variant="outline"
                               role="combobox"
                               aria-expanded={rolePopoverOpen}
-                              className="w-full h-11 justify-between font-normal border-gray-300 focus:border-gray-500 focus:ring-gray-500"
+                              className="w-full h-9 justify-between font-normal border-gray-300 focus:border-gray-500 focus:ring-gray-500"
                             >
                               <span className="truncate">{selectedRoleLabel}</span>
                               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -1303,11 +1303,11 @@ export default function AddUser() {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2.5">
                       {locationRestrictLoginEnabled && (
-                      <div className="space-y-3">
+                      <div className="space-y-1">
                         <div className="flex items-center gap-2">
-                          <Label className="text-sm font-medium text-gray-700">Is location restrict Login</Label>
+                          <Label className="text-xs font-medium text-gray-700">Is location restrict Login</Label>
                           <Popover>
                             <PopoverTrigger asChild>
                               <button
@@ -1323,7 +1323,7 @@ export default function AddUser() {
                             </PopoverContent>
                           </Popover>
                         </div>
-                        <div className="h-11 flex items-center rounded-md border border-gray-300 px-3">
+                        <div className="h-9 flex items-center rounded-md border border-gray-300 px-3">
                           <label className="flex items-center gap-2 cursor-pointer select-none">
                             <Checkbox
                               checked={formData.is_location_restrict_login}
@@ -1342,9 +1342,9 @@ export default function AddUser() {
                       </div>
                       )}
                       {canManageTracking && (
-                      <div className="space-y-3">
-                        <Label className="text-sm font-medium text-gray-700">Is tracking enabled</Label>
-                        <div className="h-11 flex items-center rounded-md border border-gray-300 px-3">
+                      <div className="space-y-1">
+                        <Label className="text-xs font-medium text-gray-700">Is tracking enabled</Label>
+                        <div className="h-9 flex items-center rounded-md border border-gray-300 px-3">
                           <label className="flex items-center gap-2 cursor-pointer select-none">
                             <Checkbox
                               checked={formData.is_tracking_enabled}
@@ -1361,8 +1361,8 @@ export default function AddUser() {
                       </div>
                       )}
                       {locationRestrictLoginEnabled && formData.is_location_restrict_login && (
-                        <div className="space-y-3">
-                          <Label htmlFor="login_ratio" className="text-sm font-medium text-gray-700">Login radius (KM)</Label>
+                        <div className="space-y-1">
+                          <Label htmlFor="login_ratio" className="text-xs font-medium text-gray-700">Login radius (KM)</Label>
                           <Input
                             id="login_ratio"
                             value={formData.login_ratio}
@@ -1371,14 +1371,14 @@ export default function AddUser() {
                               handleInputChange('login_ratio', onlyNumbers);
                             }}
                             placeholder="Enter KM"
-                            className="h-11 border-gray-300 focus:border-gray-500 focus:ring-gray-500"
+                            className="h-9 text-sm border-gray-300 focus:border-gray-500 focus:ring-gray-500"
                           />
                         </div>
                       )}
 
                       <div className="space-y-4 min-w-0">
                         <div className="flex items-center justify-between">
-                          <Label htmlFor="branches" className="text-sm font-medium text-gray-700">Branches *</Label>
+                          <Label htmlFor="branches" className="text-xs font-medium text-gray-700">Branches *</Label>
                           {formData.branch_ids.length > 0 && (
                             <Button
                               type="button"
@@ -1399,7 +1399,7 @@ export default function AddUser() {
                               variant="outline"
                               role="combobox"
                               aria-expanded={branchPopoverOpen}
-                              className="w-full h-11 justify-between border-gray-300 focus:border-gray-500 focus:ring-gray-500"
+                              className="w-full h-9 justify-between border-gray-300 focus:border-gray-500 focus:ring-gray-500"
                             >
                               <span className="truncate">
                                 {formData.branch_ids.length > 0 ? `${formData.branch_ids.length} branch${formData.branch_ids.length > 1 ? "es" : ""} selected` : "Select branches"}
@@ -1490,16 +1490,16 @@ export default function AddUser() {
 
                 {/* Branch, Godown, Voucher, Customers and Assigned Users - single row on large screens */}
                 <Card className="shadow-sm border border-gray-200">
-                  <CardHeader>
-                    <CardTitle className="text-lg font-semibold text-gray-900">Assignment</CardTitle>
+                  <CardHeader className="p-3 pb-1.5">
+                    <CardTitle className="text-sm font-semibold text-gray-900">Assignment</CardTitle>
                   </CardHeader>
 
-                  <CardContent className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 items-start">
+                  <CardContent className="p-3 pt-1.5 space-y-2.5">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-2.5 items-start">
                       {!hideGodownsAndVouchers && (
                         <div className="space-y-2 min-w-0">
                           <div className="flex items-center justify-between">
-                            <Label htmlFor="godowns" className="text-sm font-medium text-gray-700">Godowns</Label>
+                            <Label htmlFor="godowns" className="text-xs font-medium text-gray-700">Godowns</Label>
                             {formData.godown_ids.length > 0 && (
                               <Button
                                 type="button"
@@ -1693,7 +1693,7 @@ export default function AddUser() {
                       {!hideGodownsAndVouchers && (
                         <div className="space-y-2 min-w-0">
                           <div className="flex items-center justify-between">
-                            <Label htmlFor="vouchers" className="text-sm font-medium text-gray-700">Vouchers</Label>
+                            <Label htmlFor="vouchers" className="text-xs font-medium text-gray-700">Vouchers</Label>
                             {formData.voucher_ids.length > 0 && (
                               <Button type="button" variant="ghost" size="sm" onClick={() => handleInputChange('voucher_ids', [])} className="h-6 px-2 text-xs text-gray-600 hover:text-gray-900 hover:bg-gray-100">
                                 <X className="h-3 w-3 mr-1" />
@@ -1793,7 +1793,7 @@ export default function AddUser() {
                       {!hideCustomers && (
                         <div className="space-y-2 min-w-0">
                           <div className="flex items-center justify-between">
-                            <Label htmlFor="customers" className="text-sm font-medium text-gray-700">Customers</Label>
+                            <Label htmlFor="customers" className="text-xs font-medium text-gray-700">Customers</Label>
                             {formData.customer_ids.length > 0 && (
                               <Button type="button" variant="ghost" size="sm" onClick={() => handleInputChange('customer_ids', [])} className="h-6 px-2 text-xs text-gray-600 hover:text-gray-900 hover:bg-gray-100">
                                 <X className="h-3 w-3 mr-1" />
@@ -1901,7 +1901,7 @@ export default function AddUser() {
                       {!hideAssignedUsers && (
                         <div className="space-y-2 min-w-0">
                           <div className="flex items-center justify-between">
-                            <Label htmlFor="users" className="text-sm font-medium text-gray-700">Assigned Users</Label>
+                            <Label htmlFor="users" className="text-xs font-medium text-gray-700">Assigned Users</Label>
                             {formData.user_ids.length > 0 && (
                               <Button type="button" variant="ghost" size="sm" onClick={() => handleInputChange('user_ids', [])} className="h-6 px-2 text-xs text-gray-600 hover:text-gray-900 hover:bg-gray-100">
                                 <X className="h-3 w-3 mr-1" />
@@ -2014,7 +2014,7 @@ export default function AddUser() {
 
                       <div className="space-y-2 min-w-0">
                         <div className="flex items-center justify-between">
-                          <Label className="text-sm font-medium text-gray-700">Assigned Items</Label>
+                          <Label className="text-xs font-medium text-gray-700">Assigned Items</Label>
                           {formData.item_ids.length > 0 && (
                             <Button
                               type="button"
@@ -2047,7 +2047,7 @@ export default function AddUser() {
 
                       <div className="space-y-2 min-w-0">
                         <div className="flex items-center justify-between">
-                          <Label htmlFor="machines" className="text-sm font-medium text-gray-700">Machines</Label>
+                          <Label htmlFor="machines" className="text-xs font-medium text-gray-700">Machines</Label>
                           {formData.machine_ids.length > 0 && (
                             <Button type="button" variant="ghost" size="sm" onClick={() => handleInputChange('machine_ids', [])} className="h-6 px-2 text-xs text-gray-600 hover:text-gray-900 hover:bg-gray-100">
                               <X className="h-3 w-3 mr-1" />
@@ -2148,9 +2148,9 @@ export default function AddUser() {
 
                 {/* Address Information */}
                 <Card className="shadow-sm border border-gray-200">
-                  <CardHeader>
+                  <CardHeader className="p-3 pb-1.5">
                     <div className="flex items-center justify-between">
-                      <CardTitle className="text-lg font-semibold text-gray-900">Address Information</CardTitle>
+                      <CardTitle className="text-sm font-semibold text-gray-900">Address Information</CardTitle>
                       {(formData.address || formData.city || formData.state || formData.pincode) && (
                         <Button
                           type="button"
@@ -2165,7 +2165,7 @@ export default function AddUser() {
                       )}
                     </div>
                   </CardHeader>
-                  <CardContent className="space-y-4">
+                  <CardContent className="p-3 pt-1.5 space-y-2.5">
                     <div className="space-y-2">
                       <Label htmlFor="address">Address *</Label>
                       <div className="relative">
@@ -2200,7 +2200,7 @@ export default function AddUser() {
                         </p>
                       )}
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2.5">
                       <div className="space-y-2">
                         <Label htmlFor="city">City *</Label>
                         <Input
@@ -2259,15 +2259,15 @@ export default function AddUser() {
 
                 {/* Access Permission Module Assignment */}
                 <Card className="shadow-sm border border-gray-200">
-                  <CardHeader>
-                    <CardTitle className="text-lg font-semibold text-gray-900">Access Permissions</CardTitle>
+                  <CardHeader className="p-3 pb-1.5">
+                    <CardTitle className="text-sm font-semibold text-gray-900">Access Permissions</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="overflow-x-auto">
                       <table className="w-full min-w-full">
                         <thead className="bg-gray-50 border-b-2 border-gray-200 dark:bg-gray-800 dark:border-gray-700">
                           <tr>
-                            <th className="h-12 px-4 py-3 text-center align-middle font-semibold text-gray-900 dark:text-white uppercase tracking-wider text-xs w-25">
+                            <th className="h-9 px-3 py-2 text-center align-middle font-semibold text-gray-900 dark:text-white uppercase tracking-wider text-xs w-25">
                               <div className="flex flex-col items-center space-y-1">
                                 <span>Select All</span>
                                 <Checkbox
@@ -2276,11 +2276,11 @@ export default function AddUser() {
                                 />
                               </div>
                             </th>
-                            <th className="h-12 px-4 py-3 text-left align-middle font-semibold text-gray-900 dark:text-white uppercase tracking-wider text-xs w-1/3">Add Modules</th>
-                            <th className="h-12 px-4 py-3 text-center align-middle font-semibold text-gray-900 dark:text-white uppercase tracking-wider text-xs w-1/6">Create</th>
-                            <th className="h-12 px-4 py-3 text-center align-middle font-semibold text-gray-900 dark:text-white uppercase tracking-wider text-xs w-1/6">Read</th>
-                            <th className="h-12 px-4 py-3 text-center align-middle font-semibold text-gray-900 dark:text-white uppercase tracking-wider text-xs w-1/6">Update</th>
-                            <th className="h-12 px-4 py-3 text-center align-middle font-semibold text-gray-900 dark:text-white uppercase tracking-wider text-xs w-1/6">Delete</th>
+                            <th className="h-9 px-3 py-2 text-left align-middle font-semibold text-gray-900 dark:text-white uppercase tracking-wider text-xs w-1/3">Add Modules</th>
+                            <th className="h-9 px-3 py-2 text-center align-middle font-semibold text-gray-900 dark:text-white uppercase tracking-wider text-xs w-1/6">Create</th>
+                            <th className="h-9 px-3 py-2 text-center align-middle font-semibold text-gray-900 dark:text-white uppercase tracking-wider text-xs w-1/6">Read</th>
+                            <th className="h-9 px-3 py-2 text-center align-middle font-semibold text-gray-900 dark:text-white uppercase tracking-wider text-xs w-1/6">Update</th>
+                            <th className="h-9 px-3 py-2 text-center align-middle font-semibold text-gray-900 dark:text-white uppercase tracking-wider text-xs w-1/6">Delete</th>
                           </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
@@ -2444,7 +2444,7 @@ export default function AddUser() {
                   placeholder="Search by name..."
                   value={assignItemSearchTerm}
                   onChange={(e) => setAssignItemSearchTerm(e.target.value)}
-                  className="pl-10 pr-8 h-11 w-full"
+                  className="pl-10 pr-8 h-9 w-full"
                 />
                 {assignItemSearchTerm && (
                   <button
@@ -2467,7 +2467,7 @@ export default function AddUser() {
                 value={assignItemSelectedItemGrouping || "all"}
                 onValueChange={(value) => setAssignItemSelectedItemGrouping(value === "all" ? "" : value)}
               >
-                <SelectTrigger className="h-11">
+                <SelectTrigger className="h-9">
                   <SelectValue placeholder="Select item grouping" />
                 </SelectTrigger>
                 <SelectContent>
@@ -2487,7 +2487,7 @@ export default function AddUser() {
                 Status
               </label>
               <Select value={assignItemActiveStatusFilter} onValueChange={setAssignItemActiveStatusFilter}>
-                <SelectTrigger className="h-11">
+                <SelectTrigger className="h-9">
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
                 <SelectContent>
@@ -2503,7 +2503,7 @@ export default function AddUser() {
                 Stock
               </label>
               <Select value={assignItemInStockFilter} onValueChange={setAssignItemInStockFilter}>
-                <SelectTrigger className="h-11">
+                <SelectTrigger className="h-9">
                   <SelectValue placeholder="Select stock" />
                 </SelectTrigger>
                 <SelectContent>
@@ -2518,7 +2518,7 @@ export default function AddUser() {
               type="button"
               variant="outline"
               size="icon"
-              className="h-11 w-11 shrink-0"
+              className="h-9 w-11 shrink-0"
               onClick={clearAssignItemFilters}
               title="Clear filters"
               aria-label="Clear filters"

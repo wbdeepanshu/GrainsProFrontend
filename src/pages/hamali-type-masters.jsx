@@ -1095,13 +1095,13 @@ export default function HamaliTypeMasters() {
         )}
 
         {/* Main Content Area */}
-        <div className="flex-1 p-6 overflow-auto">
+        <div className="flex-1 p-2.5 sm:p-3 overflow-auto">
           {/* Page Header */}
-          <div className="mb-6">
+          <div className="mb-3">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Hamali Type Masters</h1>
-                <p className="text-gray-600 dark:text-gray-400 mt-2">
+                <h1 className="text-lg font-bold text-gray-900 dark:text-white">Hamali Type Masters</h1>
+                <p className="text-gray-600 dark:text-gray-400 mt-0.5 text-sm">
                   Manage and view all hamali types with rates across branches
                 </p>
               </div>
@@ -1290,21 +1290,21 @@ export default function HamaliTypeMasters() {
           </div>
 
           {/* Filters Section */}
-          <Card className={`mb-6 transition-all duration-300 ${isMobile ? '' : showFilters ? 'opacity-100' : 'opacity-100'}`}>
-            <CardContent className="p-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+          <Card className={`mb-3 transition-all duration-300 ${isMobile ? '' : showFilters ? 'opacity-100' : 'opacity-100'}`}>
+            <CardContent className="p-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-2.5">
                 {/* Search Input */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-gray-700 dark:text-gray-300">
                     Search Hamali Types
                   </label>
                   <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-3.5 w-3.5" />
                     <Input
                       placeholder="Search by name, branch, group..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10 pr-8"
+                      className="pl-9 pr-8 h-9"
                     />
                     {searchTerm && (
                       <button
@@ -1318,12 +1318,12 @@ export default function HamaliTypeMasters() {
                 </div>
 
                 {/* Branch Filter */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-gray-700 dark:text-gray-300">
                     Branch
                   </label>
                   <Select value={selectedBranch} onValueChange={setSelectedBranch}>
-                    <SelectTrigger>
+                    <SelectTrigger className="h-9">
                       <SelectValue placeholder="Select branch" />
                     </SelectTrigger>
                     <SelectContent>
@@ -1337,8 +1337,8 @@ export default function HamaliTypeMasters() {
                 </div>
 
                 {/* Hamali Group Filter */}
-                <div className="space-y-2 min-w-0">
-                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                <div className="space-y-1 min-w-0">
+                  <label className="text-xs font-medium text-gray-700 dark:text-gray-300">
                     Hamali Group
                   </label>
                   {renderSearchableHamaliGroupSelect({
@@ -1356,12 +1356,12 @@ export default function HamaliTypeMasters() {
                 </div>
 
                 {/* Status Filter */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-gray-700 dark:text-gray-300">
                     Status
                   </label>
                   <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-                    <SelectTrigger>
+                    <SelectTrigger className="h-9">
                       <SelectValue placeholder="Select status" />
                     </SelectTrigger>
                     <SelectContent>
@@ -1375,13 +1375,13 @@ export default function HamaliTypeMasters() {
                 </div>
 
                 {/* Results Summary */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-gray-700 dark:text-gray-300">
                     Results Summary
                   </label>
-                  <div className="flex items-center space-x-2 h-10 px-3 border rounded-md bg-gray-50 dark:bg-gray-800">
-                    <Package className="h-4 w-4 text-gray-500" />
-                    <span className="font-semibold text-gray-900 dark:text-white">
+                  <div className="flex items-center space-x-2 h-9 px-3 border rounded-md bg-gray-50 dark:bg-gray-800">
+                    <Package className="h-3.5 w-3.5 text-gray-500" />
+                    <span className="text-sm font-semibold text-gray-900 dark:text-white">
                       {allHamaliTypes.length} hamali type{allHamaliTypes.length !== 1 ? 's' : ''}
                     </span>
                   </div>
@@ -1390,7 +1390,7 @@ export default function HamaliTypeMasters() {
 
               {/* Clear Filters Button */}
               {(searchTerm || selectedBranch !== "All" || selectedHamaliGroup !== "All" || selectedStatus !== "All") && (
-                <div className="mt-4 flex justify-start">
+                <div className="mt-2.5 flex justify-start">
                   <Button
                     variant="outline"
                     size="sm"
@@ -1407,10 +1407,10 @@ export default function HamaliTypeMasters() {
 
           {/* Hamali Types Table */}
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
+            <CardHeader className="py-2.5 px-3">
+              <CardTitle className="flex items-center justify-between text-base">
                 <div className="flex items-center space-x-2">
-                  <Package className="h-5 w-5" />
+                  <Package className="h-4 w-4" />
                   <span>Hamali Types List</span>
                 </div>
                 <div className="text-sm font-normal text-gray-500 dark:text-gray-400">
@@ -1423,17 +1423,17 @@ export default function HamaliTypeMasters() {
                 </div>
               </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-3 pt-0">
               {totalItems > 0 ? (
                 <>
                   {/* Desktop Table */}
-                  <div className="overflow-x-auto">
-                    <table className="w-full border-collapse">
-                      <thead>
-                        <tr className="border-b-2 border-gray-200 dark:border-gray-700">
-                          <th className="w-12 text-left py-3 px-4 font-medium text-gray-900 dark:text-white">#</th>
+                  <div className="overflow-x-auto max-h-[min(72vh,calc(100vh-14rem))]">
+                    <table className="w-full border-collapse text-sm">
+                      <thead className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-800">
+                        <tr className="border-b border-slate-300 dark:border-gray-600">
+                          <th className="w-12 h-9 text-left px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-gray-900 dark:text-white">#</th>
                           <th 
-                            className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                            className="h-9 text-left px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-gray-900 dark:text-white cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                             onClick={() => handleSort('name')}
                           >
                             <div className="flex items-center space-x-1">
@@ -1442,14 +1442,14 @@ export default function HamaliTypeMasters() {
                             </div>
                           </th>
                           
-                          <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">
+                          <th className="h-9 text-left px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-gray-900 dark:text-white">
                             <div className="flex items-center space-x-1">
-                              <Users className="h-4 w-4" />
+                              <Users className="h-3.5 w-3.5" />
                               <span>Hamali Group</span>
                             </div>
                           </th>
                           <th 
-                            className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                            className="h-9 text-left px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-gray-900 dark:text-white cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                             onClick={() => handleSort('branch_name')}
                           >
                             <div className="flex items-center space-x-1">
@@ -1458,7 +1458,7 @@ export default function HamaliTypeMasters() {
                             </div>
                           </th>
                           
-                          <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">
+                          <th className="h-9 text-left px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-gray-900 dark:text-white">
                             <div className="flex items-center space-x-1">
 
                               <span>Current Rate</span>
@@ -1483,7 +1483,7 @@ export default function HamaliTypeMasters() {
                           </th> */}
                           
                           <th 
-                            className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                            className="h-9 text-left px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-gray-900 dark:text-white cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                             onClick={() => handleSort('created_at')}
                           >
                             <div className="flex items-center space-x-1">
@@ -1493,7 +1493,7 @@ export default function HamaliTypeMasters() {
                             </div>
                           </th>
                           
-                          <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">
+                          <th className="h-9 text-left px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-gray-900 dark:text-white">
                             Actions
                           </th>
 
@@ -1503,49 +1503,49 @@ export default function HamaliTypeMasters() {
                         {paginatedHamaliTypes.map((hamaliType, index) => (
                           <tr 
                             key={hamaliType.id || index} 
-                            className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                            className="border-b border-slate-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
                           >
-                            <td className="py-4 px-4 font-medium text-gray-900 dark:text-white">
+                            <td className="py-1.5 px-3 font-medium text-gray-900 dark:text-white">
                               {startItem + index}
                             </td>
-                            <td className="py-4 px-4">
-                              <div className="font-semibold text-gray-900 dark:text-white">
+                            <td className="py-1.5 px-3">
+                              <div className="font-medium text-sm text-gray-900 dark:text-white">
                                 {hamaliType.name || 'N/A'}
                               </div>
                               {hamaliType.description && (
-                                <div className="text-sm text-gray-500 dark:text-gray-400 max-w-xs truncate" title={hamaliType.description}>
+                                <div className="text-[10px] text-gray-500 dark:text-gray-400 max-w-xs truncate" title={hamaliType.description}>
                                   {hamaliType.description}
                                 </div>
                               )}
                             </td>
-                            <td className="py-4 px-4">
-                              <span className="text-gray-900 dark:text-white">
+                            <td className="py-1.5 px-3">
+                              <span className="text-sm text-gray-900 dark:text-white">
                                 {hamaliType.hamali_group?.name || "—"}
                               </span>
                             </td>
-                            <td className="py-4 px-4">
-                              <div className="flex items-center space-x-1">
-                                <Building2 className="h-4 w-4 text-gray-400" />
-                                <span className="text-gray-900 dark:text-white">
+                            <td className="py-1.5 px-3">
+                              <div className="flex items-center gap-1.5">
+                                <Building2 className="h-3.5 w-3.5 text-gray-400 shrink-0" />
+                                <span className="text-sm text-gray-900 dark:text-white">
                                   {hamaliType.branch_name || 'N/A'}
                                 </span>
                               </div>
                             </td>
                             
-                            <td className="py-4 px-4">
+                            <td className="py-1.5 px-3">
                               <div className="flex items-center space-x-1">
                                 {/* <IndianRupee className="h-4 w-4 text-green-600" /> */}
-                                <span className="font-semibold text-gray-900 dark:text-white">
+                                <span className="font-medium text-sm text-gray-900 dark:text-white">
                                   {hamaliType.current_rate ? `₹${hamaliType.current_rate}` : 'N/A'}
                                 </span>
                               </div>
                               {hamaliType.current_rate_details?.per_weight && parseFloat(hamaliType.current_rate_details.per_weight) > 1 && (
-                                <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                <div className="text-[10px] text-gray-500 dark:text-gray-400">
                                   per {hamaliType.current_rate_details.per_weight} {hamaliType.current_rate_details?.per_unit || 'unit'}
                                 </div>
                               )}
                               {hamaliType.current_rate_details?.per_unit && (!hamaliType.current_rate_details?.per_weight || parseFloat(hamaliType.current_rate_details.per_weight) <= 1) && (
-                                <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                <div className="text-[10px] text-gray-500 dark:text-gray-400">
                                   per {hamaliType.current_rate_details.per_unit}
                                 </div>
                               )}
@@ -1583,32 +1583,32 @@ export default function HamaliTypeMasters() {
                               </Badge>
                             </td> */}
                             
-                            <td className="py-4 px-4">
-                              <span className="text-gray-900 dark:text-white text-sm">
+                            <td className="py-1.5 px-3">
+                              <span className="text-gray-900 dark:text-white text-xs">
                               {new Date(hamaliType.created_at).toLocaleDateString("en-GB").replace(/\//g, "-")}
                               </span>
                             </td>
                             
-                            <td className="py-4 px-4">
-                              <div className="flex items-center space-x-2">
+                            <td className="py-1.5 px-3">
+                              <div className="flex items-center gap-1">
                                 <Button
                                   variant="outline"
                                   size="sm"
                                   onClick={() => handleEdit(hamaliType)}
-                                  className="flex items-center space-x-1"
+                                  className="h-7 w-7 p-0"
                                   disabled={!hasUpdatePermission("hamali") || updateMutation.isPending || deleteMutation.isPending}
                                 >
-                                  <Edit className="h-4 w-4" />
+                                  <Edit className="h-3.5 w-3.5" />
 
                                 </Button>
                                 <Button
                                   variant="outline"
                                   size="sm"
                                   onClick={() => handleDelete(hamaliType)}
-                                  className="flex items-center space-x-1 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                  className="h-7 w-7 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
                                   disabled={!hasDeletePermission("hamali") || updateMutation.isPending || deleteMutation.isPending}
                                 >
-                                  <Trash2 className="h-4 w-4" />
+                                  <Trash2 className="h-3.5 w-3.5" />
 
                                 </Button>
                               </div>

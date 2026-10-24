@@ -385,7 +385,7 @@ export default function GstMasters() {
       )}
 
       <div className="flex-1 flex flex-col overflow-hidden">
-        <div className="bg-white border-b px-4 py-3 flex items-center justify-between">
+        <div className="bg-white border-b px-3 py-2 flex items-center justify-between md:px-4">
           <div className="flex items-center gap-3">
             {isMobile && (
               <Button variant="outline" size="sm" onClick={() => setIsMobileSidebarOpen(true)}>
@@ -393,8 +393,8 @@ export default function GstMasters() {
               </Button>
             )}
             <div>
-              <h1 className="text-xl font-bold text-gray-900">GST Masters</h1>
-              <p className="text-sm text-gray-500">Map GST rates to sales and purchase ledgers</p>
+              <h1 className="text-lg font-bold text-gray-900">GST Masters</h1>
+              <p className="text-xs text-gray-500">Map GST rates to sales and purchase ledgers</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -410,11 +410,11 @@ export default function GstMasters() {
           </div>
         </div>
 
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6">
+        <main className="flex-1 overflow-y-auto p-2.5 sm:p-3">
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <Percent className="h-5 w-5" />
+            <CardHeader className="py-2.5 px-3">
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Percent className="h-4 w-4" />
                 GST Configs ({filteredMappings.length}
                 {searchTerm.trim() && filteredMappings.length !== mappings.length
                   ? ` of ${mappings.length}`
@@ -422,22 +422,22 @@ export default function GstMasters() {
                 )
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <CardContent className="space-y-2.5 p-3 pt-0">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
                 <div className="relative md:col-span-2">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
                   <Input
                     placeholder="Search ledger, type, GST rate..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-9 pr-9"
+                    className="pl-9 pr-9 h-9"
                   />
                   {isFetching && (
                     <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-gray-400" />
                   )}
                 </div>
                 <Select value={typeFilter} onValueChange={setTypeFilter}>
-                  <SelectTrigger>
+                  <SelectTrigger className="h-9">
                     <SelectValue placeholder="Filter by type" />
                   </SelectTrigger>
                   <SelectContent>
@@ -464,60 +464,60 @@ export default function GstMasters() {
                   <p className="text-sm mt-1">Click Add GST Config to create one.</p>
                 </div>
               ) : (
-                <div className="overflow-x-auto rounded-lg border">
-                  <table className="w-full text-sm">
-                    <thead className="bg-gray-50 border-b">
-                      <tr>
-                        <th className="text-left px-4 py-3 font-medium text-gray-600">Type</th>
-                        <th className="text-left px-4 py-3 font-medium text-gray-600">Ledger</th>
-                        <th className="text-left px-4 py-3 font-medium text-gray-600">GST Rate</th>
-                        <th className="text-left px-4 py-3 font-medium text-gray-600">Status</th>
-                        <th className="text-right px-4 py-3 font-medium text-gray-600">Actions</th>
+                <div className="overflow-x-auto rounded-lg border border-slate-200">
+                  <table className="w-full border-collapse text-sm">
+                    <thead className="bg-gray-50">
+                      <tr className="border-b border-slate-300">
+                        <th className="text-left px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-gray-600">Type</th>
+                        <th className="text-left px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-gray-600">Ledger</th>
+                        <th className="text-left px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-gray-600">GST Rate</th>
+                        <th className="text-left px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-gray-600">Status</th>
+                        <th className="text-right px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-gray-600">Actions</th>
                       </tr>
                     </thead>
                     <tbody>
                       {filteredMappings.map((item) => (
-                        <tr key={item.id} className="border-b last:border-0 hover:bg-gray-50">
-                          <td className="px-4 py-3 capitalize">{item.ledger_type}</td>
-                          <td className="px-4 py-3">
+                        <tr key={item.id} className="border-b border-slate-200 last:border-b-0 hover:bg-gray-50">
+                          <td className="px-3 py-1.5 capitalize">{item.ledger_type}</td>
+                          <td className="px-3 py-1.5">
                             <div className="font-medium text-gray-900">
                               {item.ledger_account_name || "-"}
                             </div>
                             {item.ledger_account_tally_name &&
                               item.ledger_account_tally_name !== item.ledger_account_name && (
-                                <div className="text-xs text-gray-500">
+                                <div className="text-[10px] text-gray-500">
                                   {item.ledger_account_tally_name}
                                 </div>
                               )}
                           </td>
-                          <td className="px-4 py-3">{item.applied_gst_rate}%</td>
-                          <td className="px-4 py-3">
-                            <Badge variant={item.is_active ? "default" : "secondary"}>
+                          <td className="px-3 py-1.5">{item.applied_gst_rate}%</td>
+                          <td className="px-3 py-1.5">
+                            <Badge variant={item.is_active ? "default" : "secondary"} className="text-[10px] px-1.5 py-0">
                               {item.is_active ? "Active" : "Inactive"}
                             </Badge>
                           </td>
-                          <td className="px-4 py-3">
+                          <td className="px-3 py-1.5">
                             <div className="flex items-center justify-end gap-1">
                               {hasUpdatePermission("customer_management") && (
                                 <Button
                                   variant="ghost"
                                   size="icon"
-                                  className="h-8 w-8"
+                                  className="h-7 w-7"
                                   onClick={() => handleEdit(item)}
                                   title="Edit"
                                 >
-                                  <Edit className="h-4 w-4" />
+                                  <Edit className="h-3.5 w-3.5" />
                                 </Button>
                               )}
                               {hasDeletePermission("customer_management") && (
                                 <Button
                                   variant="ghost"
                                   size="icon"
-                                  className="h-8 w-8 text-red-600 hover:text-red-700"
+                                  className="h-7 w-7 text-red-600 hover:text-red-700"
                                   onClick={() => setDeleteTarget(item)}
                                   title="Delete"
                                 >
-                                  <Trash2 className="h-4 w-4" />
+                                  <Trash2 className="h-3.5 w-3.5" />
                                 </Button>
                               )}
                             </div>

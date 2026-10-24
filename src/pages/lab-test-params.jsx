@@ -566,30 +566,30 @@ export default function LabTestParams() {
                     </div>
                 )}
 
-                <div className="flex-1 p-6 overflow-auto">
-                    <div className="mb-6">
-                        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Lab Test Parameters</h1>
-                        <p className="text-gray-600 dark:text-gray-400 mt-2">Manage laboratory testing parameters and validation rules</p>
+                <div className="flex-1 p-2.5 sm:p-3 overflow-auto">
+                    <div className="mb-3">
+                        <h1 className="text-lg font-bold text-gray-900 dark:text-white">Lab Test Parameters</h1>
+                        <p className="text-gray-600 dark:text-gray-400 mt-0.5 text-sm">Manage laboratory testing parameters and validation rules</p>
                     </div>
 
                     {/* Search and Create Section */}
-                    <Card className="mb-6">
-                        <CardContent className="p-4">
-                            <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
-                                <div className="flex flex-1 flex-wrap gap-4 items-center max-w-2xl">
+                    <Card className="mb-3">
+                        <CardContent className="p-3">
+                            <div className="flex flex-col md:flex-row gap-2.5 items-start md:items-center justify-between">
+                                <div className="flex flex-1 flex-wrap gap-2.5 items-center max-w-2xl">
                                     <div className="relative flex-1 min-w-[200px] max-w-md">
-                                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-3.5 w-3.5" />
                                         <Input
                                             placeholder="Search parameters..."
                                             value={searchTerm}
                                             onChange={(e) => setSearchTerm(e.target.value)}
-                                            className="pl-10"
+                                            className="pl-9 h-9"
                                         />
                                     </div>
                                 </div>
 
-                                <div className="flex items-center gap-4">
-                                    <Badge variant="secondary" className="text-lg font-semibold">
+                                <div className="flex items-center gap-2.5">
+                                    <Badge variant="secondary" className="text-sm font-semibold">
                                         {filteredParams.length} parameters
                                     </Badge>
 
@@ -1186,54 +1186,62 @@ export default function LabTestParams() {
                         </CardContent>
                     </Card>
 
-                    {/* Item Group Cards Filter */}
-                    <Card className="mb-6">
-                        <CardHeader className="pb-2">
-                            <CardTitle className="text-base flex items-center gap-2">
-                                <Package className="h-4 w-4" />
+                    {/* Item Group Filter — compact chips */}
+                    <Card className="mb-3">
+                        <CardHeader className="py-2 px-3 pb-1.5">
+                            <CardTitle className="text-sm flex items-center gap-2">
+                                <Package className="h-3.5 w-3.5" />
                                 Item Groups
                             </CardTitle>
                         </CardHeader>
-                        <CardContent>
+                        <CardContent className="p-3 pt-1">
                             {groupFilter === null && (
-                                <p className="text-sm text-gray-500 mb-3">
-                                    Select an item group card to view test parameters.
+                                <p className="text-xs text-gray-500 mb-2">
+                                    Select an item group to view test parameters.
                                 </p>
                             )}
                             {isLoadingItemGroups ? (
                                 <div className="text-sm text-gray-500">Loading item groups...</div>
                             ) : (
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                                    <button
-                                        type="button"
-                                        onClick={() => setGroupFilter("")}
-                                        className={`text-left rounded-lg border p-3 transition-colors ${
-                                            groupFilter === ""
-                                                ? "border-black bg-black text-white"
-                                                : "border-gray-200 bg-white hover:border-gray-300 dark:bg-gray-900"
-                                        }`}
-                                    >
-                                        <div className="text-sm font-semibold">All Groups</div>
-                                        <div className="text-xs opacity-80 mt-1">Show all test parameters</div>
-                                    </button>
-                                    {(itemGroupsData || []).map((group) => {
-                                        const isSelected = String(groupFilter) === String(group.id);
-                                        return (
-                                            <button
-                                                key={group.id}
-                                                type="button"
-                                                onClick={() => setGroupFilter(String(group.id))}
-                                                className={`text-left rounded-lg border p-3 transition-colors ${
-                                                    isSelected
-                                                        ? "border-black bg-black text-white"
-                                                        : "border-gray-200 bg-white hover:border-gray-300 dark:bg-gray-900"
-                                                }`}
+                                <div className="overflow-x-auto rounded-md border border-slate-200 dark:border-gray-700">
+                                    <table className="w-full border-collapse text-sm">
+                                        <thead className="bg-slate-50 dark:bg-gray-800">
+                                            <tr className="border-b border-slate-300 dark:border-gray-600">
+                                                <th className="h-8 px-3 py-1 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">Group</th>
+                                                <th className="h-8 px-3 py-1 text-right text-xs font-semibold uppercase tracking-wider text-gray-600">Select</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr
+                                                className={`border-b border-slate-200 dark:border-gray-700 cursor-pointer hover:bg-slate-50 dark:hover:bg-gray-800 ${groupFilter === "" ? "bg-slate-100 dark:bg-gray-800" : ""}`}
+                                                onClick={() => setGroupFilter("")}
                                             >
-                                                <div className="text-sm font-semibold truncate">{group.name}</div>
-                                                <div className="text-xs opacity-80 mt-1">Filter by this group</div>
-                                            </button>
-                                        );
-                                    })}
+                                                <td className="px-3 py-1.5 font-medium">All Groups</td>
+                                                <td className="px-3 py-1.5 text-right">
+                                                    <span className={`inline-flex rounded-full border px-2 py-0.5 text-[10px] ${groupFilter === "" ? "border-black bg-black text-white" : "border-slate-200 text-slate-600"}`}>
+                                                        {groupFilter === "" ? "Selected" : "Filter"}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                            {(itemGroupsData || []).map((group) => {
+                                                const isSelected = String(groupFilter) === String(group.id);
+                                                return (
+                                                    <tr
+                                                        key={group.id}
+                                                        className={`border-b border-slate-200 dark:border-gray-700 last:border-b-0 cursor-pointer hover:bg-slate-50 dark:hover:bg-gray-800 ${isSelected ? "bg-slate-100 dark:bg-gray-800" : ""}`}
+                                                        onClick={() => setGroupFilter(String(group.id))}
+                                                    >
+                                                        <td className="px-3 py-1.5 font-medium truncate max-w-[240px]">{group.name}</td>
+                                                        <td className="px-3 py-1.5 text-right">
+                                                            <span className={`inline-flex rounded-full border px-2 py-0.5 text-[10px] ${isSelected ? "border-black bg-black text-white" : "border-slate-200 text-slate-600"}`}>
+                                                                {isSelected ? "Selected" : "Filter"}
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })}
+                                        </tbody>
+                                    </table>
                                 </div>
                             )}
                         </CardContent>
@@ -1241,28 +1249,28 @@ export default function LabTestParams() {
 
                     {/* Parameters Table */}
                     <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center space-x-2">
-                                <FlaskConical className="h-5 w-5" />
+                        <CardHeader className="py-2.5 px-3">
+                            <CardTitle className="flex items-center space-x-2 text-base">
+                                <FlaskConical className="h-4 w-4" />
                                 <span>Lab Test Parameters</span>
                             </CardTitle>
                         </CardHeader>
-                        <CardContent>
+                        <CardContent className="p-3 pt-0">
                             {filteredParams.length > 0 ? (
-                                <div className="overflow-x-auto">
-                                    <Table>
+                                <div className="overflow-x-auto max-h-[min(60vh,calc(100vh-16rem))] rounded-md border border-slate-200 dark:border-gray-700">
+                                    <Table className="border-collapse [&_th]:h-9 [&_th]:px-3 [&_th]:py-1.5 [&_td]:px-3 [&_td]:py-1.5 [&_td]:border-b [&_td]:border-slate-200 dark:[&_td]:border-gray-700">
                                         <TableHeader>
-                                            <TableRow>
-                                                <TableHead>#</TableHead>
-                                                <TableHead>Sequence</TableHead>
-                                                <TableHead>Parameter</TableHead>
-                                                <TableHead>Unit</TableHead>
-                                                <TableHead>Test Type</TableHead>
-                                                <TableHead>Is Required</TableHead>
-                                                <TableHead>Validation</TableHead>
-                                                <TableHead>Image Required</TableHead>
+                                            <TableRow className="border-b border-slate-300 dark:border-gray-600">
+                                                <TableHead className="text-xs uppercase">#</TableHead>
+                                                <TableHead className="text-xs uppercase">Sequence</TableHead>
+                                                <TableHead className="text-xs uppercase">Parameter</TableHead>
+                                                <TableHead className="text-xs uppercase">Unit</TableHead>
+                                                <TableHead className="text-xs uppercase">Test Type</TableHead>
+                                                <TableHead className="text-xs uppercase">Is Required</TableHead>
+                                                <TableHead className="text-xs uppercase">Validation</TableHead>
+                                                <TableHead className="text-xs uppercase">Image Required</TableHead>
 
-                                                <TableHead>Actions</TableHead>
+                                                <TableHead className="text-xs uppercase">Actions</TableHead>
                                                 {/* <TableHead>Status</TableHead> */}
                                             </TableRow>
                                         </TableHeader>
@@ -1273,34 +1281,34 @@ export default function LabTestParams() {
                                                 const ImageIcon = Image;
 
                                                 return (
-                                                    <TableRow key={param.id}>
+                                                    <TableRow key={param.id} className="border-b border-slate-200 dark:border-gray-700">
                                                         <TableCell>{index + 1}</TableCell>
                                                         <TableCell>
                                                             {param.sequence ?? "-"}
                                                         </TableCell>
                                                         <TableCell className="font-medium">
-                                                            <div className="flex items-center space-x-2">
-                                                                <FlaskConical className="h-4 w-4 text-blue-500" />
+                                                            <div className="flex items-center gap-1.5">
+                                                                <FlaskConical className="h-3.5 w-3.5 text-blue-500 shrink-0" />
                                                                 <span>{param.parameter_name}</span>
                                                             </div>
                                                         </TableCell>
 
                                                         <TableCell>
                                                             {param.unit ? (
-                                                                <Badge variant="outline">{param.unit}</Badge>
+                                                                <Badge variant="outline" className="text-[10px] px-1.5 py-0">{param.unit}</Badge>
                                                             ) : (
                                                                 <span className="text-gray-400">-</span>
                                                             )}
                                                         </TableCell>
                                                         <TableCell>
-                                                            <Badge variant="outline">
+                                                            <Badge variant="outline" className="text-[10px] px-1.5 py-0">
                                                                 {param.test_type === "pre_test" ? "Pre Test" :
                                                                  param.test_type === "post_test" ? "Post Test" :
                                                                  param.test_type === "both" ? "Both" : "-"}
                                                             </Badge>
                                                         </TableCell>
                                                         <TableCell>
-                                                            <Badge variant="outline">
+                                                            <Badge variant="outline" className="text-[10px] px-1.5 py-0">
                                                                 {param.is_required === "pre_test" ? "Pre Test Only" :
                                                                  param.is_required === "post_test" ? "Post Test Only" :
                                                                  param.is_required === "both" ? "Both" :
@@ -1311,10 +1319,10 @@ export default function LabTestParams() {
                                                             {param.min_value && param.max_value ? (
                                                                 <div className="flex items-center space-x-2">
 
-                                                                    <span className="text-sm">{validation.text}</span>
+                                                                    <span className="text-xs">{validation.text}</span>
                                                                 </div>
                                                             ) : (
-                                                                <Badge variant="outline">
+                                                                <Badge variant="outline" className="text-[10px] px-1.5 py-0">
                                                                     <div className="flex items-center space-x-1">
                                                                         <XCircle className="h-3 w-3" />
                                                                         <span>No</span>
@@ -1323,7 +1331,7 @@ export default function LabTestParams() {
                                                             )}
                                                         </TableCell>
                                                         <TableCell>
-                                                            <Badge variant={param.is_image_required ? "default" : "outline"}>
+                                                            <Badge variant={param.is_image_required ? "default" : "outline"} className="text-[10px] px-1.5 py-0">
                                                                 <div className="flex items-center space-x-1">
                                                                     {param.is_image_required ? (
                                                                         <CheckCircle className="h-3 w-3" />
@@ -1336,24 +1344,24 @@ export default function LabTestParams() {
                                                         </TableCell>
                                                         
                                                         <TableCell>
-                                                            <div className="flex items-center space-x-2">
+                                                            <div className="flex items-center gap-1">
                                                                 <Button
                                                                     variant="outline"
                                                                     size="sm"
                                                                     onClick={() => handleEditParam(param)}
-                                                                    className="h-8 w-8 p-0"
+                                                                    className="h-7 w-7 p-0"
                                                                     disabled={!hasUpdatePermission("inward")}
                                                                 >
-                                                                    <Edit className="h-4 w-4" />
+                                                                    <Edit className="h-3.5 w-3.5" />
                                                                 </Button>
                                                                 <Button
                                                                     variant="outline"
                                                                     size="sm"
                                                                     onClick={() => handleDeleteParam(param.id)}
-                                                                    className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
+                                                                    className="h-7 w-7 p-0 text-red-600 hover:text-red-700"
                                                                     disabled={!hasDeletePermission("inward") || deleteLabTestParamMutation.isPending}
                                                                 >
-                                                                    <Trash2 className="h-4 w-4" />
+                                                                    <Trash2 className="h-3.5 w-3.5" />
                                                                 </Button>
                                                             </div>
                                                         </TableCell>
@@ -1369,8 +1377,8 @@ export default function LabTestParams() {
                                     </Table>
                                 </div>
                             ) : (
-                                <div className="text-center py-12">
-                                    <FlaskConical className="mx-auto h-12 w-12 text-gray-400" />
+                                <div className="text-center py-8">
+                                    <FlaskConical className="mx-auto h-10 w-10 text-gray-400" />
                                     <h3 className="mt-2 text-sm font-semibold text-gray-900 dark:text-white">No parameters found</h3>
                                     <p className="mt-1 text-sm text-gray-500">
                                         {(searchTerm || groupFilter) ? "No parameters match your search or group filter." : "Get started by creating your first lab test parameter."}

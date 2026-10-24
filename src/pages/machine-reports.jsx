@@ -27,7 +27,9 @@ import {
     ChevronLeft,
     ChevronRight,
     Filter,
-    RefreshCw
+    RefreshCw,
+    Image as ImageIcon,
+    X
 } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import CommonLoader from "@/components/common/loader";
@@ -35,6 +37,7 @@ import Sidebar from "@/components/layout/sidebar";
 import MobileSidebar from "@/components/layout/mobile-sidebar";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useUserPermissions } from "@/hooks/useUserPermissions";
+import { uploadMediaFile } from "@/lib/media_upload_api";
 
 const MONTH_OPTIONS = [
     { value: "1", label: "January" },
@@ -129,14 +132,17 @@ export default function MachineReports() {
         machine_id: "",
         plant_id: "",
         item_details: "",
+        operator_name: "",
         start_time: "",
         end_time: "",
         remarks: "",
+        image_url: "",
         performance_data: []
     });
     const [selectedMachineParams, setSelectedMachineParams] = useState([]);
     const [predefinedValuesByParam, setPredefinedValuesByParam] = useState({});
     const [isLoadingParams, setIsLoadingParams] = useState(false);
+    const [isUploadingImage, setIsUploadingImage] = useState(false);
     
     // Verification form state
     const [verificationData, setVerificationData] = useState({
@@ -584,18 +590,52 @@ export default function MachineReports() {
             machine_id: "",
             plant_id: "",
             item_details: "",
+            operator_name: "",
             start_time: formatCurrentTime(),
             end_time: "",
             remarks: "",
+            image_url: "",
             performance_data: []
         });
         setSelectedMachineParams([]);
         setPredefinedValuesByParam({});
         setIsLoadingParams(false);
+        setIsUploadingImage(false);
         setEditingEntryId(null);
         setEditingParamEntryId(null);
         setIsAddingToBatch(false);
         setIsEndingBatch(false);
+    };
+
+    const handleParamImageUpload = async (event) => {
+        const file = event.target.files?.[0];
+        event.target.value = "";
+        if (!file) return;
+        if (!file.type?.startsWith("image/")) {
+            toast({
+                title: "Invalid file",
+                description: "Please select an image file",
+                variant: "destructive",
+            });
+            return;
+        }
+        setIsUploadingImage(true);
+        try {
+            const url = await uploadMediaFile(file, "machine_params");
+            setFormData((prev) => ({ ...prev, image_url: url || "" }));
+            toast({
+                title: "Image uploaded",
+                description: "Image URL attached to this params entry",
+            });
+        } catch (error) {
+            toast({
+                title: "Upload failed",
+                description: error?.message || "Could not upload image",
+                variant: "destructive",
+            });
+        } finally {
+            setIsUploadingImage(false);
+        }
     };
 
     const handleFormChange = (field, value) => {
@@ -651,9 +691,15 @@ export default function MachineReports() {
             if (data.status === 200 && data.data) {
                 const machineData = data.data;
                 if (machineData.parameters && machineData.parameters.length > 0) {
-                    const formParams = machineData.parameters.filter(
-                        (param) => !isBatchHeaderOwnedParam(param)
-                    );
+                    const formParams = machineData.parameters
+                        .filter((param) => !isBatchHeaderOwnedParam(param))
+                        .slice()
+                        .sort((a, b) => {
+                            const seqA = Number(a.sequence ?? 0);
+                            const seqB = Number(b.sequence ?? 0);
+                            if (seqA !== seqB) return seqA - seqB;
+                            return (a.id || 0) - (b.id || 0);
+                        });
                     setSelectedMachineParams(formParams);
                     const predefinedParams = formParams.filter(
                         (param) => getParamType(param) === "pre_defined"
@@ -915,18 +961,22 @@ export default function MachineReports() {
                 return;
             }
 
+            const imageUrl = String(formData.image_url || "").trim();
             createEntryMutation.mutate({
                 entry_id: editingEntryId,
                 machine_id: machineId,
                 ...plantPayload,
                 ...(editingParamEntryId ? { param_entry_id: editingParamEntryId } : {}),
                 ...(formData.remarks ? { remarks: formData.remarks } : {}),
+                ...(imageUrl
+                    ? { images: [{ image_url: imageUrl }] }
+                    : {}),
                 performance_data: performanceData,
             });
             return;
         }
 
-        // Mode 1: Start machine — { machine_id, plant_id, item_details, start_time, remarks? }
+        // Mode 1: Start machine — { machine_id, plant_id, item_details, operator_name, start_time, remarks? }
         if (!String(formData.start_time || "").trim()) {
             toast({
                 title: "Validation Error",
@@ -940,6 +990,7 @@ export default function MachineReports() {
             machine_id: machineId,
             ...plantPayload,
             item_details: String(formData.item_details || "").trim() || null,
+            operator_name: String(formData.operator_name || "").trim() || null,
             start_time: String(formData.start_time || "").trim(),
             remarks: formData.remarks || null,
         });
@@ -964,12 +1015,45 @@ export default function MachineReports() {
         setIsCreateDialogOpen(true);
     };
 
+    const resolveEndTimeAfterStart = (startTime, preferredEndTime) => {
+        const endTime = String(preferredEndTime || formatCurrentTime()).trim();
+        const start = String(startTime || "").trim();
+        if (!start || !endTime) return endTime || formatCurrentTime();
+        // If times are equal (same second), bump end by 1s so same-day close is valid.
+        if (endTime === start || endTime === start.slice(0, 5)) {
+            const parts = endTime.split(":").map((p) => parseInt(p, 10));
+            if (parts.length >= 2 && parts.every((n) => !Number.isNaN(n))) {
+                let [h, m, s = 0] = parts;
+                s += 1;
+                if (s >= 60) {
+                    s = 0;
+                    m += 1;
+                }
+                if (m >= 60) {
+                    m = 0;
+                    h = (h + 1) % 24;
+                }
+                return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+            }
+        }
+        return endTime;
+    };
+
     const handleOpenEndDialog = async (report) => {
         const machineId = String(filters.machine_id || report.machine || "");
         if (!machineId || !report?.id) {
             toast({
                 title: "Error",
                 description: "Machine entry is required to end this batch",
+                variant: "destructive",
+            });
+            return;
+        }
+
+        if (report.end_time) {
+            toast({
+                title: "Already closed",
+                description: "This machine entry is already closed. Please start the machine for another entry.",
                 variant: "destructive",
             });
             return;
@@ -983,19 +1067,36 @@ export default function MachineReports() {
             machine_id: machineId,
             plant_id: report.plant_id ? String(report.plant_id) : "",
             item_details: report.item_details || "",
+            operator_name: report.operator_name || "",
             start_time: report.start_time || "",
-            end_time: formatCurrentTime(),
+            end_time: resolveEndTimeAfterStart(report.start_time, formatCurrentTime()),
             remarks: report.remarks || "",
+            image_url: "",
             performance_data: [],
         };
         try {
             const details = await fetchReportDetails(report.id);
+            if (details?.end_time) {
+                toast({
+                    title: "Already closed",
+                    description: "This machine entry is already closed. Please start the machine for another entry.",
+                    variant: "destructive",
+                });
+                setIsEndingBatch(false);
+                setEditingEntryId(null);
+                queryClient.invalidateQueries(["machineReports"]);
+                return;
+            }
+            const startTime = details?.start_time || header.start_time || "";
             header = {
                 ...header,
                 plant_id: details?.plant_id ? String(details.plant_id) : header.plant_id,
                 item_details: details?.item_details ?? header.item_details,
-                start_time: details?.start_time || header.start_time || "",
+                operator_name: details?.operator_name ?? header.operator_name,
+                start_time: startTime,
+                end_time: resolveEndTimeAfterStart(startTime, formatCurrentTime()),
                 remarks: details?.remarks || header.remarks || "",
+                image_url: "",
             };
         } catch (error) {
             console.error("Error loading batch header for end machine:", error);
@@ -1004,7 +1105,18 @@ export default function MachineReports() {
         setIsCreateDialogOpen(true);
     };
 
-    const handleOpenEditDialog = async (report) => {
+    const isBatchInProgress = (report) => {
+        const batchStatus = report?.batch_status || (
+            report?.start_time && !report?.end_time
+                ? "in_progress"
+                : report?.start_time && report?.end_time
+                    ? "completed"
+                    : "open"
+        );
+        return batchStatus === "in_progress" || batchStatus === "In Progress";
+    };
+
+    const openParamEntryDialog = async (report, paramEntry = null) => {
         const machineId = String(filters.machine_id || report.machine || "");
         if (!machineId) {
             toast({
@@ -1015,53 +1127,64 @@ export default function MachineReports() {
             return;
         }
 
-        const batchStatus = report.batch_status || (
-            report.start_time && !report.end_time
-                ? "in_progress"
-                : report.start_time && report.end_time
-                    ? "completed"
-                    : "open"
-        );
-
-        // In-progress batch: add another param reading under the same report header.
-        if (batchStatus === "in_progress" || batchStatus === "In Progress") {
-            setEditingEntryId(report.id);
-            setEditingParamEntryId(null);
-            setIsAddingToBatch(true);
-            setIsEndingBatch(false);
-            let header = {
-                machine_id: machineId,
-                plant_id: report.plant_id ? String(report.plant_id) : "",
-                item_details: report.item_details || "",
-                start_time: report.start_time || "",
-                end_time: "",
-                remarks: report.remarks || "",
-                performance_data: [],
-            };
-            try {
-                const details = await fetchReportDetails(report.id);
-                header = {
-                    ...header,
-                    plant_id: details?.plant_id ? String(details.plant_id) : header.plant_id,
-                    item_details: details?.item_details ?? header.item_details,
-                    start_time: details?.start_time || header.start_time || "",
-                    end_time: "",
-                    remarks: details?.remarks || header.remarks || "",
-                };
-            } catch (error) {
-                console.error("Error loading batch header for add entry:", error);
-            }
-            setFormData(header);
-            setIsCreateDialogOpen(true);
-            await fetchMachineParameters(machineId, {});
+        if (!isBatchInProgress(report)) {
+            toast({
+                title: "Batch completed",
+                description: "This machine entry is closed. Please start the machine for another entry.",
+                variant: "destructive",
+            });
             return;
         }
 
-        toast({
-            title: "Batch completed",
-            description: "This machine entry is closed. Please start the machine for another entry.",
-            variant: "destructive",
-        });
+        setEditingEntryId(report.id);
+        setEditingParamEntryId(paramEntry?.id || null);
+        setIsAddingToBatch(true);
+        setIsEndingBatch(false);
+
+        const existingImageUrl =
+            paramEntry?.image_url
+            || (Array.isArray(paramEntry?.images) && paramEntry.images[0]?.image_url)
+            || "";
+
+        let header = {
+            machine_id: machineId,
+            plant_id: report.plant_id ? String(report.plant_id) : "",
+            item_details: report.item_details || "",
+            operator_name: report.operator_name || "",
+            start_time: report.start_time || "",
+            end_time: "",
+            remarks: paramEntry?.remarks || report.remarks || "",
+            image_url: existingImageUrl || "",
+            performance_data: [],
+        };
+        try {
+            const details = await fetchReportDetails(report.id);
+            header = {
+                ...header,
+                plant_id: details?.plant_id ? String(details.plant_id) : header.plant_id,
+                item_details: details?.item_details ?? header.item_details,
+                operator_name: details?.operator_name ?? header.operator_name,
+                start_time: details?.start_time || header.start_time || "",
+                end_time: "",
+                remarks: paramEntry?.remarks || details?.remarks || header.remarks || "",
+                image_url: existingImageUrl || "",
+            };
+        } catch (error) {
+            console.error("Error loading batch header for param entry:", error);
+        }
+        setFormData(header);
+        setIsCreateDialogOpen(true);
+        await fetchMachineParameters(machineId, paramEntry?.parameter_values || {});
+    };
+
+    const handleOpenEditDialog = async (report) => {
+        // Add a new params reading under the in-progress batch.
+        await openParamEntryDialog(report, null);
+    };
+
+    const handleEditParamEntry = async (report, entry) => {
+        // Edit an existing params row while the machine is still in progress.
+        await openParamEntryDialog(report, entry);
     };
 
     const getVerificationStatus = (report) => {
@@ -1665,12 +1788,20 @@ export default function MachineReports() {
                                                                         Batch #{serialNo}
                                                                         {report.item_details ? ` — ${report.item_details}` : ""}
                                                                     </CardTitle>
-                                                                    <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-600">
-                                                                        <span>Plant: {report.plant_name || "-"}</span>
-                                                                        <span>Start: {formatTime(report.start_time)}</span>
-                                                                        <span>End: {formatTime(report.end_time)}</span>
-                                                                        <span>Created: {formatDateTime(report.created_at)}</span>
-                                                                        <span>
+                                                                    <div className="flex flex-wrap gap-2 items-center text-sm">
+                                                                        <span className="inline-flex items-center rounded-md border border-indigo-200 bg-indigo-50 px-2.5 py-1 font-medium text-indigo-800">
+                                                                            Plant: {report.plant_name || "-"}
+                                                                        </span>
+                                                                        <span className="inline-flex items-center rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-1 font-medium text-emerald-800">
+                                                                            Operator: {report.operator_name || "-"}
+                                                                        </span>
+                                                                        <span className="inline-flex items-center rounded-md border border-sky-200 bg-sky-50 px-2.5 py-1 font-medium text-sky-800">
+                                                                            Start: {formatTime(report.start_time)}
+                                                                        </span>
+                                                                        <span className="inline-flex items-center rounded-md border border-amber-200 bg-amber-50 px-2.5 py-1 font-medium text-amber-900">
+                                                                            End: {formatTime(report.end_time)}
+                                                                        </span>
+                                                                        <span className="text-gray-600 px-1">
                                                                             Params entries: {report.param_entries_count ?? paramEntries.length}
                                                                         </span>
                                                                     </div>
@@ -1716,23 +1847,42 @@ export default function MachineReports() {
                                                                     <TableHeader>
                                                                         <TableRow>
                                                                             <TableHead>Sr.</TableHead>
-                                                                            <TableHead>Operated By</TableHead>
-                                                                            <TableHead>Created</TableHead>
                                                                             {parameterColumns.map((col) => (
                                                                                 <TableHead key={`head-${report.id}-${col.param_id}`}>
                                                                                     {col.label}
                                                                                 </TableHead>
                                                                             ))}
+                                                                            <TableHead>Image</TableHead>
+                                                                            <TableHead>Entered At</TableHead>
+                                                                            {batchStatus === "in_progress" && (
+                                                                                <TableHead className="text-right">Actions</TableHead>
+                                                                            )}
                                                                         </TableRow>
                                                                     </TableHeader>
                                                                     <TableBody>
                                                                         {paramEntries.length === 0 ? (
                                                                             <TableRow>
                                                                                 <TableCell
-                                                                                    colSpan={3 + parameterColumns.length}
+                                                                                    colSpan={
+                                                                                        3
+                                                                                        + parameterColumns.length
+                                                                                        + (batchStatus === "in_progress" ? 1 : 0)
+                                                                                    }
                                                                                     className="text-center text-gray-500"
                                                                                 >
-                                                                                    No parameter entries yet
+                                                                                    <div className="py-4 space-y-3">
+                                                                                        <p>No parameter entries yet</p>
+                                                                                        {batchStatus === "in_progress" && (
+                                                                                            <Button
+                                                                                                variant="outline"
+                                                                                                size="sm"
+                                                                                                onClick={() => handleOpenEditDialog(report)}
+                                                                                            >
+                                                                                                <Plus className="h-4 w-4 mr-1" />
+                                                                                                Add Params
+                                                                                            </Button>
+                                                                                        )}
+                                                                                    </div>
                                                                                 </TableCell>
                                                                             </TableRow>
                                                                         ) : (
@@ -1741,8 +1891,6 @@ export default function MachineReports() {
                                                                                     <TableCell className="font-medium">
                                                                                         {entryIndex + 1}
                                                                                     </TableCell>
-                                                                                    <TableCell>{entry.operated_by_name || "-"}</TableCell>
-                                                                                    <TableCell>{formatDateTime(entry.created_at)}</TableCell>
                                                                                     {parameterColumns.map((col) => (
                                                                                         <TableCell key={`val-${entry.id}-${col.param_id}`}>
                                                                                             {entry.parameter_values?.[String(col.param_id)] ? (
@@ -1755,11 +1903,57 @@ export default function MachineReports() {
                                                                                             )}
                                                                                         </TableCell>
                                                                                     ))}
+                                                                                    <TableCell>
+                                                                                        {(entry.image_url || entry.images?.[0]?.image_url) ? (
+                                                                                            <a
+                                                                                                href={entry.image_url || entry.images[0].image_url}
+                                                                                                target="_blank"
+                                                                                                rel="noopener noreferrer"
+                                                                                                className="inline-flex items-center gap-1 text-blue-600 hover:underline"
+                                                                                            >
+                                                                                                <img
+                                                                                                    src={entry.image_url || entry.images[0].image_url}
+                                                                                                    alt="Entry"
+                                                                                                    className="h-8 w-8 rounded object-cover border"
+                                                                                                />
+                                                                                            </a>
+                                                                                        ) : (
+                                                                                            <span className="text-gray-400">-</span>
+                                                                                        )}
+                                                                                    </TableCell>
+                                                                                    <TableCell className="whitespace-nowrap text-muted-foreground">
+                                                                                        {formatDateTime(entry.created_at)}
+                                                                                    </TableCell>
+                                                                                    {batchStatus === "in_progress" && (
+                                                                                        <TableCell className="text-right">
+                                                                                            <Button
+                                                                                                variant="outline"
+                                                                                                size="sm"
+                                                                                                className="h-8"
+                                                                                                onClick={() => handleEditParamEntry(report, entry)}
+                                                                                            >
+                                                                                                <Pencil className="h-3.5 w-3.5 mr-1" />
+                                                                                                Edit
+                                                                                            </Button>
+                                                                                        </TableCell>
+                                                                                    )}
                                                                                 </TableRow>
                                                                             ))
                                                                         )}
                                                                     </TableBody>
                                                                 </Table>
+                                                                {batchStatus === "in_progress" && paramEntries.length > 0 && (
+                                                                    <div className="mt-3 flex justify-end">
+                                                                        <Button
+                                                                            variant="outline"
+                                                                            size="sm"
+                                                                            onClick={() => handleOpenEditDialog(report)}
+                                                                        >
+                                                                            <Plus className="h-4 w-4 mr-1" />
+                                                                            Add Params
+                                                                        </Button>
+                                                                    </div>
+                                                                )}
                                                             </div>
                                                         </CardContent>
                                                     </Card>
@@ -1846,6 +2040,10 @@ export default function MachineReports() {
                                     <div>
                                         <Label className="text-sm font-medium text-gray-500">Item Details</Label>
                                         <p className="text-sm">{reportDetails.item_details || "-"}</p>
+                                    </div>
+                                    <div>
+                                        <Label className="text-sm font-medium text-gray-500">Operator Name</Label>
+                                        <p className="text-sm">{reportDetails.operator_name || "-"}</p>
                                     </div>
                                     <div>
                                         <Label className="text-sm font-medium text-gray-500">Start Time</Label>
@@ -2151,7 +2349,9 @@ export default function MachineReports() {
                             {isEndingBatch
                                 ? "End Machine"
                                 : isAddingToBatch
-                                    ? "Add Params to In-Progress Machine"
+                                    ? (editingParamEntryId
+                                        ? "Edit Params Entry"
+                                        : "Add Params to In-Progress Machine")
                                     : "Start Machine"}
                         </DialogTitle>
                     </DialogHeader>
@@ -2235,6 +2435,19 @@ export default function MachineReports() {
                                             placeholder="Enter item details"
                                             value={formData.item_details}
                                             onChange={(e) => handleFormChange('item_details', e.target.value)}
+                                            disabled={isAddingToBatch}
+                                        />
+                                    </div>
+                                )}
+
+                                {!isEndingBatch && (
+                                    <div className="space-y-2">
+                                        <Label htmlFor="operator_name">Operator Name</Label>
+                                        <Input
+                                            id="operator_name"
+                                            placeholder="Enter operator name"
+                                            value={formData.operator_name || ""}
+                                            onChange={(e) => handleFormChange('operator_name', e.target.value)}
                                             disabled={isAddingToBatch}
                                         />
                                     </div>
@@ -2346,6 +2559,67 @@ export default function MachineReports() {
                                                 );
                                                 })}
                                             </div>
+
+                                            <div className="mt-6 border rounded-md p-4 space-y-3 bg-slate-50">
+                                                <div className="flex items-center gap-2">
+                                                    <ImageIcon className="h-4 w-4 text-slate-600" />
+                                                    <Label className="text-sm font-medium mb-0">
+                                                        Image (optional)
+                                                    </Label>
+                                                </div>
+                                                <p className="text-xs text-muted-foreground">
+                                                    Upload an image or paste a Cloudinary URL. Stored as text and returned with the entry.
+                                                </p>
+                                                <div className="flex flex-col sm:flex-row gap-3 items-start">
+                                                    <Input
+                                                        type="file"
+                                                        accept="image/*"
+                                                        disabled={isUploadingImage}
+                                                        onChange={handleParamImageUpload}
+                                                        className="max-w-xs"
+                                                    />
+                                                    <Input
+                                                        placeholder="Or paste image URL (https://...)"
+                                                        value={formData.image_url || ""}
+                                                        onChange={(e) => handleFormChange("image_url", e.target.value)}
+                                                        className="flex-1"
+                                                    />
+                                                    {formData.image_url ? (
+                                                        <Button
+                                                            type="button"
+                                                            variant="outline"
+                                                            size="icon"
+                                                            onClick={() => handleFormChange("image_url", "")}
+                                                            title="Clear image"
+                                                        >
+                                                            <X className="h-4 w-4" />
+                                                        </Button>
+                                                    ) : null}
+                                                </div>
+                                                {isUploadingImage && (
+                                                    <p className="text-xs text-blue-600">Uploading image...</p>
+                                                )}
+                                                {formData.image_url ? (
+                                                    <div className="flex items-center gap-3">
+                                                        <img
+                                                            src={formData.image_url}
+                                                            alt="Preview"
+                                                            className="h-16 w-16 rounded border object-cover"
+                                                            onError={(e) => {
+                                                                e.currentTarget.style.display = "none";
+                                                            }}
+                                                        />
+                                                        <a
+                                                            href={formData.image_url}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="text-xs text-blue-600 break-all hover:underline"
+                                                        >
+                                                            {formData.image_url}
+                                                        </a>
+                                                    </div>
+                                                ) : null}
+                                            </div>
                                         </CardContent>
                                     </Card>
                                 ) : (
@@ -2386,7 +2660,7 @@ export default function MachineReports() {
                             </Button>
                             <Button 
                                 onClick={handleCreateEntry}
-                                disabled={createEntryMutation.isPending || !formData.machine_id}
+                                disabled={createEntryMutation.isPending || isUploadingImage || !formData.machine_id}
                             >
                                 {createEntryMutation.isPending ? (
                                     <>
@@ -2400,8 +2674,12 @@ export default function MachineReports() {
                                     </>
                                 ) : isAddingToBatch ? (
                                     <>
-                                        <Plus className="h-4 w-4 mr-2" />
-                                        Save Params
+                                        {editingParamEntryId ? (
+                                            <Pencil className="h-4 w-4 mr-2" />
+                                        ) : (
+                                            <Plus className="h-4 w-4 mr-2" />
+                                        )}
+                                        {editingParamEntryId ? "Update Params" : "Save Params"}
                                     </>
                                 ) : (
                                     <>

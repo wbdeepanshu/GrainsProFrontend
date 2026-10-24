@@ -309,6 +309,57 @@ const applyAccountTypeToSubmitPayload = (submitData, accountType) => {
   return submitData;
 };
 
+const emptyBankDetailRow = () => ({
+  id: null,
+  account_holder: "",
+  bank_name: "",
+  branch_name: "",
+  account_number: "",
+  ifsc_code: "",
+  account_type: "CURRENT",
+  upi_id: "",
+  remarks: "",
+  is_primary: false,
+  is_active: true,
+});
+
+const BANK_ACCOUNT_TYPE_OPTIONS = [
+  { value: "SAVINGS", label: "Savings" },
+  { value: "CURRENT", label: "Current" },
+  { value: "OTHER", label: "Other" },
+];
+
+const buildBankDetailsPayload = (rows = []) =>
+  (rows || [])
+    .map((row) => {
+      const item = {
+        account_holder: (row.account_holder || "").trim(),
+        bank_name: (row.bank_name || "").trim(),
+        branch_name: (row.branch_name || "").trim(),
+        account_number: (row.account_number || "").trim(),
+        ifsc_code: (row.ifsc_code || "").trim().toUpperCase(),
+        account_type: (row.account_type || "CURRENT").trim().toUpperCase() || "CURRENT",
+        upi_id: (row.upi_id || "").trim(),
+        remarks: (row.remarks || "").trim(),
+        is_primary: Boolean(row.is_primary),
+        is_active: row.is_active === false ? false : true,
+      };
+      if (row.id != null && row.id !== "") {
+        item.id = Number(row.id);
+      }
+      return item;
+    })
+    .filter((item) =>
+      Boolean(
+        item.account_holder ||
+          item.bank_name ||
+          item.branch_name ||
+          item.account_number ||
+          item.ifsc_code ||
+          item.upi_id
+      )
+    );
+
 const buildCreateCustomerApiPayload = ({
   form,
   firmName,
@@ -319,6 +370,7 @@ const buildCreateCustomerApiPayload = ({
   branchId = null,
   branchName = "",
   kycDocuments: kycDocs = [],
+  bankDetails: bankRows = [],
 }) => {
   const ledgerType = normalizeLedgerTypeValue(form.ledger_type);
 
@@ -371,6 +423,15 @@ const buildCreateCustomerApiPayload = ({
 
   if (kycDocs.length > 0) {
     payload.kyc_documents = kycDocs;
+  }
+
+  const bankPayload = buildBankDetailsPayload(bankRows);
+  if (bankPayload.length > 0) {
+    // Ensure at least one primary when any bank rows are sent
+    if (!bankPayload.some((b) => b.is_primary)) {
+      bankPayload[0].is_primary = true;
+    }
+    payload.bank_details = bankPayload;
   }
 
   Object.keys(payload).forEach((key) => {
@@ -630,19 +691,19 @@ const FormSection = ({
   className = "border-gray-200 bg-gray-50/60",
   headerClassName = "",
 }) => (
-  <div className={`rounded-lg border p-4 space-y-4 ${className}`}>
+  <div className={`rounded-md border p-2.5 space-y-2 ${className}`}>
     <div
-      className={`flex items-center gap-2 border-b border-gray-200 pb-2 -mx-4 -mt-4 mb-2 px-4 pt-3 rounded-t-lg ${headerClassName}`.trim()}
+      className={`flex items-center gap-1.5 border-b border-gray-200 pb-1.5 -mx-2.5 -mt-2.5 mb-1.5 px-2.5 pt-2 rounded-t-md ${headerClassName}`.trim()}
     >
-      {Icon && <Icon className="h-4 w-4 text-blue-600 shrink-0" />}
-      <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-900">{title}</h3>
+      {Icon && <Icon className="h-3.5 w-3.5 text-blue-600 shrink-0" />}
+      <h3 className="text-xs font-semibold uppercase tracking-wide text-gray-900">{title}</h3>
     </div>
     {children}
   </div>
 );
 
 const FormLabel = ({ children, required }) => (
-  <Label className="text-sm font-semibold text-gray-800">
+  <Label className="text-xs font-semibold text-gray-800">
     {children}
     {required && <span className="text-red-500 ml-0.5">*</span>}
   </Label>
@@ -774,10 +835,12 @@ export default function InwardReports() {
     "Invalid GST Number. Use 15 characters: valid state code, PAN, entity code, Z, and checksum digit.";
   const [editingCustomerId, setEditingCustomerId] = useState(null);
   const [kycDocuments, setKycDocuments] = useState([]); // { id?, document_name, document_number, file?, uploading?, fileName? }[]
+  const [bankDetails, setBankDetails] = useState([]); // party bank detail rows for create/edit
   const editPrefillDoneRef = useRef(null);
   const editFormTouchedRef = useRef(false);
   const editingLedgerEntryRef = useRef(null);
   const kycTouchedRef = useRef(false);
+  const bankTouchedRef = useRef(false);
   const [isKycImageDialogOpen, setIsKycImageDialogOpen] = useState(false);
   const [selectedKycImage, setSelectedKycImage] = useState(null);
   const [kycImageZoom, setKycImageZoom] = useState(1);
@@ -2329,6 +2392,24 @@ export default function InwardReports() {
         };
       }));
     }
+    if (!bankTouchedRef.current) {
+      const incomingBanks = Array.isArray(d.bank_details) ? d.bank_details : [];
+      setBankDetails(
+        incomingBanks.map((row) => ({
+          id: row.id ?? null,
+          account_holder: row.account_holder ?? "",
+          bank_name: row.bank_name ?? "",
+          branch_name: row.branch_name ?? "",
+          account_number: row.account_number ?? "",
+          ifsc_code: row.ifsc_code ?? "",
+          account_type: (row.account_type || "CURRENT").toUpperCase(),
+          upi_id: row.upi_id ?? "",
+          remarks: row.remarks ?? "",
+          is_primary: Boolean(row.is_primary),
+          is_active: row.is_active === false ? false : true,
+        }))
+      );
+    }
   }, [isCreateDialogOpen, editingCustomerId, editPartyDetail, taxationTypes, branchesData]);
 
   // Resolve branch_id from branch_name once branches list is available (detail API often omits branch_id).
@@ -2512,6 +2593,13 @@ export default function InwardReports() {
         } else if (kycStatus?.errors?.length) {
           description += ` KYC errors: ${kycStatus.errors.join("; ")}`;
         }
+        const bankStatus = data.bank_status;
+        if (bankStatus?.processed > 0) {
+          description += ` ${bankStatus.processed} bank detail(s) saved.`;
+        }
+        if (bankStatus?.errors?.length) {
+          description += ` Bank errors: ${bankStatus.errors.join("; ")}`;
+        }
         toast({
           title: "Success",
           description,
@@ -2604,10 +2692,12 @@ export default function InwardReports() {
   const resetCustomerForm = () => {
     setEditingCustomerId(null);
     kycTouchedRef.current = false;
+    bankTouchedRef.current = false;
     editFormTouchedRef.current = false;
     editPrefillDoneRef.current = null;
     editingLedgerEntryRef.current = null;
     setKycDocuments([]);
+    setBankDetails([]);
     setCustomerFormData({
       name: "",
       tally_name: "",
@@ -3064,6 +3154,8 @@ export default function InwardReports() {
     const selectedBranchName =
       String(selectedBranch?.name || customerFormData.branch_name || "").trim();
 
+    const bankPayloadPreview = buildBankDetailsPayload(bankDetails);
+
     const apiPayload = buildCreateCustomerApiPayload({
       form: customerFormData,
       firmName: firmNameInput,
@@ -3074,6 +3166,7 @@ export default function InwardReports() {
       branchId: resolvedBranchId,
       branchName: selectedBranchName,
       kycDocuments: kycPayload,
+      bankDetails,
     });
 
     if (editingCustomerId) {
@@ -3083,12 +3176,51 @@ export default function InwardReports() {
       console.log("Customer ID:", editingCustomerId);
       console.log("Form values (after your changes):", { ...customerFormData });
       console.log("KYC documents payload:", kycPayload);
+      console.log("Bank details payload:", bankPayloadPreview);
       console.log("Request body (object):", apiPayload);
       console.log("Request body (JSON):", JSON.stringify(apiPayload, null, 2));
       console.groupEnd();
     }
 
     createCustomerMutation.mutate(apiPayload);
+  };
+
+  const updateBankDetailRow = (index, field, value) => {
+    bankTouchedRef.current = true;
+    setBankDetails((prev) => {
+      const next = [...prev];
+      const row = { ...next[index], [field]: value };
+      if (field === "is_primary" && value) {
+        return next.map((item, i) => ({
+          ...item,
+          is_primary: i === index,
+        }));
+      }
+      next[index] = row;
+      return next;
+    });
+  };
+
+  const addBankDetailRow = () => {
+    bankTouchedRef.current = true;
+    setBankDetails((prev) => [
+      ...prev,
+      {
+        ...emptyBankDetailRow(),
+        is_primary: prev.length === 0,
+      },
+    ]);
+  };
+
+  const removeBankDetailRow = (index) => {
+    bankTouchedRef.current = true;
+    setBankDetails((prev) => {
+      const next = prev.filter((_, i) => i !== index);
+      if (next.length > 0 && !next.some((row) => row.is_primary)) {
+        next[0] = { ...next[0], is_primary: true };
+      }
+      return next;
+    });
   };
 
   const handleViewDetails = (entry) => {
@@ -3268,7 +3400,7 @@ export default function InwardReports() {
       )}
 
       <div className="app-main-content">
-        <header className="app-header bg-white shadow-sm border-b border-gray-200 px-4 py-4 sm:px-6">
+        <header className="app-header bg-white shadow-sm border-b border-gray-200 px-3 py-2.5 sm:px-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
               {isMobile && (
@@ -3282,8 +3414,8 @@ export default function InwardReports() {
                 </Button>
               )}
               <div className="flex items-center space-x-2">
-                <User className="h-6 w-6 text-gray-600" />
-                <h1 className="text-2xl font-bold text-gray-900">Ledgers Masters</h1>
+                <User className="h-4 w-4 text-gray-600" />
+                <h1 className="text-lg font-bold text-gray-900 leading-tight">Ledgers Masters</h1>
               </div>
             </div>
             <div className="flex items-center space-x-4">
@@ -3326,9 +3458,9 @@ export default function InwardReports() {
           </div>
         </header>
 
-        <main className="app-main-scrollable p-4 sm:p-6">
+        <main className="app-main-scrollable p-2.5 sm:p-3">
           <div className="max-w-7xl mx-auto">
-            <div className="space-y-6">
+            <div className="space-y-3">
               {/* Tabs for Split Screen */}
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                 <TabsList className="grid w-full max-w-3xl grid-cols-2 lg:grid-cols-4">
@@ -3888,7 +4020,7 @@ export default function InwardReports() {
                 </TabsContent>
 
                 {/* Ledgers Groups Tab */}
-                <TabsContent value="groups" className="space-y-6 mt-6">
+                <TabsContent value="groups" className="space-y-3 mt-3">
                   {/* Search Filter */}
                   <Card>
                     <CardHeader>
@@ -4175,7 +4307,7 @@ export default function InwardReports() {
                 </TabsContent>
 
                 {/* Business Types Tab */}
-                <TabsContent value="business-types" className="space-y-6 mt-6">
+                <TabsContent value="business-types" className="space-y-3 mt-3">
                   <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0">
                       <CardTitle>Business Types</CardTitle>
@@ -4214,7 +4346,7 @@ export default function InwardReports() {
                 </TabsContent>
 
                 {/* Credit Types Tab */}
-                <TabsContent value="credit-types" className="space-y-6 mt-6">
+                <TabsContent value="credit-types" className="space-y-3 mt-3">
                   <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0">
                       <CardTitle>Credit Types</CardTitle>
@@ -4532,9 +4664,42 @@ export default function InwardReports() {
                 </div>
               </FormSection>
 
+              {Array.isArray(entryDetail.bank_details) && entryDetail.bank_details.length > 0 && (
+                <FormSection title="Bank Details" icon={CreditCard} headerClassName="bg-blue-100 border-blue-100">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    {entryDetail.bank_details.map((bank, bankIdx) => (
+                      <div
+                        key={bank.id || bankIdx}
+                        className="border border-gray-200 rounded-lg p-3 bg-white space-y-2"
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <p className="text-sm font-semibold text-gray-900">
+                            {bank.bank_name || "Bank account"}
+                          </p>
+                          {bank.is_primary ? (
+                            <Badge className="text-[10px]">Primary</Badge>
+                          ) : null}
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                          <DetailField label="Account Holder" value={bank.account_holder} />
+                          <DetailField label="Account Type" value={bank.account_type} />
+                          <DetailField label="Account Number" value={bank.account_number} />
+                          <DetailField label="IFSC" value={bank.ifsc_code} />
+                          <DetailField label="Branch" value={bank.branch_name} />
+                          <DetailField label="UPI ID" value={bank.upi_id} />
+                        </div>
+                        {bank.remarks ? (
+                          <DetailField label="Remarks" value={bank.remarks} />
+                        ) : null}
+                      </div>
+                    ))}
+                  </div>
+                </FormSection>
+              )}
+
               {entryDetail.kyc_documents && entryDetail.kyc_documents.length > 0 && (
                 <FormSection title="KYC Documents" icon={FileText} headerClassName="bg-blue-100 border-blue-100">
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
                       {entryDetail.kyc_documents.map((doc, docIdx) => {
                       const fileUrl =
                         (typeof doc.file_url === "string" && doc.file_url) ||
@@ -4698,7 +4863,7 @@ export default function InwardReports() {
         }}
       >
         <DialogContent
-          className="max-w-4xl max-h-[90vh] overflow-y-auto"
+          className="max-w-5xl max-h-[92vh] overflow-y-auto p-4"
           onInteractOutside={(e) => {
             if (isPacContainerTarget(e.target)) e.preventDefault();
           }}
@@ -4710,7 +4875,7 @@ export default function InwardReports() {
             <DialogTitle>{editingCustomerId ? "Edit Ledger" : "Create Ledger"}</DialogTitle>
             <DialogDescription>{editingCustomerId ? "Update ledger entry and KYC documents." : "Create a new ledger entry"}</DialogDescription>
           </DialogHeader>
-          <div className="relative space-y-5">
+          <div className="relative space-y-2.5">
             {isSavingCustomer && (
               <div className="absolute inset-0 z-20 flex flex-col items-center justify-center rounded-lg bg-white/80 backdrop-blur-[1px]">
                 <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
@@ -4727,8 +4892,8 @@ export default function InwardReports() {
             )}
 
             <FormSection title="Basic Information" icon={User}>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="space-y-1.5">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
+                <div className="space-y-1">
                   <FormLabel required>Firm Name</FormLabel>
                   <Input
                     value={customerFormData.firm_name}
@@ -4740,7 +4905,7 @@ export default function InwardReports() {
                     }}
                   />
                 </div>
-                <div className="space-y-1.5">
+                <div className="space-y-1">
                   <FormLabel>Alias Name</FormLabel>
                   <Input
                     value={customerFormData.alias_name}
@@ -4750,7 +4915,7 @@ export default function InwardReports() {
                     maxLength={10}
                   />
                 </div>
-                <div className="space-y-1.5">
+                <div className="space-y-1">
                   <FormLabel>Parent</FormLabel>
                   <Popover open={createCustomerParentOpen} onOpenChange={(open) => { setCreateCustomerParentOpen(open); if (!open) setCreateCustomerParentSearch(""); }}>
                     <PopoverTrigger asChild>
@@ -4827,7 +4992,7 @@ export default function InwardReports() {
                     </PopoverContent>
                   </Popover>
                 </div>
-                <div className="space-y-1.5">
+                <div className="space-y-1">
                   <FormLabel>Owner Name</FormLabel>
                   <Input
                     value={customerFormData.owner_name}
@@ -4842,7 +5007,7 @@ export default function InwardReports() {
                     }}
                   />
                 </div>
-                <div className="space-y-1.5">
+                <div className="space-y-1">
                   <FormLabel>Ledger Type</FormLabel>
                   <Select
                     value={normalizeLedgerTypeValue(customerFormData.ledger_type)}
@@ -4861,7 +5026,7 @@ export default function InwardReports() {
                     </SelectContent>
                   </Select>
                   </div>
-                <div className="space-y-1.5">
+                <div className="space-y-1">
                   <FormLabel>Account Type</FormLabel>
                   <Select
                     value={normalizeAccountTypeValue(customerFormData.account_type)}
@@ -4880,7 +5045,7 @@ export default function InwardReports() {
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-1.5">
+                <div className="space-y-1">
                   <FormLabel>Branch</FormLabel>
                   <Popover
                     open={branchOpen}
@@ -4965,8 +5130,8 @@ export default function InwardReports() {
             </FormSection>
 
             <FormSection title="Contact Information" icon={Users}>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="space-y-1.5">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
+                <div className="space-y-1">
                   <FormLabel>Contact Person</FormLabel>
                   <Input
                     value={customerFormData.contact_person}
@@ -4981,7 +5146,7 @@ export default function InwardReports() {
                     }}
                   />
                 </div>
-                <div className="space-y-1.5">
+                <div className="space-y-1">
                   <FormLabel>Contact Number</FormLabel>
                   <Input
                     type="tel"
@@ -4993,7 +5158,7 @@ export default function InwardReports() {
                     disabled={isSavingCustomer}
                   />
                 </div>
-                <div className="space-y-1.5">
+                <div className="space-y-1">
                   <FormLabel>WhatsApp Number</FormLabel>
                   <Input
                     type="tel"
@@ -5005,7 +5170,7 @@ export default function InwardReports() {
                     disabled={isSavingCustomer}
                   />
                 </div>
-                <div className="space-y-1.5">
+                <div className="space-y-1">
                   <FormLabel>Email</FormLabel>
                   <Input
                     type="email"
@@ -5034,7 +5199,7 @@ export default function InwardReports() {
                   </Button>
                 )}
               </div>
-              <div className="space-y-1.5">
+              <div className="space-y-1">
                 <FormLabel>Address</FormLabel>
                 <Input
                   ref={handleAddressInputRef}
@@ -5061,8 +5226,8 @@ export default function InwardReports() {
                   </p>
                 )}
                 </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="space-y-1.5">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
+                <div className="space-y-1">
                   <FormLabel>City</FormLabel>
                   <Input
                     value={customerFormData.city}
@@ -5075,7 +5240,7 @@ export default function InwardReports() {
                     <p className="text-xs text-red-600">{addressErrors.city}</p>
                   )}
                 </div>
-                <div className="space-y-1.5">
+                <div className="space-y-1">
                   <FormLabel>State</FormLabel>
                   <Popover open={createCustomerStateOpen} onOpenChange={setCreateCustomerStateOpen}>
                     <PopoverTrigger asChild>
@@ -5125,7 +5290,7 @@ export default function InwardReports() {
                     <p className="text-xs text-red-600">{addressErrors.state}</p>
                   )}
                 </div>
-                <div className="space-y-1.5">
+                <div className="space-y-1">
                   <FormLabel>Pincode</FormLabel>
                   <Input
                     type="tel"
@@ -5141,7 +5306,7 @@ export default function InwardReports() {
                     <p className="text-xs text-red-600">{addressErrors.pincode}</p>
                   )}
                 </div>
-                <div className="space-y-1.5">
+                <div className="space-y-1">
                   <FormLabel>Landmark</FormLabel>
                   <Input
                     value={customerFormData.landmark}
@@ -5150,7 +5315,7 @@ export default function InwardReports() {
                     disabled={isSavingCustomer}
                   />
                 </div>
-                <div className="space-y-1.5">
+                <div className="space-y-1">
                   <FormLabel>Exact Location</FormLabel>
                   <Input
                     value={formatExactLocation(customerFormData.lat, customerFormData.long)}
@@ -5164,8 +5329,8 @@ export default function InwardReports() {
                   </p>
               </div>
             </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="space-y-1.5">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
+                <div className="space-y-1">
                   <FormLabel>Country</FormLabel>
                   <Input
                     value={customerFormData.country}
@@ -5217,7 +5382,7 @@ export default function InwardReports() {
                   </Button>
                 )}
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
                 <div className="md:col-span-3 space-y-1.5">
                   <FormLabel>Shipping Address</FormLabel>
                   <Input
@@ -5241,7 +5406,7 @@ export default function InwardReports() {
                     </p>
                   ) : null}
                 </div>
-                <div className="space-y-1.5">
+                <div className="space-y-1">
                   <FormLabel>Shipping City</FormLabel>
                   <Input
                     value={customerFormData.shipping_city}
@@ -5250,7 +5415,7 @@ export default function InwardReports() {
                     disabled={isSavingCustomer}
                   />
                 </div>
-                <div className="space-y-1.5">
+                <div className="space-y-1">
                   <FormLabel>Shipping State</FormLabel>
                   <Input
                     value={customerFormData.shipping_state}
@@ -5259,7 +5424,7 @@ export default function InwardReports() {
                     disabled={isSavingCustomer}
                   />
                 </div>
-                <div className="space-y-1.5">
+                <div className="space-y-1">
                   <FormLabel>Shipping Pincode</FormLabel>
                   <Input
                     type="tel"
@@ -5275,8 +5440,8 @@ export default function InwardReports() {
             </FormSection>
 
             <FormSection title="Registration & Tax Information" icon={Building}>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="space-y-1.5">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
+                <div className="space-y-1">
                   <FormLabel required>Registration Type</FormLabel>
                   <Popover
                     open={registrationTypeOpen}
@@ -5350,7 +5515,7 @@ export default function InwardReports() {
                     </PopoverContent>
                   </Popover>
                 </div>
-                <div className="space-y-1.5">
+                <div className="space-y-1">
                   <FormLabel>GST Number</FormLabel>
                   <Input
                     value={customerFormData.gst_number}
@@ -5376,7 +5541,7 @@ export default function InwardReports() {
                     <p className="text-xs text-red-600">{gstNumberError}</p>
                   ) : null}
                 </div>
-                <div className="space-y-1.5">
+                <div className="space-y-1">
                   <FormLabel>PAN Number</FormLabel>
                   <Input
                     value={customerFormData.pan_number}
@@ -5388,7 +5553,7 @@ export default function InwardReports() {
                     disabled={isSavingCustomer}
                   />
                 </div>
-                <div className="space-y-1.5">
+                <div className="space-y-1">
                   <FormLabel>Religion</FormLabel>
                   <Select
                     value={customerFormData.religion || ""}
@@ -5411,8 +5576,8 @@ export default function InwardReports() {
             </FormSection>
 
             <FormSection title="Additional Details" icon={Building}>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div className="space-y-1.5">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+                <div className="space-y-1">
                   <FormLabel>Customer Type (Business Type)</FormLabel>
                   <Popover
                     open={customerBusinessTypeOpen}
@@ -5512,7 +5677,7 @@ export default function InwardReports() {
                     </PopoverContent>
                   </Popover>
                 </div>
-                <div className="space-y-1.5">
+                <div className="space-y-1">
                   <FormLabel>Credit Type</FormLabel>
                   <Select
                     value={customerFormData.credit_type_id}
@@ -5531,7 +5696,7 @@ export default function InwardReports() {
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-1.5">
+                <div className="space-y-1">
                   <FormLabel>Category Type</FormLabel>
                   <Popover
                     open={categoryTypeOpen}
@@ -5606,6 +5771,180 @@ export default function InwardReports() {
                   </Popover>
                 </div>
             </div>
+            </FormSection>
+
+            <FormSection title="Bank Details" icon={CreditCard}>
+              <div className="flex items-center justify-between gap-2 mb-1">
+                <p className="text-xs text-gray-600">
+                  Optional. Add one or more bank accounts for this ledger. Mark one as primary.
+                </p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="h-8 shrink-0"
+                  onClick={addBankDetailRow}
+                  disabled={isSavingCustomer}
+                >
+                  <Plus className="h-3.5 w-3.5 mr-1" />
+                  Add bank
+                </Button>
+              </div>
+              {bankDetails.length === 0 ? (
+                <p className="text-xs text-amber-700 bg-amber-50 border border-amber-100 rounded-md px-2.5 py-2">
+                  No bank details added. Click &quot;Add bank&quot; to capture account information.
+                </p>
+              ) : (
+                <div className="space-y-2.5">
+                  {bankDetails.map((row, index) => (
+                    <div
+                      key={row.id || `bank-${index}`}
+                      className="border rounded-md bg-white p-2.5 space-y-2"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <label className="flex items-center gap-2 text-xs font-medium text-gray-700 cursor-pointer">
+                          <Checkbox
+                            checked={Boolean(row.is_primary)}
+                            onCheckedChange={(checked) =>
+                              updateBankDetailRow(index, "is_primary", Boolean(checked))
+                            }
+                            disabled={isSavingCustomer}
+                          />
+                          Primary account
+                        </label>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 px-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+                          onClick={() => removeBankDetailRow(index)}
+                          disabled={isSavingCustomer}
+                        >
+                          <Trash2 className="h-3.5 w-3.5 mr-1" />
+                          Remove
+                        </Button>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
+                        <div className="space-y-1">
+                          <FormLabel>Account Holder</FormLabel>
+                          <Input
+                            value={row.account_holder}
+                            onChange={(e) =>
+                              updateBankDetailRow(index, "account_holder", e.target.value)
+                            }
+                            placeholder="Account holder name"
+                            disabled={isSavingCustomer}
+                            maxLength={100}
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <FormLabel>Bank Name</FormLabel>
+                          <Input
+                            value={row.bank_name}
+                            onChange={(e) =>
+                              updateBankDetailRow(index, "bank_name", e.target.value)
+                            }
+                            placeholder="e.g. HDFC Bank"
+                            disabled={isSavingCustomer}
+                            maxLength={100}
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <FormLabel>Branch Name</FormLabel>
+                          <Input
+                            value={row.branch_name}
+                            onChange={(e) =>
+                              updateBankDetailRow(index, "branch_name", e.target.value)
+                            }
+                            placeholder="Branch name"
+                            disabled={isSavingCustomer}
+                            maxLength={100}
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <FormLabel>Account Type</FormLabel>
+                          <Select
+                            value={row.account_type || "CURRENT"}
+                            onValueChange={(value) =>
+                              updateBankDetailRow(index, "account_type", value)
+                            }
+                            disabled={isSavingCustomer}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select account type" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {BANK_ACCOUNT_TYPE_OPTIONS.map((opt) => (
+                                <SelectItem key={opt.value} value={opt.value}>
+                                  {opt.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-1">
+                          <FormLabel>Account Number</FormLabel>
+                          <Input
+                            value={row.account_number}
+                            onChange={(e) =>
+                              updateBankDetailRow(
+                                index,
+                                "account_number",
+                                e.target.value.replace(/[^0-9]/g, "")
+                              )
+                            }
+                            placeholder="Account number"
+                            disabled={isSavingCustomer}
+                            maxLength={30}
+                            inputMode="numeric"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <FormLabel>IFSC Code</FormLabel>
+                          <Input
+                            value={row.ifsc_code}
+                            onChange={(e) =>
+                              updateBankDetailRow(
+                                index,
+                                "ifsc_code",
+                                e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "")
+                              )
+                            }
+                            placeholder="e.g. HDFC0001234"
+                            className="uppercase"
+                            disabled={isSavingCustomer}
+                            maxLength={11}
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <FormLabel>UPI ID</FormLabel>
+                          <Input
+                            value={row.upi_id}
+                            onChange={(e) =>
+                              updateBankDetailRow(index, "upi_id", e.target.value)
+                            }
+                            placeholder="name@upi"
+                            disabled={isSavingCustomer}
+                            maxLength={100}
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <FormLabel>Remarks</FormLabel>
+                          <Input
+                            value={row.remarks}
+                            onChange={(e) =>
+                              updateBankDetailRow(index, "remarks", e.target.value)
+                            }
+                            placeholder="Optional remarks"
+                            disabled={isSavingCustomer}
+                            maxLength={200}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </FormSection>
 
             <FormSection title="KYC Documents" icon={FileText}>
@@ -5843,10 +6182,11 @@ export default function InwardReports() {
               )}
             </FormSection>
 
-            <div className="flex justify-end gap-2 pt-2 border-t border-gray-200">
+            <div className="flex justify-end gap-2 pt-1.5 border-t border-gray-200">
               <Button
                 type="button"
                 variant="outline"
+                size="sm"
                 disabled={isSavingCustomer}
                 onClick={() => {
                   setIsCreateDialogOpen(false);
@@ -5857,9 +6197,10 @@ export default function InwardReports() {
               </Button>
               <Button
                 type="button"
+                size="sm"
                 onClick={handleCreateCustomer}
                 disabled={isSavingCustomer || isKycUploading}
-                className="hover:bg-gray-800 min-w-[10rem]"
+                className="hover:bg-gray-800 min-w-[8rem]"
               >
                 {isSavingCustomer ? (
                   <>
@@ -5894,7 +6235,7 @@ export default function InwardReports() {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
-            <div className="space-y-1.5">
+            <div className="space-y-1">
               <FormLabel required>Group Name</FormLabel>
               <Input
                 value={ledgerGroupForm.name}
@@ -5905,7 +6246,7 @@ export default function InwardReports() {
                 }
               />
             </div>
-            <div className="space-y-1.5">
+            <div className="space-y-1">
               <FormLabel required>Parent</FormLabel>
               <Select
                 value={ledgerGroupForm.parent}
@@ -5985,7 +6326,7 @@ export default function InwardReports() {
             <DialogDescription>Manage business types used in ledger classification.</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
-            <div className="space-y-1.5">
+            <div className="space-y-1">
               <FormLabel required>Name</FormLabel>
               <Input
                 value={businessTypeForm.name}
@@ -6000,7 +6341,7 @@ export default function InwardReports() {
                 }}
               />
             </div>
-            <div className="space-y-1.5">
+            <div className="space-y-1">
               <FormLabel>Description</FormLabel>
               <Textarea
                 value={businessTypeForm.description}
@@ -6010,7 +6351,7 @@ export default function InwardReports() {
                 disabled={saveBusinessTypeMutation.isPending}
               />
             </div>
-            <div className="space-y-1.5">
+            <div className="space-y-1">
               <FormLabel required>Margin %</FormLabel>
               <Input
                 type="number"
@@ -6068,7 +6409,7 @@ export default function InwardReports() {
             <DialogDescription>Manage credit types used in ledger classification.</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
-            <div className="space-y-1.5">
+            <div className="space-y-1">
               <FormLabel required>Name</FormLabel>
               <Input
                 value={creditTypeForm.name}
@@ -6083,7 +6424,7 @@ export default function InwardReports() {
                 }}
               />
             </div>
-            <div className="space-y-1.5">
+            <div className="space-y-1">
               <FormLabel>Description</FormLabel>
               <Textarea
                 value={creditTypeForm.description}
@@ -6093,7 +6434,7 @@ export default function InwardReports() {
                 disabled={saveCreditTypeMutation.isPending}
               />
             </div>
-            <div className="space-y-1.5">
+            <div className="space-y-1">
               <FormLabel required>Margin %</FormLabel>
               <Input
                 type="number"
@@ -6305,7 +6646,7 @@ export default function InwardReports() {
             </SheetDescription>
           </SheetHeader>
           <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
-            <div className="space-y-1.5">
+            <div className="space-y-1">
               <Label className="flex items-center gap-2">
                 <Building className="h-4 w-4 text-blue-600" />
                 Parent
@@ -6334,7 +6675,7 @@ export default function InwardReports() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-1.5">
+              <div className="space-y-1">
                 <Label className="flex items-center gap-2">
                   <MapPin className="h-4 w-4 text-indigo-600" />
                   Branch
@@ -6376,7 +6717,7 @@ export default function InwardReports() {
                 </Select>
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-1">
                 <Label className="flex items-center gap-2">
                   <CheckCircle className="h-4 w-4 text-blue-600" />
                   Status
@@ -6399,7 +6740,7 @@ export default function InwardReports() {
               </div>
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-1">
               <Label className="flex items-center gap-2">
                 <MapPin className="h-4 w-4 text-indigo-600" />
                 Area Group
@@ -6434,7 +6775,7 @@ export default function InwardReports() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-1.5">
+              <div className="space-y-1">
                 <Label className="flex items-center gap-2">
                   <User className="h-4 w-4 text-green-600" />
                   Ledger Type
@@ -6461,7 +6802,7 @@ export default function InwardReports() {
                 </Select>
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-1">
                 <Label className="flex items-center gap-2">
                   <Users className="h-4 w-4 text-slate-600" />
                   Created By
@@ -6498,7 +6839,7 @@ export default function InwardReports() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-1.5">
+              <div className="space-y-1">
                 <Label className="flex items-center gap-2">
                   <Store className="h-4 w-4 text-emerald-600" />
                   Business Type
@@ -6528,7 +6869,7 @@ export default function InwardReports() {
                 </div>
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-1">
                 <Label className="flex items-center gap-2">
                   <CreditCard className="h-4 w-4 text-violet-600" />
                   Credit Type
@@ -6558,7 +6899,7 @@ export default function InwardReports() {
                 </div>
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-1">
                 <Label className="flex items-center gap-2">
                   <FileText className="h-4 w-4 text-sky-600" />
                   Category Type
@@ -6588,7 +6929,7 @@ export default function InwardReports() {
                 </div>
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-1">
                 <Label className="flex items-center gap-2">
                   <User className="h-4 w-4 text-amber-600" />
                   Religion
@@ -6619,7 +6960,7 @@ export default function InwardReports() {
               </div>
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-1">
               <Label className="flex items-center gap-2">
                 <Calendar className="h-4 w-4 text-rose-600" />
                 Week Off

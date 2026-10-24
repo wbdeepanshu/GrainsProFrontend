@@ -253,17 +253,17 @@ export default function StockMasters() {
       {!isMobile && <Sidebar />}
       <MobileSidebar isOpen={mobileSidebarOpen} onClose={() => setMobileSidebarOpen(false)} />
       <main className="app-main-content min-w-0">
-        <div className="flex items-center justify-between border-b bg-white px-5 py-4 dark:border-gray-700 dark:bg-gray-800">
+        <div className="flex items-center justify-between border-b bg-white px-3 py-2.5 dark:border-gray-700 dark:bg-gray-800">
           <div className="flex items-center gap-3">
             {isMobile && <Button variant="outline" size="sm" onClick={() => setMobileSidebarOpen(true)}>Menu</Button>}
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Stock Masters</h1>
+            <h1 className="text-lg font-bold text-slate-900 dark:text-white">Stock Masters</h1>
           </div>
           <Button variant="default" onClick={refresh} className="bg-indigo-950 hover:bg-indigo-900">
             <RefreshCw className="mr-2 h-4 w-4" /> Refresh
           </Button>
         </div>
 
-        <div className="app-main-scrollable space-y-3 p-3 md:p-4">
+        <div className="app-main-scrollable space-y-2.5 p-2.5 md:p-3">
           <div className="flex w-fit max-w-full gap-2 overflow-x-auto rounded-xl border bg-white p-1 shadow-sm dark:border-gray-700 dark:bg-gray-800">
             {Object.entries(titles).map(([key, title]) => {
               const Icon = title.icon;
@@ -271,27 +271,27 @@ export default function StockMasters() {
                 <button
                   key={key}
                   onClick={() => setTab(key)}
-                  className={`flex shrink-0 items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium ${tab === key ? "bg-indigo-950 text-white" : "text-slate-600 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-gray-700"}`}
+                  className={`flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium ${tab === key ? "bg-indigo-950 text-white" : "text-slate-600 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-gray-700"}`}
                 >
-                  <Icon className="h-4 w-4" />
+                  <Icon className="h-3.5 w-3.5" />
                   {title.label}
-                  <span className={`rounded-full px-2 py-0.5 text-xs ${tab === key ? "bg-white/15 text-white" : "bg-slate-100 dark:bg-gray-700"}`}>{title.count}</span>
+                  <span className={`rounded-full px-2 py-0.5 text-[10px] ${tab === key ? "bg-white/15 text-white" : "bg-slate-100 dark:bg-gray-700"}`}>{title.count}</span>
                 </button>
               );
             })}
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
             {statItems.map((stat) => {
               const Icon = stat.icon;
               return (
                 <Card key={stat.label} className={`border-0 bg-gradient-to-r ${stat.style} text-white shadow-sm`}>
-                  <CardContent className="flex items-center justify-between p-3">
+                  <CardContent className="flex items-center justify-between p-2.5">
                     <div>
-                      <p className="text-sm text-white/80">{stat.label}</p>
-                      <p className="mt-1 text-2xl font-bold">{Number(stat.value || 0).toLocaleString()}</p>
+                      <p className="text-xs text-white/80">{stat.label}</p>
+                      <p className="mt-0.5 text-base font-bold">{Number(stat.value || 0).toLocaleString()}</p>
                     </div>
-                    <span className="rounded-xl bg-white/15 p-3"><Icon className="h-6 w-6" /></span>
+                    <span className="rounded-lg bg-white/15 p-2"><Icon className="h-4 w-4" /></span>
                   </CardContent>
                 </Card>
               );
@@ -299,15 +299,15 @@ export default function StockMasters() {
           </div>
 
           <Card className="border-slate-200 dark:border-gray-700">
-            <CardContent className={`grid gap-3 p-3 lg:items-end ${tab === "categories" ? "lg:grid-cols-[minmax(220px,1fr)_150px_150px_150px_150px_auto]" : "lg:grid-cols-[minmax(220px,1fr)_170px_170px_170px_auto]"}`}>
-              <label className="space-y-2 text-sm font-medium text-slate-700 dark:text-slate-200">
-                <span className="flex items-center gap-2"><Search className="h-4 w-4" /> Search {activeTitle.label}</span>
-                <Input value={search} onChange={(event) => setSearch(event.target.value)} placeholder={`Search by ${tab === "groups" ? "group" : "category"} name...`} />
+            <CardContent className={`grid gap-2 p-2.5 lg:items-end ${tab === "categories" ? "lg:grid-cols-[minmax(220px,1fr)_150px_150px_150px_150px_auto]" : "lg:grid-cols-[minmax(220px,1fr)_170px_170px_170px_auto]"}`}>
+              <label className="space-y-1 text-xs font-medium text-slate-700 dark:text-slate-200">
+                <span className="flex items-center gap-2"><Search className="h-3.5 w-3.5" /> Search {activeTitle.label}</span>
+                <Input className="h-9" value={search} onChange={(event) => setSearch(event.target.value)} placeholder={`Search by ${tab === "groups" ? "group" : "category"} name...`} />
               </label>
-              <label className="space-y-2 text-sm font-medium text-slate-700 dark:text-slate-200">
+              <label className="space-y-1 text-xs font-medium text-slate-700 dark:text-slate-200">
                 <span>Branch</span>
                 <Select value={branchId} onValueChange={(value) => { setBranchId(value); }}>
-                  <SelectTrigger><SelectValue placeholder="All branches" /></SelectTrigger>
+                  <SelectTrigger className="h-9"><SelectValue placeholder="All branches" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All branches</SelectItem>
                     {branches.map((branch) => <SelectItem key={branch.id} value={String(branch.id)}>{branch.name}</SelectItem>)}
@@ -315,10 +315,10 @@ export default function StockMasters() {
                 </Select>
               </label>
               {tab === "categories" && (
-                <label className="space-y-2 text-sm font-medium text-slate-700 dark:text-slate-200">
+                <label className="space-y-1 text-xs font-medium text-slate-700 dark:text-slate-200">
                   <span>Stock Group</span>
                   <Select value="all" onValueChange={() => {}}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All stock groups</SelectItem>
                       {groups.map((group) => <SelectItem key={group.id} value={String(group.id)}>{group.name}</SelectItem>)}
@@ -326,10 +326,10 @@ export default function StockMasters() {
                   </Select>
                 </label>
               )}
-              <label className="space-y-2 text-sm font-medium text-slate-700 dark:text-slate-200">
+              <label className="space-y-1 text-xs font-medium text-slate-700 dark:text-slate-200">
                 <span>Items</span>
                 <Select value={itemFilter} onValueChange={setItemFilter}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All</SelectItem>
                     <SelectItem value="with">With items</SelectItem>
@@ -337,10 +337,10 @@ export default function StockMasters() {
                   </SelectContent>
                 </Select>
               </label>
-              <label className="space-y-2 text-sm font-medium text-slate-700 dark:text-slate-200">
+              <label className="space-y-1 text-xs font-medium text-slate-700 dark:text-slate-200">
                 <span>Status</span>
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All statuses</SelectItem>
                     <SelectItem value="active">Active</SelectItem>
@@ -351,7 +351,7 @@ export default function StockMasters() {
               <Button
                 variant="outline"
                 aria-label="Clear filters"
-                className="h-10 w-fit gap-1.5 px-3"
+                className="h-9 w-fit gap-1.5 px-3"
                 onClick={() => { setSearch(""); setItemFilter("all"); setStatusFilter("all"); setBranchId("all"); }}
               >
                 <X className="h-4 w-4" /> Clear
@@ -360,7 +360,7 @@ export default function StockMasters() {
           </Card>
 
           <Card className="overflow-hidden border-slate-200 dark:border-gray-700">
-            <div className="flex items-center justify-between border-b px-4 py-4 dark:border-gray-700">
+            <div className="flex items-center justify-between border-b px-3 py-2 dark:border-gray-700">
               <div className="flex items-center gap-2">
                 <ActiveIcon className="h-5 w-5 text-indigo-900 dark:text-indigo-300" />
                 <h2 className="font-semibold text-slate-900 dark:text-white">{activeTitle.label}</h2>
@@ -385,52 +385,52 @@ export default function StockMasters() {
                 <table className="w-full min-w-[760px] text-left text-sm">
                   <thead className="sticky top-0 bg-slate-50 text-xs uppercase text-slate-500 dark:bg-gray-800 dark:text-slate-300">
                     <tr>
-                      <th className="px-4 py-3">#</th>
-                      <th className="px-4 py-3">{tab === "groups" ? "Group Name" : tab === "categories" ? "Category Name" : "Sub Category Name"}</th>
-                      {tab !== "groups" && <th className="px-4 py-3">Parent</th>}
-                      {tab === "categories" && <th className="px-4 py-3">Primary Godown</th>}
-                      <th className="px-4 py-3">Status</th>
-                      <th className="px-4 py-3 text-center">Linked Items</th>
-                      <th className="px-4 py-3 text-right">Actions</th>
+                      <th className="px-3 py-1.5">#</th>
+                      <th className="px-3 py-1.5">{tab === "groups" ? "Group Name" : tab === "categories" ? "Category Name" : "Sub Category Name"}</th>
+                      {tab !== "groups" && <th className="px-3 py-1.5">Parent</th>}
+                      {tab === "categories" && <th className="px-3 py-1.5">Primary Godown</th>}
+                      <th className="px-3 py-1.5">Status</th>
+                      <th className="px-3 py-1.5 text-center">Linked Items</th>
+                      <th className="px-3 py-1.5 text-right">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-gray-700">
                     {rows.map((row, index) => (
                       <tr key={row.id} className="hover:bg-slate-50/70 dark:hover:bg-gray-800/60">
-                        <td className="px-4 py-3 text-slate-500">{index + 1}</td>
-                        <td className="px-4 py-3">
-                          <span className="inline-flex items-center gap-3 font-semibold text-slate-900 dark:text-white">
-                            <span className="rounded-lg border border-slate-200 p-2 text-blue-600 dark:border-gray-600"><ActiveIcon className="h-4 w-4" /></span>
+                        <td className="px-3 py-1.5 text-slate-500">{index + 1}</td>
+                        <td className="px-3 py-1.5">
+                          <span className="inline-flex items-center gap-1.5 font-medium text-slate-900 dark:text-white">
+                            <span className="rounded border border-slate-200 p-1 text-blue-600 dark:border-gray-600"><ActiveIcon className="h-3.5 w-3.5" /></span>
                             {row.name}
                           </span>
                         </td>
-                        {tab !== "groups" && <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{tab === "categories" ? (row.parent_name || "Primary") : (row.category_name || categoryMap.get(String(row.category_id)) || "—")}</td>}
-                        {tab === "categories" && <td className="px-4 py-3 text-slate-500 dark:text-slate-400">{row.primary_godown_name || "Not mapped"}</td>}
-                        <td className="px-4 py-3">
-                          <span className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs ${row.is_active ? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-700 dark:bg-emerald-950 dark:text-emerald-300" : "border-slate-200 bg-slate-100 text-slate-600 dark:border-gray-600 dark:bg-gray-700 dark:text-slate-300"}`}>
-                            <CheckCircle className="h-3.5 w-3.5" /> {row.is_active ? "Active" : "Inactive"}
+                        {tab !== "groups" && <td className="px-3 py-1.5 text-slate-600 dark:text-slate-300">{tab === "categories" ? (row.parent_name || "Primary") : (row.category_name || categoryMap.get(String(row.category_id)) || "—")}</td>}
+                        {tab === "categories" && <td className="px-3 py-1.5 text-slate-500 dark:text-slate-400">{row.primary_godown_name || "Not mapped"}</td>}
+                        <td className="px-3 py-1.5">
+                          <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] ${row.is_active ? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-700 dark:bg-emerald-950 dark:text-emerald-300" : "border-slate-200 bg-slate-100 text-slate-600 dark:border-gray-600 dark:bg-gray-700 dark:text-slate-300"}`}>
+                            <CheckCircle className="h-3 w-3" /> {row.is_active ? "Active" : "Inactive"}
                           </span>
                         </td>
-                        <td className="px-4 py-3 text-center">
-                          <span className="inline-flex items-center gap-1 rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-emerald-700 dark:border-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
-                            <Package className="h-4 w-4" /> {Number(row.item_count || 0).toLocaleString()}
+                        <td className="px-3 py-1.5 text-center">
+                          <span className="inline-flex items-center gap-1 rounded-md border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-xs text-emerald-700 dark:border-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
+                            <Package className="h-3.5 w-3.5" /> {Number(row.item_count || 0).toLocaleString()}
                           </span>
                         </td>
-                        <td className="px-4 py-3 text-right">
+                        <td className="px-3 py-1.5 text-right">
                           {canManage && tab === "categories" && (
-                            <Button variant="outline" size="sm" onClick={() => { setEditingCategory(row); setGodownId(row.primary_godown_id ? String(row.primary_godown_id) : ""); }}>
-                              <Warehouse className="mr-1.5 h-4 w-4" /> Edit
+                            <Button variant="outline" size="sm" className="h-7 px-2 text-xs" onClick={() => { setEditingCategory(row); setGodownId(row.primary_godown_id ? String(row.primary_godown_id) : ""); }}>
+                              <Warehouse className="mr-1 h-3.5 w-3.5" /> Edit
                             </Button>
                           )}
                           {canManage && tab === "groups" && (
-                            <div className="inline-flex gap-2">
-                              <Button variant="outline" size="icon" aria-label={`Rename ${row.name}`} onClick={() => groupMutation.mutate({ group: row, action: "edit" })}>
-                                <Tag className="h-4 w-4" />
+                            <div className="inline-flex gap-1">
+                              <Button variant="outline" size="icon" className="h-7 w-7" aria-label={`Rename ${row.name}`} onClick={() => groupMutation.mutate({ group: row, action: "edit" })}>
+                                <Tag className="h-3.5 w-3.5" />
                               </Button>
-                              <Button variant="outline" size="icon" aria-label={`Delete ${row.name}`} onClick={() => {
+                              <Button variant="outline" size="icon" className="h-7 w-7" aria-label={`Delete ${row.name}`} onClick={() => {
                                 if (window.confirm(`Delete stock group "${row.name}"?`)) groupMutation.mutate({ group: row, action: "delete" });
                               }}>
-                                <Trash2 className="h-4 w-4 text-rose-500" />
+                                <Trash2 className="h-3.5 w-3.5 text-rose-500" />
                               </Button>
                             </div>
                           )}

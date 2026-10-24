@@ -1567,7 +1567,7 @@ export default function ItemMasters() {
 
       <div className="app-main-content">
         {isMobile && (
-          <div className="bg-white dark:bg-gray-800 shadow-sm border-b p-4 flex items-center justify-between">
+          <div className="bg-white dark:bg-gray-800 shadow-sm border-b p-2.5 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setIsMobileSidebarOpen(true)}
@@ -1575,7 +1575,7 @@ export default function ItemMasters() {
               >
                 <Menu className="h-6 w-6" />
               </button>
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Item Masters</h1>
+              <h1 className="text-lg font-bold text-gray-900 dark:text-white">Item Masters</h1>
             </div>
             <div className="flex items-center gap-2">
               {canCreateStockGroupOrCategory && (
@@ -1631,12 +1631,12 @@ export default function ItemMasters() {
           </div>
         )}
 
-        <div className="flex-1 min-h-0 overflow-auto p-6">
-          <div className="mb-6">
+        <div className="flex-1 min-h-0 overflow-auto p-2.5 sm:p-3">
+          <div className="mb-3">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Item Masters</h1>
-                <p className="text-gray-600 dark:text-gray-400 mt-2">
+                <h1 className="text-lg font-bold text-gray-900 dark:text-white">Item Masters</h1>
+                <p className="text-gray-600 dark:text-gray-400 mt-0.5 text-sm">
                   Manage and view all stock item information
                 </p>
               </div>
@@ -1695,22 +1695,22 @@ export default function ItemMasters() {
           </div>
 
           {/* Filters Section */}
-          <Card className="mb-6">
-            <CardContent className="p-6">
-              <div className="flex flex-col gap-4 lg:flex-row lg:items-end">
+          <Card className="mb-3">
+            <CardContent className="p-3">
+              <div className="flex flex-col gap-2 lg:flex-row lg:items-end">
                 {/* Search */}
-                <div className="space-y-2 flex-1 min-w-0">
-                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                    <Search className="h-4 w-4 text-gray-600" />
+                <div className="space-y-1 flex-1 min-w-0">
+                  <label className="text-xs font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
+                    <Search className="h-3.5 w-3.5 text-gray-600" />
                     Search Items
                   </label>
                   <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-3.5 w-3.5" />
                     <Input
                       placeholder="Search by name, group, category..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10 pr-8 h-11 w-full"
+                      className="pl-9 pr-8 h-9 w-full"
                     />
                     {searchTerm && (
                       <button
@@ -1725,16 +1725,16 @@ export default function ItemMasters() {
                 </div>
 
                 {/* Item Grouping */}
-                <div className="space-y-2 w-full lg:w-52 shrink-0">
-                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                    <Filter className="h-4 w-4 text-purple-600" />
+                <div className="space-y-1 w-full lg:w-52 shrink-0">
+                  <label className="text-xs font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
+                    <Filter className="h-3.5 w-3.5 text-purple-600" />
                     Item Grouping
                   </label>
                   <Select
                     value={selectedItemGrouping || "all"}
                     onValueChange={(value) => setSelectedItemGrouping(value === "all" ? "" : value)}
                   >
-                    <SelectTrigger className="h-11">
+                    <SelectTrigger className="h-9">
                       <SelectValue placeholder="Select item grouping" />
                     </SelectTrigger>
                     <SelectContent>
@@ -1749,13 +1749,13 @@ export default function ItemMasters() {
                 </div>
 
                 {/* Active Status Filter */}
-                <div className="space-y-2 w-full lg:w-40 shrink-0">
-                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-blue-600" />
+                <div className="space-y-1 w-full lg:w-40 shrink-0">
+                  <label className="text-xs font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
+                    <CheckCircle className="h-3.5 w-3.5 text-blue-600" />
                     Status
                   </label>
                   <Select value={activeStatusFilter} onValueChange={setActiveStatusFilter}>
-                    <SelectTrigger className="h-11">
+                    <SelectTrigger className="h-9">
                       <SelectValue placeholder="Select status" />
                     </SelectTrigger>
                     <SelectContent>
@@ -1767,13 +1767,13 @@ export default function ItemMasters() {
                 </div>
 
                 {/* In Stock Filter */}
-                <div className="space-y-2 w-full lg:w-44 shrink-0">
-                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                    <TrendingUp className="h-4 w-4 text-emerald-600" />
+                <div className="space-y-1 w-full lg:w-44 shrink-0">
+                  <label className="text-xs font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
+                    <TrendingUp className="h-3.5 w-3.5 text-emerald-600" />
                     Stock
                   </label>
                   <Select value={inStockFilter} onValueChange={setInStockFilter}>
-                    <SelectTrigger className="h-11">
+                    <SelectTrigger className="h-9">
                       <SelectValue placeholder="Select stock filter" />
                     </SelectTrigger>
                     <SelectContent>
@@ -1787,7 +1787,7 @@ export default function ItemMasters() {
                   type="button"
                   variant="outline"
                   size="icon"
-                  className="h-11 w-11 shrink-0"
+                  className="h-9 w-9 shrink-0"
                   onClick={clearAllFilters}
                   title="Clear filters"
                   aria-label="Clear filters"
@@ -1800,10 +1800,10 @@ export default function ItemMasters() {
 
           {/* Items Table */}
           <Card>
-            <CardHeader>
-              <CardTitle className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <CardHeader className="py-2.5 px-3">
+              <CardTitle className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between text-base">
                 <div className="flex items-center space-x-2">
-                  <Package className="h-5 w-5" />
+                  <Package className="h-4 w-4" />
                   <span>Item List</span>
                 </div>
                 <div className="flex flex-wrap items-center gap-2 text-sm font-normal text-gray-500 dark:text-gray-400">
@@ -1992,11 +1992,11 @@ export default function ItemMasters() {
                       </div>
                     </div>
                   )}
-                  <div className="w-full max-h-[min(72vh,calc(100vh-14rem))] overflow-auto relative isolate">
-                    <table className="w-full caption-bottom text-sm border-separate border-spacing-0">
+                  <div className="w-full max-h-[min(78vh,calc(100vh-11rem))] overflow-auto relative isolate">
+                    <table className="w-full caption-bottom text-sm border-collapse [&_th]:h-9 [&_th]:px-3 [&_th]:py-2 [&_td]:px-3 [&_td]:py-1.5 [&_td]:border-b [&_td]:border-slate-200 dark:[&_td]:border-gray-700">
                       <TableHeader>
-                        <TableRow>
-                          <TableHead className="w-10 pr-0 sticky top-0 z-30 bg-gray-50 dark:bg-gray-800 shadow-[inset_0_-1px_0_0_rgb(229_231_235)]">
+                        <TableRow className="border-b border-slate-300 dark:border-gray-600">
+                          <TableHead className="w-10 pr-0 sticky top-0 z-30 bg-gray-50 dark:bg-gray-800 border-b border-slate-300 dark:border-gray-600">
                             <Checkbox
                               checked={
                                 displayItems.length > 0 &&
@@ -2013,9 +2013,9 @@ export default function ItemMasters() {
                               aria-label="Select all on page"
                             />
                           </TableHead>
-                          <TableHead className="w-12 sticky top-0 z-30 bg-gray-50 dark:bg-gray-800 shadow-[inset_0_-1px_0_0_rgb(229_231_235)]">#</TableHead>
+                          <TableHead className="w-12 sticky top-0 z-30 bg-gray-50 dark:bg-gray-800 border-b border-slate-300 dark:border-gray-600">#</TableHead>
                           <TableHead 
-                            className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors sticky top-0 z-30 bg-gray-50 dark:bg-gray-800 shadow-[inset_0_-1px_0_0_rgb(229_231_235)]"
+                            className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors sticky top-0 z-30 bg-gray-50 dark:bg-gray-800 border-b border-slate-300 dark:border-gray-600"
                             onClick={() => handleSort('name')}
                           >
                             <div className="flex items-center space-x-1">
@@ -2023,11 +2023,11 @@ export default function ItemMasters() {
                               <span className="text-xs">{getSortIcon('name')}</span>
                             </div>
                             </TableHead>
-                          <TableHead className="sticky top-0 z-30 bg-gray-50 dark:bg-gray-800 shadow-[inset_0_-1px_0_0_rgb(229_231_235)]">
+                          <TableHead className="sticky top-0 z-30 bg-gray-50 dark:bg-gray-800 border-b border-slate-300 dark:border-gray-600">
                             APMC Head
                           </TableHead>
                           <TableHead 
-                            className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors sticky top-0 z-30 bg-gray-50 dark:bg-gray-800 shadow-[inset_0_-1px_0_0_rgb(229_231_235)]"
+                            className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors sticky top-0 z-30 bg-gray-50 dark:bg-gray-800 border-b border-slate-300 dark:border-gray-600"
                             onClick={() => handleSort('parent')}
                           >
                             <div className="flex items-center space-x-1">
@@ -2036,7 +2036,7 @@ export default function ItemMasters() {
                             </div>
                           </TableHead>
                           <TableHead 
-                            className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors sticky top-0 z-30 bg-gray-50 dark:bg-gray-800 shadow-[inset_0_-1px_0_0_rgb(229_231_235)]"
+                            className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors sticky top-0 z-30 bg-gray-50 dark:bg-gray-800 border-b border-slate-300 dark:border-gray-600"
                             onClick={() => handleSort('category')}
                           >
                             <div className="flex items-center space-x-1">
@@ -2044,10 +2044,10 @@ export default function ItemMasters() {
                               <span className="text-xs">{getSortIcon('category')}</span>
                             </div>
                           </TableHead>
-                          <TableHead className="sticky top-0 z-30 bg-gray-50 dark:bg-gray-800 shadow-[inset_0_-1px_0_0_rgb(229_231_235)]">Base Unit</TableHead>
-                          <TableHead className="sticky top-0 z-30 bg-gray-50 dark:bg-gray-800 shadow-[inset_0_-1px_0_0_rgb(229_231_235)]">Conversion</TableHead>
+                          <TableHead className="sticky top-0 z-30 bg-gray-50 dark:bg-gray-800 border-b border-slate-300 dark:border-gray-600">Base Unit</TableHead>
+                          <TableHead className="sticky top-0 z-30 bg-gray-50 dark:bg-gray-800 border-b border-slate-300 dark:border-gray-600">Conversion</TableHead>
                           <TableHead
-                            className="text-center cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors sticky top-0 z-30 bg-gray-50 dark:bg-gray-800 shadow-[inset_0_-1px_0_0_rgb(229_231_235)]"
+                            className="text-center cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors sticky top-0 z-30 bg-gray-50 dark:bg-gray-800 border-b border-slate-300 dark:border-gray-600"
                             onClick={() => handleSort('total_closing_balance')}
                           >
                             <div className="flex items-center justify-center gap-1">
@@ -2055,14 +2055,14 @@ export default function ItemMasters() {
                               <span className="text-xs">{getSortIcon('total_closing_balance')}</span>
                             </div>
                           </TableHead>
-                          <TableHead className="w-24 text-center sticky top-0 z-30 bg-gray-50 dark:bg-gray-800 shadow-[inset_0_-1px_0_0_rgb(229_231_235)]">Actions</TableHead>
+                          <TableHead className="w-24 text-center sticky top-0 z-30 bg-gray-50 dark:bg-gray-800 border-b border-slate-300 dark:border-gray-600">Actions</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {displayItems.map((item, index) => (
                           <TableRow 
                             key={`item-${item.id ?? index}-${index}`}
-                            className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                            className="border-b border-slate-200 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                             onClick={() => handleRowClick(item)}
                           >
                             <TableCell className="pr-0" onClick={(e) => e.stopPropagation()}>
@@ -2082,34 +2082,34 @@ export default function ItemMasters() {
                                {startItem + index}
                             </TableCell>
                             <TableCell className="font-medium">
-                              <div className="flex items-center space-x-2">
-                                <Package className="h-4 w-4 text-blue-500" />
-                                <span>{item.name}</span>
+                              <div className="flex items-center gap-1.5">
+                                <Package className="h-3.5 w-3.5 text-blue-500 shrink-0" />
+                                <span className="truncate">{item.name}</span>
                               </div>
                             </TableCell>
                             
-                            <TableCell>{item.apmc_head || "Not Available"}</TableCell>
+                            <TableCell className="text-xs text-slate-600 dark:text-slate-300">{item.apmc_head || "Not Available"}</TableCell>
                             <TableCell>
-                              <div className="flex items-center space-x-2">
-                                <Building2 className="h-4 w-4 text-gray-500" />
-                                <span>{item.parent || "Primary"}</span>
+                              <div className="flex items-center gap-1.5">
+                                <Building2 className="h-3.5 w-3.5 text-gray-500 shrink-0" />
+                                <span className="truncate">{item.parent || "Primary"}</span>
                               </div>
                             </TableCell>
                             <TableCell>
-                              <div className="flex items-center space-x-2">
-                                <Building2 className="h-4 w-4 text-gray-500" />
-                                <span>{item.category || "General"}</span>
+                              <div className="flex items-center gap-1.5">
+                                <Building2 className="h-3.5 w-3.5 text-gray-500 shrink-0" />
+                                <span className="truncate">{item.category || "General"}</span>
                               </div>
                             </TableCell>
                             <TableCell>
-                              <Badge variant="outline">{item.base_units_name}</Badge>
+                              <Badge variant="outline" className="text-[10px] px-1.5 py-0">{item.base_units_name}</Badge>
                             </TableCell>
-                            <TableCell className="text-center">
+                            <TableCell className="text-center text-xs">
                               {item.conversion} {item.secondary_unit || "Qtl"}
                             </TableCell>
                             <TableCell className="text-center">
-                              <div className="flex items-center justify-center gap-1 flex-wrap">
-                                <TrendingUp className={`h-4 w-4 shrink-0 ${item.total_closing_balance > 0 ? 'text-green-500' : 'text-gray-400'}`} />
+                              <div className="flex items-center justify-center gap-1 flex-wrap text-xs">
+                                <TrendingUp className={`h-3.5 w-3.5 shrink-0 ${item.total_closing_balance > 0 ? 'text-green-500' : 'text-gray-400'}`} />
                                 <span>
                                   {formatValue(item.total_closing_balance)}
                                   {item.base_units_name ? (
@@ -2124,7 +2124,7 @@ export default function ItemMasters() {
                                 size="sm"
                                 onClick={(e) => handleToggleStatus(e, item)}
                                 disabled={toggleItemStatusMutation.isPending}
-                                className={`h-8 w-8 p-0 ${
+                                className={`h-7 w-7 p-0 ${
                                   shouldShowActivate
                                     ? "text-green-600 hover:text-green-700 hover:bg-green-50 border-green-200"
                                     : "text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
@@ -2148,7 +2148,7 @@ export default function ItemMasters() {
 
                   {/* Pagination - based on API response */}
                   {totalItems > 0 && (
-                    <div className="flex flex-col sm:flex-row items-center justify-between mt-6 gap-4">
+                    <div className="flex flex-col sm:flex-row items-center justify-between mt-3 gap-2">
                       <div className="text-sm text-gray-700 dark:text-gray-300">
                         Showing <span className="font-semibold">{startItem}</span> to{" "}
                         <span className="font-semibold">{endItem}</span> of{" "}
@@ -2203,7 +2203,7 @@ export default function ItemMasters() {
                   <h3 className="mt-4 text-lg font-semibold text-gray-900 dark:text-white">
                     {totalItems === 0 ? 'No items available' : 'No items found'}
                   </h3>
-                  <p className="mt-2 text-sm text-gray-500 dark:text-gray-400 max-w-md mx-auto">
+                  <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400 max-w-md mx-auto">
                     {totalItems === 0 
                       ? "There are currently no items in the system. Contact your administrator to add items."
                       : hasListFiltersApplied
@@ -2255,7 +2255,7 @@ export default function ItemMasters() {
               <span className="ml-2 text-gray-600">Loading item details...</span>
             </div>
           ) : itemDetails ? (
-            <div className="space-y-6">
+            <div className="space-y-3">
               {/* Basic Item Information */}
               <Card>
                 <CardHeader>
@@ -2621,7 +2621,7 @@ export default function ItemMasters() {
                 <Card>
                   <CardContent className="text-center py-8">
                     <Building2 className="mx-auto h-12 w-12 text-gray-400" />
-                    <h3 className="mt-2 text-sm font-semibold text-gray-900 dark:text-white">No Godown Data</h3>
+                    <h3 className="mt-0.5 text-sm font-semibold text-gray-900 dark:text-white">No Godown Data</h3>
                     <p className="mt-1 text-sm text-gray-500">
                       No godown information available for this item.
                     </p>
@@ -2641,7 +2641,7 @@ export default function ItemMasters() {
           ) : (
             <div className="text-center py-8">
               <Package className="mx-auto h-12 w-12 text-gray-400" />
-              <h3 className="mt-2 text-sm font-semibold text-gray-900 dark:text-white">No Details Available</h3>
+              <h3 className="mt-0.5 text-sm font-semibold text-gray-900 dark:text-white">No Details Available</h3>
               <p className="mt-1 text-sm text-gray-500">
                 Unable to load item details.
               </p>

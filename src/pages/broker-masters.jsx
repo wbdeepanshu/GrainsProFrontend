@@ -200,10 +200,10 @@ export default function BrokerMasters() {
       {!isMobile && <Sidebar />}
       <MobileSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <main className="app-main-content min-w-0">
-        <header className="flex items-center justify-between border-b bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-800 md:px-6">
+        <header className="flex items-center justify-between border-b bg-white px-3 py-1.5 dark:border-gray-700 dark:bg-gray-800 md:px-6">
           <div className="flex items-center gap-3">
             {isMobile && <Button variant="outline" size="sm" onClick={() => setSidebarOpen(true)}>Menu</Button>}
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Brokers Master</h1>
+            <h1 className="text-lg font-bold text-slate-900 dark:text-white">Brokers Master</h1>
           </div>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => setLocation("/margin-settings/brokerage-configuration")}>
@@ -218,13 +218,13 @@ export default function BrokerMasters() {
           </div>
         </header>
 
-        <div className="app-main-scrollable space-y-4 p-3 md:p-4">
+        <div className="app-main-scrollable space-y-2.5 p-2.5 md:p-3">
           {brokersQuery.error && (
             <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
               Failed to load brokers: {brokersQuery.error.message}
             </div>
           )}
-          <section className="grid gap-3 md:grid-cols-3">
+          <section className="grid gap-2 md:grid-cols-3">
             {[
               { label: "Total Brokers", value: brokers.length, icon: Users },
               { label: "KYC Verified", value: verifiedCount, icon: BadgeCheck },
@@ -233,9 +233,9 @@ export default function BrokerMasters() {
               const Icon = stat.icon;
               return (
                 <Card key={stat.label} className="border-blue-200 bg-gradient-to-br from-white to-blue-50 shadow-sm dark:border-gray-700 dark:from-gray-800 dark:to-gray-800">
-                  <CardContent className="flex items-center justify-between p-4">
-                    <div><p className="text-sm text-slate-600 dark:text-slate-300">{stat.label}</p><p className="mt-1 text-2xl font-bold text-slate-900 dark:text-white">{stat.value}</p></div>
-                    <span className="rounded-xl bg-indigo-950 p-3 text-white"><Icon className="h-5 w-5" /></span>
+                  <CardContent className="flex items-center justify-between p-2.5">
+                    <div><p className="text-sm text-slate-600 dark:text-slate-300">{stat.label}</p><p className="mt-1 text-lg font-bold text-slate-900 dark:text-white">{stat.value}</p></div>
+                    <span className="rounded-lg bg-indigo-950 p-2 text-white"><Icon className="h-5 w-5" /></span>
                   </CardContent>
                 </Card>
               );
@@ -243,7 +243,7 @@ export default function BrokerMasters() {
           </section>
 
           <Card className="border-blue-100 shadow-sm dark:border-gray-700">
-            <CardContent className="grid gap-4 p-4 md:grid-cols-2">
+            <CardContent className="grid gap-2.5 p-3 md:grid-cols-2">
               <Label className="space-y-2">
                 <span className="flex items-center gap-2"><Search className="h-4 w-4" /> Search</span>
                 <Input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search brokers..." />
@@ -271,39 +271,39 @@ export default function BrokerMasters() {
                 <table className="w-full min-w-[850px] text-left text-sm">
                   <thead className="border-b bg-slate-50 text-slate-700 dark:border-gray-700 dark:bg-gray-800 dark:text-slate-200">
                     <tr>
-                      <th className="px-4 py-3 font-semibold">Broker</th>
-                      <th className="px-4 py-3 font-semibold">Contact</th>
-                      <th className="px-4 py-3 font-semibold">Branch</th>
-                      <th className="px-4 py-3 font-semibold">KYC Status</th>
-                      <th className="px-4 py-3 font-semibold">Created</th>
-                      <th className="px-4 py-3 text-right font-semibold">Actions</th>
+                      <th className="px-3 py-1.5 font-semibold">Broker</th>
+                      <th className="px-3 py-1.5 font-semibold">Contact</th>
+                      <th className="px-3 py-1.5 font-semibold">Branch</th>
+                      <th className="px-3 py-1.5 font-semibold">KYC Status</th>
+                      <th className="px-3 py-1.5 font-semibold">Created</th>
+                      <th className="px-3 py-1.5 text-right font-semibold">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-gray-700">
                     {filteredBrokers.map((broker) => (
                       <tr key={broker.id} className="bg-white hover:bg-slate-50 dark:bg-gray-900 dark:hover:bg-gray-800">
-                        <td className="px-4 py-3">
-                          <div className="flex items-center gap-3">
-                            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 font-semibold text-blue-800">{broker.name?.slice(0, 2).toUpperCase()}</span>
-                            <div><p className="font-semibold text-slate-900 dark:text-white">{broker.name}</p><p className="text-xs text-slate-500">{broker.kyc_document_count || 0} document(s)</p></div>
+                        <td className="px-3 py-1.5">
+                          <div className="flex items-center gap-1.5">
+                            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-100 text-[10px] font-semibold text-blue-800">{broker.name?.slice(0, 2).toUpperCase()}</span>
+                            <div className="min-w-0"><p className="truncate text-sm font-medium text-slate-900 dark:text-white">{broker.name}</p><p className="text-[10px] text-slate-500">{broker.kyc_document_count || 0} document(s)</p></div>
                           </div>
                         </td>
-                        <td className="px-4 py-3 text-slate-600 dark:text-slate-300"><span className="inline-flex items-center gap-2"><Phone className="h-4 w-4" />{broker.contact_number || "—"}</span></td>
-                        <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{broker.branch_name || "—"}</td>
-                        <td className="px-4 py-3">
-                          <span className={`rounded-full border px-3 py-1 text-xs ${broker.kyc_verified ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-amber-200 bg-amber-50 text-amber-800"}`}>
+                        <td className="px-3 py-1.5 text-sm text-slate-600 dark:text-slate-300"><span className="inline-flex items-center gap-1.5"><Phone className="h-3.5 w-3.5 shrink-0" />{broker.contact_number || "—"}</span></td>
+                        <td className="px-3 py-1.5 text-sm text-slate-600 dark:text-slate-300">{broker.branch_name || "—"}</td>
+                        <td className="px-3 py-1.5">
+                          <span className={`rounded-full border px-2 py-0.5 text-[10px] ${broker.kyc_verified ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-amber-200 bg-amber-50 text-amber-800"}`}>
                             {broker.kyc_verified ? "Verified" : "Not Verified"}
                           </span>
                         </td>
-                        <td className="px-4 py-3 text-slate-600 dark:text-slate-300"><span className="inline-flex items-center gap-2"><CalendarDays className="h-4 w-4" />{broker.created_at || "—"}</span></td>
-                        <td className="px-4 py-3">
+                        <td className="px-3 py-1.5 text-sm text-slate-600 dark:text-slate-300"><span className="inline-flex items-center gap-1.5"><CalendarDays className="h-3.5 w-3.5 shrink-0" />{broker.created_at || "—"}</span></td>
+                        <td className="px-3 py-1.5">
                           <div className="flex justify-end gap-1">
-                            <Button variant="outline" size="icon" title="View KYC" onClick={() => openKyc(broker)}><Eye className="h-4 w-4" /></Button>
-                            <Button variant="outline" size="icon" title="Edit broker" onClick={() => openEdit(broker)}><Pencil className="h-4 w-4" /></Button>
-                            <Button variant="outline" size="icon" title="Delete broker" onClick={() => {
+                            <Button variant="outline" size="icon" className="h-7 w-7" title="View KYC" onClick={() => openKyc(broker)}><Eye className="h-3.5 w-3.5" /></Button>
+                            <Button variant="outline" size="icon" className="h-7 w-7" title="Edit broker" onClick={() => openEdit(broker)}><Pencil className="h-3.5 w-3.5" /></Button>
+                            <Button variant="outline" size="icon" className="h-7 w-7" title="Delete broker" onClick={() => {
                               if (window.confirm(`Deactivate broker "${broker.name}"?`)) deleteBrokerMutation.mutate(broker);
-                            }}><Trash2 className="h-4 w-4 text-red-600" /></Button>
-                            <Button variant="outline" size="sm" title="Brokerage settings" onClick={() => goToBrokerage(broker)}><Wallet className="h-4 w-4" /></Button>
+                            }}><Trash2 className="h-3.5 w-3.5 text-red-600" /></Button>
+                            <Button variant="outline" size="icon" className="h-7 w-7" title="Brokerage settings" onClick={() => goToBrokerage(broker)}><Wallet className="h-3.5 w-3.5" /></Button>
                           </div>
                         </td>
                       </tr>

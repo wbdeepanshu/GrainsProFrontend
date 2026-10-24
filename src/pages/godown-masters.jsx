@@ -517,14 +517,14 @@ export default function GodownMasters() {
       <div className="app-main-content">
         {/* Mobile Header */}
         {isMobile && (
-          <div className="bg-white dark:bg-gray-800 shadow-sm border-b p-4 flex items-center justify-between">
+          <div className="bg-white dark:bg-gray-800 shadow-sm border-b p-2.5 flex items-center justify-between">
             <button
               onClick={() => setIsMobileSidebarOpen(true)}
               className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors"
             >
               <Menu className="h-6 w-6" />
             </button>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Godown Masters</h1>
+            <h1 className="text-lg font-bold text-gray-900 dark:text-white">Godown Masters</h1>
             <div className="flex items-center gap-2">
               {!isTallyEnabled && (
                 <Button
@@ -550,13 +550,13 @@ export default function GodownMasters() {
         )}
 
         {/* Main Content Area */}
-        <div className="flex-1 p-6 overflow-auto">
+        <div className="flex-1 p-2.5 sm:p-3 overflow-auto">
           {/* Page Header */}
-          <div className="mb-6">
+          <div className="mb-3">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Godown Masters</h1>
-                <p className="text-gray-600 dark:text-gray-400 mt-2">
+                <h1 className="text-lg font-bold text-gray-900 dark:text-white">Godown Masters</h1>
+                <p className="text-gray-600 dark:text-gray-400 mt-0.5 text-sm">
                   Manage and view all godown information across branches
                 </p>
               </div>
@@ -586,12 +586,12 @@ export default function GodownMasters() {
           </div>
 
           {/* Filters Section */}
-          <Card className={`mb-6 transition-all duration-300 ${isMobile ? '' : showFilters ? 'opacity-100' : 'opacity-100'}`}>
-            <CardContent className="p-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Card className={`mb-3 transition-all duration-300 ${isMobile ? '' : showFilters ? 'opacity-100' : 'opacity-100'}`}>
+            <CardContent className="p-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2.5">
                 {/* Search Input */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-gray-700 dark:text-gray-300">
                     Search Godowns
                   </label>
                   <div className="relative">
@@ -614,8 +614,8 @@ export default function GodownMasters() {
                 </div>
 
                 {/* Branch Filter */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
                     <Building className="h-4 w-4 text-blue-600" />
                     Branch
                   </label>
@@ -695,8 +695,8 @@ export default function GodownMasters() {
                 </div>
 
                 {/* Status Filter */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-gray-700 dark:text-gray-300">
                     Status
                   </label>
                   <Select value={selectedStatus} onValueChange={setSelectedStatus}>
@@ -714,8 +714,8 @@ export default function GodownMasters() {
                 </div>
 
                 {/* Results Summary */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-gray-700 dark:text-gray-300">
                     Results Summary
                   </label>
                   <div className="flex items-center space-x-2 h-10 px-3 border rounded-md bg-gray-50 dark:bg-gray-800">
@@ -746,10 +746,10 @@ export default function GodownMasters() {
 
           {/* Godowns Table */}
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
+            <CardHeader className="py-2.5 px-3">
+              <CardTitle className="flex items-center justify-between text-base">
                 <div className="flex items-center space-x-2">
-                  <Warehouse className="h-5 w-5" />
+                  <Warehouse className="h-4 w-4" />
                   <span>Godown List</span>
                 </div>
                 <div className="text-sm font-normal text-gray-500 dark:text-gray-400">
@@ -762,17 +762,17 @@ export default function GodownMasters() {
                 </div>
               </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-3 pt-0">
               {totalItems > 0 ? (
                 <>
                   {/* Desktop Table */}
-                  <div className="overflow-x-auto">
-                    <table className="w-full border-collapse">
+                  <div className="overflow-x-auto max-h-[min(72vh,calc(100vh-14rem))]">
+                    <table className="w-full border-collapse text-sm">
                       <thead className="bg-gray-50 border-b-2 border-gray-200 dark:bg-gray-800 dark:border-gray-700">
                         <tr>
-                          <th className="w-12 h-12 px-4 py-3 text-left align-middle font-semibold text-gray-900 dark:text-white uppercase tracking-wider text-xs">#</th>
+                          <th className="w-12 h-9 px-3 py-2 text-left align-middle font-semibold text-gray-900 dark:text-white uppercase tracking-wider text-xs">#</th>
                           <th 
-                            className="h-12 px-4 py-3 text-left align-middle font-semibold text-gray-900 dark:text-white uppercase tracking-wider text-xs cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                            className="h-9 px-3 py-2 text-left align-middle font-semibold text-gray-900 dark:text-white uppercase tracking-wider text-xs cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                             onClick={() => handleSort('name')}
                           >
                             <div className="flex items-center space-x-1">
@@ -782,7 +782,7 @@ export default function GodownMasters() {
                           </th>
                           
                           <th 
-                            className="h-12 px-4 py-3 text-left align-middle font-semibold text-gray-900 dark:text-white uppercase tracking-wider text-xs cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                            className="h-9 px-3 py-2 text-left align-middle font-semibold text-gray-900 dark:text-white uppercase tracking-wider text-xs cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                             onClick={() => handleSort('branch')}
                           >
                             <div className="flex items-center space-x-1">
@@ -790,9 +790,9 @@ export default function GodownMasters() {
                               <span className="text-xs">{getSortIcon('branch')}</span>
                             </div>
                           </th>
-                          <th className="h-12 px-4 py-3 text-left align-middle font-semibold text-gray-900 dark:text-white uppercase tracking-wider text-xs">Parent</th>
+                          <th className="h-9 px-3 py-2 text-left align-middle font-semibold text-gray-900 dark:text-white uppercase tracking-wider text-xs">Parent</th>
                           <th 
-                            className="h-12 px-4 py-3 text-left align-middle font-semibold text-gray-900 dark:text-white uppercase tracking-wider text-xs cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                            className="h-9 px-3 py-2 text-left align-middle font-semibold text-gray-900 dark:text-white uppercase tracking-wider text-xs cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                             onClick={() => handleSort('is_active')}
                           >
                             <div className="flex items-center space-x-1">
@@ -801,7 +801,7 @@ export default function GodownMasters() {
                             </div>
                           </th>
                           <th 
-                            className="h-12 px-4 py-3 text-left align-middle font-semibold text-gray-900 dark:text-white uppercase tracking-wider text-xs cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                            className="h-9 px-3 py-2 text-left align-middle font-semibold text-gray-900 dark:text-white uppercase tracking-wider text-xs cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                             onClick={() => handleSort('created_at')}
                           >
                             <div className="flex items-center space-x-1">
@@ -809,7 +809,7 @@ export default function GodownMasters() {
                               <span className="text-xs">{getSortIcon('created_at')}</span>
                             </div>
                           </th>
-                          <th className="h-12 px-4 py-3 text-left align-middle font-semibold text-gray-900 dark:text-white uppercase tracking-wider text-xs">
+                          <th className="h-9 px-3 py-2 text-left align-middle font-semibold text-gray-900 dark:text-white uppercase tracking-wider text-xs">
                             Actions
                           </th>
                         </tr>
@@ -820,29 +820,29 @@ export default function GodownMasters() {
                             key={godown.id || index} 
                             className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
                           >
-                            <td className="py-4 px-4 font-medium text-gray-900 dark:text-white">
+                            <td className="py-1.5 px-3 font-medium text-gray-900 dark:text-white">
                               {startItem + index}
                             </td>
-                            <td className="py-4 px-4">
-                              <div className="font-semibold text-gray-900 dark:text-white">
+                            <td className="py-1.5 px-3">
+                              <div className="font-medium text-sm text-gray-900 dark:text-white">
                                 {godown.name || 'N/A'}
                               </div>
                             </td>
                            
-                            <td className="py-4 px-4">
+                            <td className="py-1.5 px-3">
                               <span className="text-gray-900 dark:text-white">
                                 {godown.branch || 'N/A'}
                               </span>
                             </td>
-                            <td className="py-4 px-4">
+                            <td className="py-1.5 px-3">
                               <span className="text-sm text-gray-500 dark:text-gray-400 max-w-xs truncate block" title={godown.parent}>
                                 {godown.parent || 'N/A'}
                               </span>
                             </td>
-                            <td className="py-4 px-4">
+                            <td className="py-1.5 px-3">
                               <Badge
                                 variant={godown.is_active ? "default" : "secondary"}
-                                className={`${
+                                className={`text-[10px] px-1.5 py-0 ${
                                   godown.is_active 
                                     ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200" 
                                     : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
@@ -861,20 +861,20 @@ export default function GodownMasters() {
                                 )}
                               </Badge>
                             </td>
-                            <td className="py-4 px-4">
+                            <td className="py-1.5 px-3">
                               <span className="text-gray-900 dark:text-white text-xs">
                                 {formatDate(godown.created_at)}
                               </span>
                             </td>
-                            <td className="py-4 px-4">
+                            <td className="py-1.5 px-3">
                               <Button
                                 variant="outline"
                                 size="sm"
                                 onClick={() => openEditDialog(godown)}
-                                className="h-8 w-8 p-0"
+                                className="h-7 w-7 p-0"
                                 title="Edit godown"
                               >
-                                <Pencil className="h-4 w-4" />
+                                <Pencil className="h-3.5 w-3.5" />
                               </Button>
                             </td>
                           </tr>
@@ -885,7 +885,7 @@ export default function GodownMasters() {
 
                   {/* Pagination */}
                   {totalPages > 1 && (
-                    <div className="flex flex-col sm:flex-row items-center justify-between mt-6 gap-4">
+                    <div className="flex flex-col sm:flex-row items-center justify-between mt-3 gap-2">
                       <div className="text-sm text-gray-700 dark:text-gray-300">
                         Showing <span className="font-semibold">{startItem}</span> to{" "}
                         <span className="font-semibold">{endItem}</span> of{" "}
@@ -940,7 +940,7 @@ export default function GodownMasters() {
                   <h3 className="mt-4 text-lg font-semibold text-gray-900 dark:text-white">
                     {allGodowns.length === 0 ? 'No godowns available' : 'No godowns found'}
                   </h3>
-                  <p className="mt-2 text-sm text-gray-500 dark:text-gray-400 max-w-md mx-auto">
+                  <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400 max-w-md mx-auto">
                     {allGodowns.length === 0 
                       ? "There are currently no godowns in the system. Contact your administrator to add godowns."
                       : (searchTerm || selectedBranch !== "All" || selectedStatus !== "All")

@@ -26,7 +26,6 @@ import {
     ArrowLeft,
     FlaskConical,
     Package,
-    Image
 } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import CommonLoader from "@/components/common/loader";
@@ -986,12 +985,20 @@ export default function MachineParams() {
         }
     };
 
-    // Filter parameters based on search term
-    const filteredParams = machineParams.filter(param =>
-        param.parameter_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (param.unit && param.unit.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (param.remarks && param.remarks.toLowerCase().includes(searchTerm.toLowerCase()))
-    );
+    // Filter parameters based on search term; display order follows sequence
+    const filteredParams = machineParams
+        .filter(param =>
+            param.parameter_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            (param.unit && param.unit.toLowerCase().includes(searchTerm.toLowerCase())) ||
+            (param.remarks && param.remarks.toLowerCase().includes(searchTerm.toLowerCase()))
+        )
+        .slice()
+        .sort((a, b) => {
+            const seqA = Number(a.sequence ?? 0);
+            const seqB = Number(b.sequence ?? 0);
+            if (seqA !== seqB) return seqA - seqB;
+            return (a.id || 0) - (b.id || 0);
+        });
 
     const getValidationStatus = (param) => {
         if (!param.is_validation_required) {
@@ -1257,6 +1264,7 @@ export default function MachineParams() {
                                                 <TableHeader>
                                                     <TableRow>
                                                         <TableHead>#</TableHead>
+                                                        <TableHead>Seq</TableHead>
                                                         <TableHead>Parameter</TableHead>
                                                         <TableHead>Unit</TableHead>
                                                         <TableHead>Required</TableHead>
@@ -1272,6 +1280,9 @@ export default function MachineParams() {
                                                         return (
                                                             <TableRow key={param.id}>
                                                                 <TableCell>{index + 1}</TableCell>
+                                                                <TableCell className="tabular-nums text-muted-foreground">
+                                                                    {param.sequence ?? 0}
+                                                                </TableCell>
                                                                 <TableCell className="font-medium">
                                                                     <div className="flex items-center space-x-2">
 
