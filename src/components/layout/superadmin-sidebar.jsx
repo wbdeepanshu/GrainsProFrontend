@@ -1,9 +1,9 @@
-import { useState, useEffect, useRef } from "react";
+import { useRef } from "react";
 import { useLocation } from "wouter";
 import { cn } from "@/lib/utils";
-import logo from "@/assets/gp_logo1.png";
-import { 
-  Gauge, 
+import logo from "@/assets/new_logo.png";
+import {
+  Gauge,
   Building2,
   LogOut,
   FileText,
@@ -14,7 +14,6 @@ import {
   Info,
   SlidersHorizontal,
 } from "lucide-react";
-import { AuthService } from "@/lib/auth";
 import { queryClient } from "@/lib/queryClient";
 
 const iconMap = {
@@ -22,15 +21,14 @@ const iconMap = {
   "building-2": Building2,
   "log-out": LogOut,
   "file-text": FileText,
-  "users": Users,
+  users: Users,
   "bar-chart-3": BarChart3,
-  "shield": Shield,
-  "receipt": Receipt,
-  "info": Info,
+  shield: Shield,
+  receipt: Receipt,
+  info: Info,
   "sliders-horizontal": SlidersHorizontal,
 };
 
-// Superadmin menu items - simplified without Masters
 const superadminMenuItems = [
   { name: "Dashboard", icon: "gauge", path: "/superadmin/dashboard" },
   { name: "Onboarding Flow", icon: "info", path: "/superadmin/onboarding-design" },
@@ -57,7 +55,6 @@ export default function SuperAdminSidebar() {
   const handleNavigation = async (path, name) => {
     if (name === "Log out") {
       try {
-        // Clear superadmin tokens
         localStorage.removeItem("superadmin_token");
         localStorage.removeItem("superadmin_user");
         queryClient.clear();
@@ -79,37 +76,34 @@ export default function SuperAdminSidebar() {
   };
 
   return (
-    <div className="w-64 sidebar-gradient text-white flex-shrink-0 h-screen flex flex-col">
-      <div className="p-4 border-b border-gray-700 flex-shrink-0">
-        <div className="flex items-start justify-between mb-3">
-          <div className="flex items-start space-x-3 flex-1">
-            <div className="bg-white rounded-full flex-shrink-0">
-              <img src={logo} alt="GrainsPro ERP Logo" className="h-12 w-auto" />
-            </div>
-            <div className="flex flex-col">
-              <h1 className="text-xl font-bold text-white leading-tight">GrainsPro ERP</h1>
-              <p className="text-gray-300 text-xs leading-tight mt-1">Enterprise Resource Planning</p>
-            </div>
+    <div className="w-64 bg-[#141414] text-white flex-shrink-0 h-screen flex flex-col border-r border-[#c9a227]/40">
+      <div className="p-3 border-b border-[#c9a227]/35 flex-shrink-0">
+        <div className="flex items-center gap-2.5">
+          <div className="bg-white rounded-full p-0.5 flex-shrink-0 border border-[#c9a227]/50">
+            <img src={logo} alt="GrainsPro ERP Logo" className="h-10 w-10 object-contain" />
+          </div>
+          <div className="flex flex-col min-w-0">
+            <h1 className="text-sm font-bold text-white leading-tight truncate">GrainsPro ERP</h1>
+            <p className="text-[#c9a227] text-[10px] font-semibold uppercase tracking-wide leading-tight mt-0.5">
+              Super Admin
+            </p>
           </div>
         </div>
       </div>
-      
-      <nav ref={navRef} className="flex-1 overflow-y-auto hide-scrollbar mt-2">
+
+      <nav ref={navRef} className="flex-1 overflow-y-auto hide-scrollbar mt-1.5 pb-2">
         {superadminMenuItems.map((item, index) => {
-          // Handle separator items - they don't have icon or name
           if (item.separator) {
-            return <div key={index} className="border-t border-gray-700 mt-4" />;
+            return (
+              <div key={index} className="border-t border-[#c9a227]/25 mx-4 my-2" />
+            );
           }
 
-          // Get icon for menu items
           const Icon = iconMap[item.icon];
-          if (!Icon) {
-            console.error(`Icon not found for: ${item.icon}`, item);
-            return null;
-          }
+          if (!Icon) return null;
 
           const isActive =
-            location === item.path || 
+            location === item.path ||
             (item.name === "Dashboard" && location === "/superadmin/dashboard") ||
             (item.name === "Onboarding Design" && location === "/superadmin/onboarding-design") ||
             (item.name === "Organizations" && location === "/superadmin/organizations") ||
@@ -134,23 +128,34 @@ export default function SuperAdminSidebar() {
                 }
               }}
               className={cn(
-                "w-full flex items-center justify-between px-6 py-3 transition-all text-left block",
-                item.name === "Log out" ? "text-white hover:bg-gray-700 hover:text-white" : "text-gray-300 hover:bg-gray-700 hover:text-white",
-                isActive && "border-r-4 border-white bg-gray-700 text-white"
+                "w-full flex items-center justify-between px-4 py-2 text-sm transition-all text-left block",
+                item.name === "Log out"
+                  ? "text-red-300 hover:bg-red-950/40 hover:text-red-200"
+                  : "text-neutral-300 hover:bg-neutral-900 hover:text-white",
+                isActive &&
+                  "border-r-2 border-[#c9a227] bg-neutral-900 text-white"
               )}
             >
-              <div className="flex items-center">
-                <Icon className="mr-3 h-5 w-5" />
-                <span>{item.name}</span>
+              <div className="flex items-center min-w-0">
+                <Icon
+                  className={cn(
+                    "mr-2.5 h-4 w-4 shrink-0",
+                    isActive ? "text-[#c9a227]" : "text-neutral-400"
+                  )}
+                />
+                <span className="truncate">{item.name}</span>
               </div>
             </a>
           );
         })}
       </nav>
 
-      <div className="p-4 border-t border-gray-700 flex-shrink-0">
-        <p className="text-gray-400 text-xs text-center">
-          © 2026 All rights reserved. • MWB Technologies India Pvt Ltd
+      <div className="p-3 border-t border-[#c9a227]/35 flex-shrink-0">
+        <p className="text-neutral-500 text-[10px] text-center leading-snug">
+          © {new Date().getFullYear()} All rights reserved.
+        </p>
+        <p className="text-[#c9a227]/80 text-[10px] text-center font-medium mt-0.5">
+          MWB Technologies India Pvt Ltd
         </p>
       </div>
     </div>

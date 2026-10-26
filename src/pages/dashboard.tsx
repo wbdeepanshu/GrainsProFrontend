@@ -13,6 +13,11 @@ import RecentActivity from "@/components/dashboard/recent-activity";
 import StockSyncStatus from "@/components/dashboard/stock-sync-status";
 import ReceiptSummary from "@/components/dashboard/receipt-summary";
 import AdditionalMetrics from "@/components/dashboard/additional-metrics";
+import SyncStatusSummary from "@/components/dashboard/SyncStatusSummary";
+import DenseSummaryPanel from "@/components/dashboard/DenseSummaryPanel";
+import SalesOrderOverviewChart from "@/components/dashboard/SalesOrderOverviewChart";
+import ReceiptsOverviewChart from "@/components/dashboard/ReceiptsOverviewChart";
+import { DashboardQuickLinksRow } from "@/components/layout/quick-links";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -158,6 +163,37 @@ interface DashboardAPIResponse {
       total_count?: number;
       approved_count?: number;
       pending_count?: number;
+      total_sales_orders?: number;
+      total_sales_order_value?: number;
+      total_sales_orders_approved?: number;
+      total_approved_value?: number;
+      total_sales_orders_pending?: number;
+      error: null | string;
+    };
+    item_details_summary?: {
+      top_selling_items_count?: number;
+      party_wise_purchase_order_count?: number;
+      purchase_order_count?: number;
+      top_selling_items?: Array<{
+        rank: number;
+        stock_item_id: number;
+        stock_item_name: string;
+        base_unit?: string;
+        total_quantity?: number;
+        sales_order_count?: number;
+      }>;
+      party_wise_purchase_orders?: unknown[];
+      error: null | string;
+    };
+    sync_status_summary?: {
+      sales_invoice_not_synced?: number;
+      sales_return_not_synced?: number;
+      purchase_invoice_not_synced?: number;
+      gate_pass_pending_or_partial?: number;
+      inward_not_completed?: number;
+      credit_note_not_synced?: number;
+      debit_note_not_synced?: number;
+      contra_entry_not_synced?: number;
       error: null | string;
     };
     receipts_summary?: {
@@ -505,18 +541,40 @@ function DashboardContent() {
     "recent_activities",
     "outward_entries_summary",
     "route_summary",
+    "sales_order_summary",
+    "item_details_summary",
+    "sync_status_summary",
   ] as const;
+
+  /** Modules that may be missing on older API deploys — soft-fail so the page still loads. */
+  const optionalDashboardObjects = new Set<string>([
+    "outward_entries_summary",
+    "route_summary",
+    "sales_order_summary",
+    "item_details_summary",
+    "sync_status_summary",
+  ]);
 
   const dashboardModuleQueries = useQueries({
     queries: dashboardObjects.map((objectName) => ({
       queryKey: [`${API_BASE_URL}/api/dashboard-data/`, objectName, selectedDate],
       queryFn: async () => {
-        const response = await apiRequest("POST", `${API_BASE_URL}/api/dashboard-data/`, {
-          object_name: objectName,
-          date: selectedDate,
-        });
-        const res = await response.json();
-        return res;
+        try {
+          const response = await apiRequest("POST", `${API_BASE_URL}/api/dashboard-data/`, {
+            object_name: objectName,
+            date: selectedDate,
+          });
+          return await response.json();
+        } catch (err) {
+          const message = String((err as Error)?.message || "");
+          const isInvalidObject =
+            message.includes("Invalid object name") ||
+            (message.startsWith("400:") && optionalDashboardObjects.has(objectName));
+          if (optionalDashboardObjects.has(objectName) && isInvalidObject) {
+            return { status: 200, data: { [objectName]: null }, soft_failed: true };
+          }
+          throw err;
+        }
       },
       enabled:
         !!AuthService.getAccessToken() &&
@@ -526,11 +584,29 @@ function DashboardContent() {
         (objectName !== "route_summary" || hasRouteManagementRead),
       refetchOnWindowFocus: false,
       staleTime: 5 * 60 * 1000,
+      retry: (failureCount, err) => {
+        const message = String((err as Error)?.message || "");
+        if (message.includes("Invalid object name") || message.startsWith("400:")) {
+          return false;
+        }
+        return failureCount < 1;
+      },
     })),
   });
 
   const isLoading = dashboardModuleQueries.some((query) => query.isLoading);
-  const errorQuery = dashboardModuleQueries.find((query) => query.error);
+  const criticalDashboardObjects = new Set([
+    "date",
+    "user_info",
+    "voucher_summary",
+    "hamali_summary",
+    "stock_items_summary",
+    "inward_entries_summary",
+    "recent_activities",
+  ]);
+  const errorQuery = dashboardModuleQueries.find(
+    (query, idx) => query.error && criticalDashboardObjects.has(dashboardObjects[idx])
+  );
   const error = errorQuery?.error as Error | null;
 
   const dashboardModuleDataMap = useMemo(() => {
@@ -566,6 +642,9 @@ function DashboardContent() {
       expense_summary: dashboardModuleDataMap.expense_summary ?? null,
       recent_activities: dashboardModuleDataMap.recent_activities ?? null,
       route_summary: dashboardModuleDataMap.route_summary ?? null,
+      sales_order_summary: dashboardModuleDataMap.sales_order_summary ?? null,
+      item_details_summary: dashboardModuleDataMap.item_details_summary ?? null,
+      sync_status_summary: dashboardModuleDataMap.sync_status_summary ?? null,
       tally_running_status: dashboardModuleDataMap.tally_running_status ?? false,
     };
 
@@ -677,7 +756,7 @@ function DashboardContent() {
 
 
   return (
-    <div className="app-layout bg-gray-50">
+    <div className="app-layout bg-neutral-100">
       {/* Desktop Sidebar */}
       {!isMobile && <Sidebar />}
 
@@ -692,7 +771,7 @@ function DashboardContent() {
       {/* Main Content */}
       <div className="app-main-content">
         {/* Top Header */}
-        <header className="app-header bg-white shadow-sm border-b border-gray-200 px-4 py-3 sm:px-6 sm:py-4">
+        <header className="app-header bg-white shadow-sm border-b border-[#c9a227]/60 px-3 py-2.5 sm:px-4 sm:py-3">
           <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-x-2 gap-y-2 sm:flex sm:items-center sm:justify-between min-w-0">
             <div className="flex items-center min-w-0 col-start-1 row-start-1">
               {isMobile && (
@@ -700,16 +779,16 @@ function DashboardContent() {
                   variant="ghost"
                   size="sm"
                   onClick={() => setIsMobileSidebarOpen(true)}
-                  className="lg:hidden p-2 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 mr-2 shrink-0"
+                  className="lg:hidden p-2 rounded-md text-gray-500 hover:text-black hover:bg-neutral-100 mr-2 shrink-0"
                 >
                   <Menu className="h-6 w-6" />
                 </Button>
               )}
-              <h1 className="text-xl sm:text-2xl font-bold text-gray-900 truncate">Dashboard</h1>
+              <h1 className="text-xl sm:text-2xl font-bold text-black truncate">Dashboard</h1>
             </div>
 
             <div className="col-start-2 row-start-1 flex items-center gap-2 justify-end shrink-0 sm:order-last">
-              <NotificationBell className="text-gray-700 hover:bg-blue-100 hover:text-gray-900 bg-blue-50 border border-blue-200 rounded-full shadow-md shrink-0" />
+              <NotificationBell className="text-black hover:bg-neutral-100 hover:text-black bg-white border border-[#c9a227]/70 rounded-full shadow-sm shrink-0" />
 
               <div className="relative shrink-0" ref={userCardRef}>
                 <div
@@ -742,7 +821,7 @@ function DashboardContent() {
 
             <div className="col-span-2 row-start-2 flex items-center gap-2 min-w-0 sm:col-span-1 sm:row-start-1 sm:flex-1 sm:justify-end">
               {isTallyEnabled && (
-                <div className="flex items-center gap-1.5 bg-gradient-to-r from-gray-50 to-gray-100 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg border border-gray-200 shrink-0">
+                <div className="flex items-center gap-1.5 bg-white px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg border border-[#c9a227]/55 shrink-0">
                   <div
                     className={`w-2 h-2 rounded-full shrink-0 ${
                       dashboardData?.data?.tally_running_status ? "bg-green-500" : "bg-red-500"
@@ -763,11 +842,11 @@ function DashboardContent() {
                     <Button
                       variant="outline"
                       className={cn(
-                        "h-9 font-normal text-sm min-w-0",
+                        "h-9 font-normal text-sm min-w-0 border-[#c9a227]/55 text-black hover:bg-neutral-50",
                         isMobile ? "flex-1 justify-start px-2.5" : "w-40 justify-start text-left shrink-0"
                       )}
                     >
-                      <CalendarIcon className="mr-1.5 h-4 w-4 shrink-0 text-gray-500" />
+                      <CalendarIcon className="mr-1.5 h-4 w-4 shrink-0 text-black" />
                       <span className="truncate text-xs sm:text-sm">
                         {selectedDate
                           ? format(new Date(selectedDate), isMobile ? "dd/MM/yy" : "dd-MM-yyyy")
@@ -795,70 +874,85 @@ function DashboardContent() {
         </header>
 
         {/* Dashboard Content */}
-        <main className="app-main-scrollable p-4 sm:p-6">
-          <div className="max-w-7xl mx-auto">
+        <main className="app-main-scrollable p-3 sm:p-4">
+          <div className="max-w-[1400px] mx-auto">
             {error ? (
               <div className="text-center py-12">
                 <div className="text-red-600 mb-4">
                   <p className="text-lg font-semibold">Failed to load dashboard data</p>
                   <p className="text-sm">{error.message}</p>
                 </div>
-                <Button onClick={refetchAll} variant="outline">
+                <Button
+                  onClick={refetchAll}
+                  variant="outline"
+                  className="border-[#c9a227] text-black hover:bg-black hover:text-white"
+                >
                   Try Again
                 </Button>
               </div>
             ) : (
-              <div className="space-y-6">
-                {/* Inward Entries Metrics */}
+              <div className="space-y-3 sm:space-y-4">
+                <DashboardQuickLinksRow />
+
+                <SyncStatusSummary
+                  data={dashboardData?.data?.sync_status_summary}
+                  toDate={selectedDate}
+                />
+
+                <DenseSummaryPanel
+                  salesOrderSummary={dashboardData?.data?.sales_order_summary}
+                  itemDetailsSummary={dashboardData?.data?.item_details_summary}
+                  selectedDate={selectedDate}
+                />
+
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
+                  <SalesOrderOverviewChart selectedDate={selectedDate} />
+                  <ReceiptsOverviewChart
+                    selectedDate={selectedDate}
+                    enabled={hasReceiptRead}
+                  />
+                </div>
+
                 {dashboardData?.data?.inward_entries_summary && (
                   <InwardEntriesMetrics data={dashboardData?.data?.inward_entries_summary} selectedDate={selectedDate} />
                 )}
-                {/* Outward Entries Metrics - show when data exists; component shows boxes by permission (sales_order R / outward R) */}
                 {dashboardData?.data?.outward_entries_summary && (
-                  <OutwardEntriesMetrics 
-                    data={dashboardData?.data?.outward_entries_summary} 
+                  <OutwardEntriesMetrics
+                    data={dashboardData?.data?.outward_entries_summary}
                     selectedDate={selectedDate}
                   />
                 )}
-                {/* Voucher Types Metrics */}
-                {permissionsStock.canRead && (<VoucherTypesMetrics data={dashboardData?.data?.voucher_summary} selectedDate={selectedDate} />)
-                }
-                {/* Route Summary — route_management read permission (same as sidebar) */}
+                {permissionsStock.canRead && (
+                  <VoucherTypesMetrics data={dashboardData?.data?.voucher_summary} selectedDate={selectedDate} />
+                )}
                 {hasRouteManagementRead && dashboardData?.data?.route_summary != null && (
                   <RouteSummaryMetrics
                     data={dashboardData.data.route_summary}
                     selectedDate={selectedDate}
                   />
                 )}
-                {/* Charts and Stats - Recent Activity, Stock Synchronization, and Receipt Summary */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
                   <RecentActivity data={dashboardData?.data?.recent_activities} />
                   {isTallyEnabled && (
                     <StockSyncStatus data={dashboardData?.data?.stock_items_summary} />
                   )}
                   {showReceiptExpenseSummary && (
                     <div className="min-w-0">
-                    <ReceiptSummary 
-                      data={hasReceiptRead ? dashboardData?.data?.receipts_summary : undefined}
-                      showReceiptSummary={hasReceiptRead}
-                      showLedgerSummary={false}
-                      expenseData={hasExpenseRead ? dashboardData?.data?.expense_summary : undefined}
-                      showExpenseSummary={hasExpenseRead}
-                    />
+                      <ReceiptSummary
+                        data={hasReceiptRead ? dashboardData?.data?.receipts_summary : undefined}
+                        showReceiptSummary={hasReceiptRead}
+                        showLedgerSummary={false}
+                        expenseData={hasExpenseRead ? dashboardData?.data?.expense_summary : undefined}
+                        showExpenseSummary={hasExpenseRead}
+                      />
                     </div>
                   )}
                 </div>
 
-                {/* Additional Metrics */}
                 <AdditionalMetrics
                   data={dashboardData?.data?.hamali_summary}
                   selectedDate={selectedDate}
                 />
-                
-                {/* Voice Assistant Demo Section (temporarily disabled) */}
-                {/* <div className="mt-8">
-                  <VoiceAssistantTest />
-                </div> */}
               </div>
             )}
           </div>

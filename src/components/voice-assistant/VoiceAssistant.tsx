@@ -149,7 +149,7 @@ const VoiceAssistant: React.FC<VoiceAssistantProps> = ({ isOpen, onClose }) => {
     },
     {
       command: 'go to margin settings',
-      action: () => setLocation('/margin-settings/business-types'),
+      action: () => setLocation('/margin-settings/item-price-margin'),
       description: 'Navigate to Margin Settings',
       keywords: ['margin', 'margin settings', 'pricing']
     },
@@ -308,52 +308,22 @@ const VoiceAssistant: React.FC<VoiceAssistantProps> = ({ isOpen, onClose }) => {
     
     // Margin Settings sub-navigation
     {
-      command: 'show business types',
-      action: () => setLocation('/margin-settings/business-types'),
-      description: 'Show Business Types',
-      keywords: ['business types', 'business', 'customer types']
+      command: 'show item price margin',
+      action: () => setLocation('/margin-settings/item-price-margin'),
+      description: 'Show Item Price Margin',
+      keywords: ['item price margin', 'price margin', 'margin']
     },
     {
-      command: 'show credit types',
-      action: () => setLocation('/margin-settings/credit-types'),
-      description: 'Show Credit Types',
-      keywords: ['credit types', 'credit', 'payment types']
+      command: 'show price master',
+      action: () => setLocation('/price-master'),
+      description: 'Show Price Master',
+      keywords: ['price master', 'price masters']
     },
     {
       command: 'show branch settings',
-      action: () => setLocation('/margin-settings/branch-settings'),
+      action: () => setLocation('/branches'),
       description: 'Show Branch Settings',
       keywords: ['branch settings', 'branch', 'branches']
-    },
-    {
-      command: 'show states',
-      action: () => setLocation('/margin-settings/states'),
-      description: 'Show States',
-      keywords: ['states', 'state', 'locations']
-    },
-    {
-      command: 'show districts',
-      action: () => setLocation('/margin-settings/districts'),
-      description: 'Show Districts',
-      keywords: ['districts', 'district', 'areas']
-    },
-    {
-      command: 'show cities',
-      action: () => setLocation('/margin-settings/cities'),
-      description: 'Show Cities',
-      keywords: ['cities', 'city', 'towns']
-    },
-    {
-      command: 'show price rules',
-      action: () => setLocation('/margin-settings/price-rules'),
-      description: 'Show Price Rules',
-      keywords: ['price rules', 'pricing rules', 'rules']
-    },
-    {
-      command: 'show stock item pricing',
-      action: () => setLocation('/margin-settings/stock-item-pricing'),
-      description: 'Show Stock Item Pricing',
-      keywords: ['stock item pricing', 'item pricing', 'stock pricing']
     },
     
     // Route Management sub-navigation

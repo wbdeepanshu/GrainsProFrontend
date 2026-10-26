@@ -3,10 +3,11 @@
 @tailwind utilities;
 
 :root {
-  --brand-from: #1e3a8a;
-  --brand-to: #1e40af;
-  --brand-focus: rgba(30, 58, 138, 0.2);
-  --brand-shadow: rgba(30, 58, 138, 0.35);
+  --brand-from: #000000;
+  --brand-to: #1a1a1a;
+  --brand-focus: rgba(201, 162, 39, 0.25);
+  --brand-shadow: rgba(0, 0, 0, 0.35);
+  --brand-gold: #c9a227;
 }
 
 .btn-brand {
@@ -113,59 +114,39 @@ html, body {
   }
 }
 
-/* Allow scrolling on login page */
+/* Full-bleed split login (video left / form right) */
 .login-page {
-  overflow-y: auto !important;
-  overflow-x: hidden !important;
+  overflow: hidden !important;
   min-height: 100vh !important;
-  height: auto !important;
-  padding: 1rem 0;
+  height: 100vh !important;
+  padding: 0 !important;
   position: relative;
 }
 
-/* Override body and html styles for login page - non-scrollable, centered */
 body.login-page-active,
 html.login-page-active {
   overflow: hidden !important;
   height: 100% !important;
 }
 
-/* Additional override for login page */
 .login-page-active {
   overflow: hidden !important;
   height: 100% !important;
 }
 
-/* Login page container - fixed viewport, no scroll */
 .login-container {
   height: 100vh;
   min-height: 0;
   overflow: hidden;
+  padding: 0;
 }
 
-/* Mobile responsive - keep centered, no scroll */
-@media (max-height: 800px) {
-  .login-page {
-    padding: 0.25rem 0;
-  }
-}
-
-@media (max-width: 640px) {
-  .login-page {
-    padding: 0.25rem 0;
-  }
-  
-  .login-page .max-w-md {
-    margin: 0 auto;
-    padding: 0 1rem;
-  }
-  
+@media (max-width: 1023px) {
+  .login-page,
   .login-container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-    padding: 1rem 0;
+    overflow-y: auto !important;
+    height: auto !important;
+    min-height: 100vh !important;
   }
 }
 
@@ -200,15 +181,16 @@ html.login-page-active {
   --ring: hsl(0, 0%, 0%);
   --radius: 0.5rem;
   
-  /* Custom ERP theme colors */
+  /* Custom ERP theme colors — black / white / gold */
   --sidebar-bg: hsl(0, 0%, 0%);
-  --sidebar-hover: hsl(0, 0%, 20%);
+  --sidebar-hover: hsl(0, 0%, 12%);
   --gradient-start: hsl(0, 0%, 0%);
-  --gradient-end: hsl(0, 0%, 20%);
+  --gradient-end: hsl(0, 0%, 10%);
   --success: hsl(142, 76%, 36%);
   --warning: hsl(45, 93%, 47%);
   --error: hsl(0, 84%, 60%);
-  --info: hsl(217, 91%, 60%);
+  --info: hsl(0, 0%, 20%);
+  --gold: #c9a227;
 }
 
 .dark {
@@ -250,6 +232,7 @@ html.login-page-active {
   
   .sidebar-gradient {
     background: linear-gradient(180deg, var(--sidebar-bg) 0%, var(--sidebar-hover) 100%);
+    border-right: 1px solid var(--brand-gold, #c9a227);
     transition:
       width 280ms ease-in-out,
       min-width 280ms ease-in-out,

@@ -5,7 +5,7 @@ import { sidebarMenuItems } from "@/lib/static-data";
 import { AuthService } from "@/lib/auth";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useUserPermissions } from "@/hooks/useUserPermissions";
-import logo from "@/assets/gp_logo1.png";
+import logo from "@/assets/new_logo.png";
 import { useQuery } from "@tanstack/react-query";
 import { 
   Gauge, 
@@ -34,10 +34,9 @@ import {
   IndianRupee, // 👈 Added for Indian Rupee
   Receipt,
   Percent, // 👈 Added for Margin Settings
-  Building2, // 👈 Added for Business Types
-  CreditCard, // 👈 Added for Credit Types
-  MapPin, // 👈 Added for Geographic
-  Settings2, // 👈 Added for Price Rules
+  Building2,
+  CreditCard,
+  MapPin,
   // New unique icons
   ClipboardList, // 👈 For Inward Reports
   BookOpen, // 👈 For Ledger Masters
@@ -51,12 +50,8 @@ import {
   Box, // 👈 For Item Masters
   Truck, // 👈 For Hamali Type Masters
   Tag, // 👈 For Base Price Master
-  DollarSign as PriceTag, // 👈 For Stock Item Pricing
-  Map, // 👈 For States
-  MapPin as DistrictPin, // 👈 For Districts
-  Navigation, // 👈 For Cities
+  Navigation, // 👈 For Live Tracking
   Cog, // 👈 For Machine Params
-  Sliders, // 👈 For Price Rules
   Image, // 👈 For Banners
   UserSearch, // 👈 For Customer Analysis
   Wallet, // 👈 For Outstanding Reports
@@ -74,6 +69,7 @@ import {
   UserRound,
   PanelLeftClose,
   PanelLeftOpen,
+  Smartphone,
 } from "lucide-react";
 
 const iconMap = {
@@ -98,10 +94,9 @@ const iconMap = {
   "receipt": Receipt, // 👈 added for Expense Reports
   "percent": Percent, // 👈 added for Margin Settings
   "activity": History, // 👈 changed to History for Recent Activity
-  "building-2": Building2, // 👈 added for Business Types
-  "credit-card": CreditCard, // 👈 added for Credit Types
-  "map-pin": MapPin, // 👈 added for Geographic
-  "settings-2": Settings2, // 👈 added for Price Rules
+  "building-2": Building2,
+  "credit-card": CreditCard,
+  "map-pin": MapPin,
   "clipboard-list": ClipboardList, // 👈 Inward menu
   "shopping-bag": ShoppingBag, // 👈 Purchase Orders (unique from Sales Orders)
   "file-check": FileCheck, // 👈 added for Receipt
@@ -323,17 +318,32 @@ const salesOrderReportsSubMenus = [
   //{ name: "Add Sales Order", icon: Plus, path: "/add-sales-order" },
 ];
 
-// 👇 Margin Settings Submenus (Brokerage Configuration added when user has brokerage read permission)
-const marginSettingsSubMenus = [
-  { name: "Business Types", icon: Building2, path: "/margin-settings/business-types" },
-  { name: "Credit Types", icon: CreditCard, path: "/margin-settings/credit-types" },
-  { name: "Branch Settings", icon: Building2, path: "/margin-settings/branch-settings" },
-  { name: "States", icon: Map, path: "/margin-settings/states" },
-  { name: "Districts", icon: DistrictPin, path: "/margin-settings/districts" },
-  { name: "Cities", icon: Navigation, path: "/margin-settings/cities" },
-  { name: "Price Rules", icon: Sliders, path: "/margin-settings/price-rules" },
-  { name: "Stock Item Pricing", icon: PriceTag, path: "/margin-settings/stock-item-pricing" },
-];
+// 👇 Margin Settings Submenus
+const getMarginSettingsSubMenus = (hasPermission) => {
+  const items = [
+    {
+      name: "Item Price Margin",
+      icon: Percent,
+      path: "/margin-settings/item-price-margin",
+      module: "item_price_margin",
+    },
+    {
+      name: "Price Master",
+      icon: IndianRupee,
+      path: "/price-master",
+      module: "price_master",
+    },
+  ];
+  return items.filter((menu) => {
+    if (menu.module === "item_price_margin") {
+      return hasPermission("margin_settings", "read");
+    }
+    if (menu.module === "price_master") {
+      return hasPermission("stock_items", "read");
+    }
+    return true;
+  });
+};
 
 
 const getSalesSubMenus = (hasPermission) => {
@@ -409,8 +419,10 @@ const getReceiptSubMenus = (hasPermission, isTallyEnabled) => {
 const getLedgerManagementSubMenus = (hasPermission) => {
   const items = [
     { name: "Ledger Masters", icon: BookOpen, path: "/ledger-masters", module: "ledger_masters" },
+    { name: "Ledgers Group", icon: Building2, path: "/ledgers-group", module: "ledger_masters" },
     { name: "Additional Ledgers", icon: Layers, path: "/additional-ledgers", module: "ledger_masters" },
     { name: "Ledgers Credit Settings", icon: CreditCard, path: "/ledger-credit-settings", module: "ledger_masters" },
+    { name: "Retailers Info", icon: Smartphone, path: "/retailers-info", module: "ledger_masters" },
     { name: "Area Listing", icon: MapPin, path: "/area-listing", module: "customer_management" },
     { name: "KYC Document Types", icon: FileText, path: "/kyc-document-type-masters", module: "customer_management" },
   ];
@@ -429,8 +441,10 @@ const getLedgerManagementSubMenus = (hasPermission) => {
 
 const isLedgerManagementPath = (location) =>
   location.includes("/ledger-masters") ||
+  location.includes("/ledgers-group") ||
   location.includes("/additional-ledgers") ||
   location.includes("/ledger-credit-settings") ||
+  location.includes("/retailers-info") ||
   location.includes("/area-listing") ||
   location.includes("/kyc-document-type-masters");
 
@@ -439,7 +453,7 @@ const isLedgerSubMenuActive = (location, path) => {
   return location === path || location.startsWith(`${path}/`);
 };
 
-const SIDEBAR_COLLAPSED_KEY = "grainspro-sidebar-collapsed";
+const SIDEBAR_COLLAPSED_KEY = "grainspro-sidebar-collapsed-v2";
 const SIDEBAR_OPEN_KEY = "grainspro-sidebar-open-sections";
 const SIDEBAR_SCROLL_KEY = "grainspro-sidebar-scroll";
 
@@ -478,11 +492,16 @@ function SidebarBody() {
   const [location, setLocation] = useLocation();
   const [collapsed, setCollapsed] = useState(() => {
     try {
-      return localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === "1";
+      const stored = localStorage.getItem(SIDEBAR_COLLAPSED_KEY);
+      // Default to mini (icons-only) sidebar
+      if (stored === null) return true;
+      return stored === "1";
     } catch {
-      return false;
+      return true;
     }
   });
+  const [hoverExpanded, setHoverExpanded] = useState(false);
+  const isCompact = collapsed && !hoverExpanded;
   const [collapsedFlyout, setCollapsedFlyout] = useState(null);
   const [isReportsOpen, setIsReportsOpen] = useState(() => readOpenSections().has("Reports"));
   const [isMastersOpen, setIsMastersOpen] = useState(() => readOpenSections().has("Masters"));
@@ -589,7 +608,8 @@ function SidebarBody() {
         location.includes("expense-type-masters") ||
         location.includes("labour-management") ||
         location.includes("item-listing") || location.includes("/branches") ||
-        location.includes("/voucher-settings") || location.includes("/margin-settings/brokerage-configuration")) {
+        location.includes("/voucher-settings") || location.includes("/margin-settings/brokerage-configuration") ||
+        location.includes("/margin-settings/item-price-margin") || location.includes("/price-master")) {
       setIsMastersOpen(true);
     }
   }, [location]);
@@ -668,9 +688,12 @@ function SidebarBody() {
     }
   }, [location]);
 
-  // Auto-open Margin Settings dropdown when on any margin-settings page
+  // Auto-open Margin Settings dropdown when on its pages
   useEffect(() => {
-    if (location.includes("margin-settings")) {
+    if (
+      location.includes("/margin-settings/item-price-margin") ||
+      location.includes("/price-master")
+    ) {
       setIsMarginSettingsOpen(true);
     }
   }, [location]);
@@ -793,7 +816,7 @@ function SidebarBody() {
     };
   }, [collapsedFlyout]);
 
-  const showSection = (name, open) => (collapsed ? collapsedFlyout === name : open);
+  const showSection = (name, open) => (isCompact ? collapsedFlyout === name : open);
 
   const openCollapsedSection = (name, event) => {
     const rect = event.currentTarget.getBoundingClientRect();
@@ -883,26 +906,35 @@ function SidebarBody() {
   };
 
   return (
-    <div className={cn(
-      "sidebar-gradient text-white flex-shrink-0 h-screen flex flex-col transition-[width] duration-200 ease-in-out",
-      collapsed
-        ? "w-[4.5rem] min-w-[4.5rem] max-w-[4.5rem] basis-[4.5rem] sidebar-collapsed overflow-hidden"
-        : "w-[16.5rem] min-w-[16.5rem] max-w-[16.5rem] basis-[16.5rem] overflow-x-hidden"
-    )}
-    style={collapsed
-      ? { width: "4.5rem", minWidth: "4.5rem", maxWidth: "4.5rem", flex: "0 0 4.5rem" }
-      : { width: "16.5rem", minWidth: "16.5rem", maxWidth: "16.5rem", flex: "0 0 16.5rem" }
-    }>
-      <div className={cn("border-b border-gray-700 flex-shrink-0", collapsed ? "px-2 py-3" : "px-3 py-3")}>
-        <div className={cn("flex", collapsed ? "flex-col items-center gap-2" : "items-center justify-between")}>
-          <div className={cn("flex items-center", collapsed ? "" : "gap-3 min-w-0")}>
-            <div className={cn("bg-white rounded-full flex-shrink-0 overflow-hidden", collapsed && "h-10 w-10")}>
-              <img src={logo} alt="GrainsPro ERP Logo" className={cn("object-contain", collapsed ? "h-10 w-10" : "h-11 w-auto")} />
+    <div
+      className={cn(
+        "sidebar-gradient text-white flex-shrink-0 h-screen flex flex-col transition-[width] duration-200 ease-in-out z-40",
+        isCompact
+          ? "w-[4.5rem] min-w-[4.5rem] max-w-[4.5rem] basis-[4.5rem] sidebar-collapsed overflow-hidden"
+          : "w-[16.5rem] min-w-[16.5rem] max-w-[16.5rem] basis-[16.5rem] overflow-x-hidden"
+      )}
+      style={isCompact
+        ? { width: "4.5rem", minWidth: "4.5rem", maxWidth: "4.5rem", flex: "0 0 4.5rem" }
+        : { width: "16.5rem", minWidth: "16.5rem", maxWidth: "16.5rem", flex: "0 0 16.5rem" }
+      }
+      onMouseEnter={() => {
+        if (collapsed) setHoverExpanded(true);
+      }}
+      onMouseLeave={() => {
+        setHoverExpanded(false);
+        setCollapsedFlyout(null);
+      }}
+    >
+      <div className={cn("border-b border-[#c9a227]/40 flex-shrink-0", isCompact ? "px-2 py-3" : "px-3 py-3")}>
+        <div className={cn("flex", isCompact ? "flex-col items-center gap-2" : "items-center justify-between")}>
+          <div className={cn("flex items-center", isCompact ? "" : "gap-3 min-w-0")}>
+            <div className={cn("bg-white rounded-full flex-shrink-0 overflow-hidden border border-[#c9a227]/50", isCompact && "h-10 w-10")}>
+              <img src={logo} alt="GrainsPro ERP Logo" className={cn("object-contain", isCompact ? "h-10 w-10" : "h-11 w-auto")} />
             </div>
-            {!collapsed && (
+            {!isCompact && (
               <div className="flex flex-col min-w-0">
                 <h1 className="text-base font-bold text-white leading-none whitespace-nowrap">GrainsPro ERP</h1>
-                <p className="text-gray-300 text-[10px] leading-none mt-1 whitespace-nowrap">Enterprise Resource Planning</p>
+                <p className="text-neutral-400 text-[10px] leading-none mt-1 whitespace-nowrap">Enterprise Resource Planning</p>
               </div>
             )}
           </div>
@@ -910,13 +942,14 @@ function SidebarBody() {
             type="button"
             onClick={() => {
               setCollapsedFlyout(null);
+              setHoverExpanded(false);
               setCollapsed((open) => !open);
             }}
-            aria-label={collapsed ? "Show sidebar" : "Hide sidebar"}
-            title={collapsed ? "Show sidebar" : "Hide sidebar"}
-            className="p-1.5 rounded-md text-gray-300 hover:bg-gray-700 hover:text-white"
+            aria-label={collapsed ? "Pin sidebar open" : "Collapse sidebar"}
+            title={collapsed ? "Pin sidebar open" : "Collapse to icons"}
+            className="p-1.5 rounded-md text-neutral-300 hover:bg-zinc-900 hover:text-white border border-transparent hover:border-[#c9a227]/50"
           >
-            {collapsed ? <PanelLeftOpen className="h-5 w-5" /> : <PanelLeftClose className="h-5 w-5" />}
+            {isCompact ? <PanelLeftOpen className="h-5 w-5" /> : <PanelLeftClose className="h-5 w-5" />}
           </button>
         </div>
       </div>
@@ -942,11 +975,17 @@ function SidebarBody() {
             
             (item.name === "Purchase" && (location.includes("purchaseorders-reports") || location.includes("purchase-register") || location.includes("add-purchase-order") || location.includes("purchase-return-reports") || location.includes("add-purchase-return"))) ||
             (item.name === "Reports" && location.startsWith("/reports") && !location.includes("inward-list") && !location.includes("purchaseorders-reports") && !location.includes("sales-order-list") && !location.includes("sales-register") && !location.includes("sales-return-reports") && !location.includes("expense-list") && !location.includes("customer-analysis") && !location.includes("outstanding-reports")) ||
-            (item.name === "Masters" && (["/branches","/godown-masters","/stock-masters","/broker-masters","/item-masters","/all-item-mapping","/gst-masters","/lab-test-params","/machine-params","/voucher-settings","/margin-settings/brokerage-configuration","/labour-management"].includes(location) || location.includes("/labour-management"))) ||
+            (item.name === "Masters" && (
+              ["/branches","/godown-masters","/stock-masters","/broker-masters","/item-masters","/all-item-mapping","/gst-masters","/lab-test-params","/machine-params","/voucher-settings","/margin-settings/brokerage-configuration","/labour-management","/item-listing"].includes(location) ||
+              location.includes("/labour-management")
+            )) ||
             (item.name === "Ledger Management" && isLedgerManagementPath(location)) ||
             (item.name === "Route Management" && (location.startsWith("/route-management") || location.startsWith("/route-assignment") || location.startsWith("/route-activity") || location.startsWith("/route-activities"))) ||
             (item.name === "Logistics" && (location.includes("/logistics/") || location.includes("/logistics-management"))) ||
-            (item.name === "Margin Settings" && location.startsWith("/margin-settings") && location !== "/margin-settings/brokerage-configuration") ||
+            (item.name === "Margin Settings" && (
+              location.includes("/margin-settings/item-price-margin") ||
+              location.includes("/price-master")
+            )) ||
             (item.name === "Recent Activity" && location === "/recent-activity") ||
             (item.name === "Stock Auditing" && location === "/stock-auditing") ||
             (item.name === "Notification Settings" && location === "/notification-settings") ||
@@ -1061,7 +1100,7 @@ function SidebarBody() {
               return null;
             }
           } else if (item.name === "Margin Settings") {
-            if (!hasPermission("margin_settings", "read")) {
+            if (getMarginSettingsSubMenus(hasPermission).length === 0) {
               return null;
             }
           } else if (item.name === "Recent Activity") {
@@ -1085,10 +1124,10 @@ function SidebarBody() {
 
           return (
             <div key={index} data-sidebar-section={isDropdownItem ? item.name : undefined}>
-              {item.separator && <div className="border-t border-gray-700 mt-4" />}
+              {item.separator && <div className="border-t border-[#c9a227]/25 mt-4" />}
               {isDropdownItem ? (
-                // Hide Margin Settings dropdown button when user only has brokerage (no margin_settings); Brokerage link shows below
-                (item.name === "Margin Settings" && !hasPermission("margin_settings", "read")) ? null : (
+                // Hide Margin Settings when user has none of its submenu permissions
+                (item.name === "Margin Settings" && getMarginSettingsSubMenus(hasPermission).length === 0) ? null : (
                 <>
                 <button
                   type="button"
@@ -1096,7 +1135,7 @@ function SidebarBody() {
                   data-sidebar-item-active={isActive ? "true" : undefined}
                   title={itemLabel}
                   onClick={(event) => {
-                    if (collapsed) {
+                    if (isCompact) {
                       openCollapsedSection(item.name, event);
                       return;
                     }
@@ -1104,8 +1143,8 @@ function SidebarBody() {
                   }}
                   className={cn(
                     "w-full flex items-center justify-between px-6 py-3 transition-all text-left",
-                    item.name === "Log out" ? "text-white hover:bg-gray-700 hover:text-white" : "text-gray-300 hover:bg-gray-700 hover:text-white",
-                    isActive && "border-r-4 border-white bg-gray-700 text-white"
+                    item.name === "Log out" ? "text-white hover:bg-zinc-900 hover:text-white" : "text-neutral-300 hover:bg-zinc-900 hover:text-white",
+                    isActive && "border-l-4 border-[#c9a227] bg-zinc-900 text-white"
                   )}
                 >
                   <div className="flex items-center">
@@ -1124,7 +1163,7 @@ function SidebarBody() {
                 </button>
 
                 {item.name === "Sales" && showSection("Sales", isSalesOpen) && (
-                  <div className="sidebar-submenu bg-gray-800 border-l-4 border-gray-600 ml-0">
+                  <div className="sidebar-submenu bg-zinc-950 border-l-4 border-[#c9a227]/40 ml-0">
                     {getSalesSubMenus(hasPermission).map((subItem, subIndex) => {
                       const SubIcon = subItem.icon;
                       const isSubActive = location === subItem.path || location.includes(subItem.path) ||
@@ -1138,8 +1177,8 @@ function SidebarBody() {
                           data-sidebar-sub-active={isSubActive ? "true" : undefined}
                           className={cn(
                             "w-full flex items-center px-6 py-2 text-left transition-all",
-                            "text-gray-300 hover:bg-gray-700 hover:text-white",
-                            isSubActive && "sidebar-link-active bg-gray-700 text-white border-r-4 border-gray-300"
+                            "text-gray-300 hover:bg-zinc-900 hover:text-white",
+                            isSubActive && "sidebar-link-active bg-zinc-900 text-white border-l-4 border-[#c9a227]/70"
                           )}
                           style={{ display: "flex", alignItems: "center" }}
                         >
@@ -1168,8 +1207,8 @@ function SidebarBody() {
                   }}
                   className={cn(
                     "w-full flex items-center justify-between px-6 py-3 transition-all text-left block",
-                    item.name === "Log out" ? "text-white hover:bg-gray-700 hover:text-white" : "text-gray-300 hover:bg-gray-700 hover:text-white",
-                    isActive && "border-r-4 border-white bg-gray-700 text-white"
+                    item.name === "Log out" ? "text-white hover:bg-zinc-900 hover:text-white" : "text-neutral-300 hover:bg-zinc-900 hover:text-white",
+                    isActive && "border-l-4 border-[#c9a227] bg-zinc-900 text-white"
                   )}
                 >
                   <div className="flex items-center">
@@ -1182,7 +1221,7 @@ function SidebarBody() {
               )}
 
               {item.name === "Inward" && showSection("Inward", isInwardOpen) && (
-                <div className="sidebar-submenu bg-gray-800 border-l-4 border-gray-600 ml-0">
+                <div className="sidebar-submenu bg-zinc-950 border-l-4 border-[#c9a227]/40 ml-0">
                   {getInwardSubMenus().map((subItem) => {
                     const SubIcon = subItem.icon;
                     const isSubActive =
@@ -1200,8 +1239,8 @@ function SidebarBody() {
                         data-sidebar-sub-active={isSubActive ? "true" : undefined}
                         className={cn(
                           "w-full flex items-center px-6 py-2 text-left transition-all",
-                          "text-gray-300 hover:bg-gray-700 hover:text-white",
-                          isSubActive && "sidebar-link-active bg-gray-700 text-white border-r-4 border-gray-300"
+                          "text-gray-300 hover:bg-zinc-900 hover:text-white",
+                          isSubActive && "sidebar-link-active bg-zinc-900 text-white border-l-4 border-[#c9a227]/70"
                         )}
                         style={{ display: "flex", alignItems: "center" }}
                       >
@@ -1227,7 +1266,7 @@ function SidebarBody() {
                 }
                 
                 return (
-                  <div className="sidebar-submenu bg-gray-800 border-l-4 border-gray-600 ml-0">
+                  <div className="sidebar-submenu bg-zinc-950 border-l-4 border-[#c9a227]/40 ml-0">
                     {allReportSubMenus.map((subItem, subIndex) => {
                       const SubIcon = subItem.icon;
                     // Match exact path or if location includes the report page name
@@ -1242,8 +1281,8 @@ function SidebarBody() {
                             onClick={() => handleNavigation(subItem.path, "Production")}
                             className={cn(
                               "w-full flex items-center justify-between px-6 py-2 text-left transition-all",
-                              "text-gray-300 hover:bg-gray-700 hover:text-white",
-                              isSubActive && "sidebar-link-active bg-gray-700 text-white border-r-4 border-gray-300"
+                              "text-gray-300 hover:bg-zinc-900 hover:text-white",
+                              isSubActive && "sidebar-link-active bg-zinc-900 text-white border-l-4 border-[#c9a227]/70"
                             )}
                           >
                             <div className="flex items-center">
@@ -1274,8 +1313,8 @@ function SidebarBody() {
                                     onClick={() => setLocation(`/reports/production-report?voucher_type_id=${vt.id}`)}
                                     className={cn(
                                       "w-full flex items-center px-10 py-2 text-left transition-all",
-                                      "text-gray-300 hover:bg-gray-700 hover:text-white",
-                                      isVtActive && "bg-gray-700 text-white border-r-4 border-gray-300"
+                                      "text-gray-300 hover:bg-zinc-900 hover:text-white",
+                                      isVtActive && "bg-gray-700 text-white border-l-4 border-[#c9a227]/70"
                                     )}
                                   >
                                     <span className="text-sm truncate">{vt.name}</span>
@@ -1295,8 +1334,8 @@ function SidebarBody() {
                         data-sidebar-sub-active={isSubActive ? "true" : undefined}
                         className={cn(
                           "w-full flex items-center px-6 py-2 text-left transition-all block",
-                          "text-gray-300 hover:bg-gray-700 hover:text-white",
-                          isSubActive && "sidebar-link-active bg-gray-700 text-white border-r-4 border-gray-300"
+                          "text-gray-300 hover:bg-zinc-900 hover:text-white",
+                          isSubActive && "sidebar-link-active bg-zinc-900 text-white border-l-4 border-[#c9a227]/70"
                         )}
                         style={{ display: 'flex', alignItems: 'center' }}
                       >
@@ -1311,7 +1350,7 @@ function SidebarBody() {
 
                 {/* Receipt Submenu */}
                 {item.name === "Receipt" && showSection("Receipt", isReceiptOpen) && (
-                  <div className="sidebar-submenu bg-gray-800 border-l-4 border-gray-600 ml-0">
+                  <div className="sidebar-submenu bg-zinc-950 border-l-4 border-[#c9a227]/40 ml-0">
                     {getReceiptSubMenus(hasPermission, isTallyEnabled).map((subItem, subIndex) => {
                       const SubIcon = subItem.icon;
                       const isSubActive =
@@ -1327,8 +1366,8 @@ function SidebarBody() {
                           href={subItem.path}
                           className={cn(
                             "w-full flex items-center px-6 py-2 text-left transition-all block",
-                            "text-gray-300 hover:bg-gray-700 hover:text-white",
-                            isSubActive && "sidebar-link-active bg-gray-700 text-white border-r-4 border-gray-300"
+                            "text-gray-300 hover:bg-zinc-900 hover:text-white",
+                            isSubActive && "sidebar-link-active bg-zinc-900 text-white border-l-4 border-[#c9a227]/70"
                           )}
                           style={{ display: "flex", alignItems: "center" }}
                         >
@@ -1342,7 +1381,7 @@ function SidebarBody() {
 
                 {/* Purchase Submenu */}
               {item.name === "Purchase" && showSection("Purchase", isPurchaseOpen) && (
-                <div className="sidebar-submenu bg-gray-800 border-l-4 border-gray-600 ml-0">
+                <div className="sidebar-submenu bg-zinc-950 border-l-4 border-[#c9a227]/40 ml-0">
                   {getPurchaseSubMenus(hasPermission).map((subItem, subIndex) => {
                     const SubIcon = subItem.icon;
                     const isSubActive = location === subItem.path || location.includes(subItem.path) ||
@@ -1354,8 +1393,8 @@ function SidebarBody() {
                         href={subItem.path}
                         className={cn(
                           "w-full flex items-center px-6 py-2 text-left transition-all block",
-                          "text-gray-300 hover:bg-gray-700 hover:text-white",
-                          isSubActive && "sidebar-link-active bg-gray-700 text-white border-r-4 border-gray-300"
+                          "text-gray-300 hover:bg-zinc-900 hover:text-white",
+                          isSubActive && "sidebar-link-active bg-zinc-900 text-white border-l-4 border-[#c9a227]/70"
                         )}
                         style={{ display: "flex", alignItems: "center" }}
                       >
@@ -1369,7 +1408,7 @@ function SidebarBody() {
 
               {/* Outward Submenu */}
               {item.name === "Outward" && showSection("Outward", isOutwardOpen) && (
-                <div className="sidebar-submenu bg-gray-800 border-l-4 border-gray-600 ml-0">
+                <div className="sidebar-submenu bg-zinc-950 border-l-4 border-[#c9a227]/40 ml-0">
                   {getOutwardSubMenus(hasModuleAccess, hasPermission, isTallyEnabled).map((subItem, subIndex) => {
                     const SubIcon = subItem.icon;
                     // More specific matching to avoid highlighting multiple items
@@ -1393,8 +1432,8 @@ function SidebarBody() {
                         href={subItem.path}
                         className={cn(
                           "w-full flex items-center px-6 py-2 text-left transition-all block",
-                          "text-gray-300 hover:bg-gray-700 hover:text-white",
-                          isSubActive && "sidebar-link-active bg-gray-700 text-white border-r-4 border-gray-300"
+                          "text-gray-300 hover:bg-zinc-900 hover:text-white",
+                          isSubActive && "sidebar-link-active bg-zinc-900 text-white border-l-4 border-[#c9a227]/70"
                         )}
                         style={{ display: 'flex', alignItems: 'center' }}
                       >
@@ -1408,7 +1447,7 @@ function SidebarBody() {
 
               {/* Promotional Submenu — same placement as Outward/Purchase */}
               {item.name === "Promotional" && showSection("Promotional", isPromotionalOpen) && (
-                <div className="sidebar-submenu bg-gray-800 border-l-4 border-gray-600 ml-0">
+                <div className="sidebar-submenu bg-zinc-950 border-l-4 border-[#c9a227]/40 ml-0">
                   {promotionalSubMenus.map((subItem) => {
                     const SubIcon = subItem.icon;
                     const isSubActive =
@@ -1421,8 +1460,8 @@ function SidebarBody() {
                         data-sidebar-sub-active={isSubActive ? "true" : undefined}
                         className={cn(
                           "w-full flex items-center px-6 py-2 text-left transition-all",
-                          "text-gray-300 hover:bg-gray-700 hover:text-white",
-                          isSubActive && "sidebar-link-active bg-gray-700 text-white border-r-4 border-gray-300"
+                          "text-gray-300 hover:bg-zinc-900 hover:text-white",
+                          isSubActive && "sidebar-link-active bg-zinc-900 text-white border-l-4 border-[#c9a227]/70"
                         )}
                         style={{ display: "flex", alignItems: "center" }}
                       >
@@ -1436,7 +1475,7 @@ function SidebarBody() {
 
 
               {item.name === "Ledger Management" && showSection("Ledger Management", isLedgerManagementOpen) && (
-                <div className="sidebar-submenu bg-gray-800 border-l-4 border-gray-600 ml-0">
+                <div className="sidebar-submenu bg-zinc-950 border-l-4 border-[#c9a227]/40 ml-0">
                   {getLedgerManagementSubMenus(hasPermission).map((subItem) => {
                     const SubIcon = subItem.icon || BookOpen;
                     const isSubActive = isLedgerSubMenuActive(location, subItem.path);
@@ -1447,8 +1486,8 @@ function SidebarBody() {
                         data-sidebar-sub-active={isSubActive ? "true" : undefined}
                         className={cn(
                           "w-full flex items-center px-6 py-2 text-left transition-all block",
-                          "text-gray-300 hover:bg-gray-700 hover:text-white",
-                          isSubActive && "sidebar-link-active bg-gray-700 text-white border-r-4 border-gray-300"
+                          "text-gray-300 hover:bg-zinc-900 hover:text-white",
+                          isSubActive && "sidebar-link-active bg-zinc-900 text-white border-l-4 border-[#c9a227]/70"
                         )}
                         style={{ display: "flex", alignItems: "center" }}
                       >
@@ -1462,7 +1501,7 @@ function SidebarBody() {
 
               {/* Masters Submenu */}
               {item.name === "Masters" && showSection("Masters", isMastersOpen) && (
-                <div className="sidebar-submenu bg-gray-800 border-l-4 border-gray-600 ml-0">
+                <div className="sidebar-submenu bg-zinc-950 border-l-4 border-[#c9a227]/40 ml-0">
                   {getMastersSubMenus(hasModuleAccess, hasPermission, isTallyEnabled).map((subItem, subIndex) => {
                     const SubIcon = subItem.icon;
                     // Match exact path or if location includes the master page name
@@ -1479,8 +1518,8 @@ function SidebarBody() {
                         href={subItem.path}
                         className={cn(
                           "w-full flex items-center px-6 py-2 text-left transition-all block",
-                          "text-gray-300 hover:bg-gray-700 hover:text-white",
-                          isSubActive && "sidebar-link-active bg-gray-700 text-white border-r-4 border-gray-300"
+                          "text-gray-300 hover:bg-zinc-900 hover:text-white",
+                          isSubActive && "sidebar-link-active bg-zinc-900 text-white border-l-4 border-[#c9a227]/70"
                         )}
                         style={{ display: 'flex', alignItems: 'center' }}
                       >
@@ -1494,7 +1533,7 @@ function SidebarBody() {
 
               {/* Route Management Submenu */}
               {item.name === "Route Management" && showSection("Route Management", isRouteManagementOpen) && hasPermission("route_management", "read") && (
-                <div className="sidebar-submenu bg-gray-800 border-l-4 border-gray-600 ml-0">
+                <div className="sidebar-submenu bg-zinc-950 border-l-4 border-[#c9a227]/40 ml-0">
                   {routeManagementSubMenus.map((subItem, subIndex) => {
                     const SubIcon = subItem.icon;
                     const isSubActive = location === subItem.path;
@@ -1504,8 +1543,8 @@ function SidebarBody() {
                         href={subItem.path}
                         className={cn(
                           "w-full flex items-center px-6 py-2 text-left transition-all block",
-                          "text-gray-300 hover:bg-gray-700 hover:text-white",
-                          isSubActive && "sidebar-link-active bg-gray-700 text-white border-r-4 border-gray-300"
+                          "text-gray-300 hover:bg-zinc-900 hover:text-white",
+                          isSubActive && "sidebar-link-active bg-zinc-900 text-white border-l-4 border-[#c9a227]/70"
                         )}
                         style={{ display: 'flex', alignItems: 'center' }}
                       >
@@ -1519,7 +1558,7 @@ function SidebarBody() {
 
               {/* Logistics Submenu */}
               {item.name === "Logistics" && showSection("Logistics", isLogisticsOpen) && hasPermission("logistics_management", "read") && (
-                <div className="sidebar-submenu bg-gray-800 border-l-4 border-gray-600 ml-0">
+                <div className="sidebar-submenu bg-zinc-950 border-l-4 border-[#c9a227]/40 ml-0">
                   {logisticsSubMenus.map((subItem, subIndex) => {
                     const SubIcon = subItem.icon;
                     const isSubActive = location === subItem.path;
@@ -1529,8 +1568,8 @@ function SidebarBody() {
                         href={subItem.path}
                         className={cn(
                           "w-full flex items-center px-6 py-2 text-left transition-all block",
-                          "text-gray-300 hover:bg-gray-700 hover:text-white",
-                          isSubActive && "sidebar-link-active bg-gray-700 text-white border-r-4 border-gray-300"
+                          "text-gray-300 hover:bg-zinc-900 hover:text-white",
+                          isSubActive && "sidebar-link-active bg-zinc-900 text-white border-l-4 border-[#c9a227]/70"
                         )}
                         style={{ display: "flex", alignItems: "center" }}
                       >
@@ -1542,20 +1581,22 @@ function SidebarBody() {
                 </div>
               )}
 
-              {/* Margin Settings Submenu - only Business Types, Credit Types, etc. (no Brokerage here) */}
-              {item.name === "Margin Settings" && showSection("Margin Settings", isMarginSettingsOpen) && hasPermission("margin_settings", "read") && (
-                <div className="sidebar-submenu bg-gray-800 border-l-4 border-gray-600 ml-0">
-                  {marginSettingsSubMenus.map((subItem, subIndex) => {
+              {/* Margin Settings Submenu */}
+              {item.name === "Margin Settings" && showSection("Margin Settings", isMarginSettingsOpen) && (
+                <div className="sidebar-submenu bg-zinc-950 border-l-4 border-[#c9a227]/40 ml-0">
+                  {getMarginSettingsSubMenus(hasPermission).map((subItem, subIndex) => {
                     const SubIcon = subItem.icon;
-                    const isSubActive = location === subItem.path || location.includes(subItem.path);
+                    const isSubActive =
+                      location === subItem.path ||
+                      (subItem.path !== "/" && location.includes(subItem.path));
                     return (
                       <RouteLink
                         key={subIndex}
                         href={subItem.path}
                         className={cn(
                           "w-full flex items-center px-6 py-2 text-left transition-all block",
-                          "text-gray-300 hover:bg-gray-700 hover:text-white",
-                          isSubActive && "sidebar-link-active bg-gray-700 text-white border-r-4 border-gray-300"
+                          "text-gray-300 hover:bg-zinc-900 hover:text-white",
+                          isSubActive && "sidebar-link-active bg-zinc-900 text-white border-l-4 border-[#c9a227]/70"
                         )}
                         style={{ display: 'flex', alignItems: 'center' }}
                       >
@@ -1572,17 +1613,17 @@ function SidebarBody() {
         })}
       </nav>
       
-      {!collapsed && (
-      <div className="border-t border-gray-700 p-2 flex-shrink-0">
+      {!isCompact && (
+      <div className="border-t border-[#c9a227]/35 p-2 flex-shrink-0">
         <div className="text-center">
-          <div className="text-xs text-gray-400">
+          <div className="text-xs text-neutral-500">
             <span>© 2026 All rights reserved</span>
             <span className="mx-1">•</span>
             <a 
               href="https://www.wbtechindia.com/" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="font-medium text-gray-300 hover:text-white transition-colors duration-200"
+              className="font-medium text-neutral-300 hover:text-[#c9a227] transition-colors duration-200"
             >
               MWB Technologies India Pvt Ltd
             </a>

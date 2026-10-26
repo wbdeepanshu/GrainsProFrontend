@@ -521,6 +521,7 @@ export default function SalesOrderList() {
       const response = await apiRequest('POST', `${API_BASE_URL}/api/growth/so-items-list/`, {
         customer_id: customerId,
         stock_item_id: stockItemId,
+        include_zero_selling_stock: true,
       });
       const data = await response.json();
       if (data.status === 200 && data.data?.stock_items?.length > 0) {

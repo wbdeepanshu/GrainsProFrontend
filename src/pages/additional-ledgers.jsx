@@ -381,7 +381,13 @@ export default function AdditionalLedgers() {
     return (religionsData || []).filter((item) => (item.religion || "").trim());
   }, [religionsData]);
 
-  const { data: responseData, isLoading, refetch } = useQuery({
+  const {
+    data: responseData,
+    isLoading,
+    isError,
+    error: loadError,
+    refetch,
+  } = useQuery({
     queryKey: [
       "additional-ledgers",
       debouncedSearch,
@@ -613,13 +619,13 @@ export default function AdditionalLedgers() {
   };
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-neutral-100">
       {!isMobile && <Sidebar />}
       <MobileSidebar isOpen={isMobileSidebarOpen} onClose={() => setIsMobileSidebarOpen(false)} />
 
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        <header className="bg-white border-b px-4 py-3 flex items-center justify-between gap-3 shrink-0">
-          <div className="flex items-center gap-3 min-w-0">
+        <header className="bg-white border-b border-[#c9a227]/55 px-3 py-2 flex items-center justify-between gap-3 shrink-0">
+          <div className="flex items-center gap-2 min-w-0">
             {isMobile && (
               <Button
                 variant="ghost"
@@ -631,24 +637,26 @@ export default function AdditionalLedgers() {
               </Button>
             )}
             <div className="flex items-center gap-2 min-w-0">
-              <Layers className="h-5 w-5 text-slate-700 shrink-0" />
-              <h1 className="text-lg font-semibold truncate">Additional Ledgers</h1>
+              <div className="h-7 w-7 rounded-md bg-black text-white border border-[#c9a227]/60 flex items-center justify-center shrink-0">
+                <Layers className="h-3.5 w-3.5" />
+              </div>
+              <h1 className="text-base font-semibold text-black truncate">Additional Ledgers</h1>
             </div>
           </div>
         </header>
 
-        <main className="flex-1 overflow-auto p-4 sm:p-6">
-          <div className="max-w-[1400px] mx-auto space-y-3">
-            <Card>
-              <CardContent className="py-2.5 px-3">
-                <div className="flex flex-nowrap items-center gap-2 overflow-x-auto">
-                  <div className="relative flex-1 min-w-[180px]">
-                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 w-3.5 h-3.5" />
+        <main className="flex-1 overflow-auto p-2.5 sm:p-3">
+          <div className="max-w-[1400px] mx-auto space-y-2">
+            <Card className="border border-[#c9a227]/45 shadow-sm">
+              <CardContent className="py-2 px-2.5">
+                <div className="flex flex-nowrap items-center gap-1.5 overflow-x-auto">
+                  <div className="relative flex-1 min-w-[160px]">
+                    <Search className="absolute left-2 top-1/2 -translate-y-1/2 text-neutral-400 w-3.5 h-3.5" />
                     <Input
                       placeholder="Search ledgers..."
                       value={searchInput}
                       onChange={(e) => setSearchInput(e.target.value)}
-                      className="pl-8 h-8 text-sm"
+                      className="pl-7 h-8 text-sm border-[#c9a227]/40"
                     />
                   </div>
 
@@ -660,7 +668,7 @@ export default function AdditionalLedgers() {
                         setCurrentPage(1);
                       }}
                     >
-                      <SelectTrigger className="h-8 w-[130px] shrink-0 text-sm">
+                      <SelectTrigger className="h-8 w-[120px] shrink-0 text-sm border-[#c9a227]/40">
                         <SelectValue placeholder="Tally Sync" />
                       </SelectTrigger>
                       <SelectContent>
@@ -675,7 +683,7 @@ export default function AdditionalLedgers() {
                     value={selectedPendingField || "all"}
                     onValueChange={handlePendingFieldSelect}
                   >
-                    <SelectTrigger className="h-8 w-[160px] shrink-0 text-sm">
+                    <SelectTrigger className="h-8 w-[150px] shrink-0 text-sm border-[#c9a227]/40">
                       <SelectValue placeholder="Pending field" />
                     </SelectTrigger>
                     <SelectContent>
@@ -693,12 +701,12 @@ export default function AdditionalLedgers() {
                     type="button"
                     variant="outline"
                     onClick={openMoreFilters}
-                    className="h-8 shrink-0 border-gray-300 px-2.5"
+                    className="h-8 shrink-0 border-[#c9a227]/55 px-2 text-black hover:bg-neutral-50"
                   >
-                    <SlidersHorizontal className="h-3.5 w-3.5 mr-1.5" />
+                    <SlidersHorizontal className="h-3.5 w-3.5 mr-1" />
                     More filters
                     {moreFiltersActiveCount > 0 && (
-                      <Badge className="ml-1.5 h-5 min-w-5 px-1 text-[10px]">
+                      <Badge className="ml-1 h-5 min-w-5 px-1 text-[10px] bg-black text-white border-[#c9a227]">
                         {moreFiltersActiveCount}
                       </Badge>
                     )}
@@ -710,21 +718,21 @@ export default function AdditionalLedgers() {
                     onClick={clearAllFilters}
                     title="Clear filters"
                     aria-label="Clear filters"
-                    className="h-8 w-8 p-0 shrink-0 text-muted-foreground hover:text-red-600"
+                    className="h-8 w-8 p-0 shrink-0 text-neutral-500 hover:text-black"
                   >
                     <FilterX className="h-4 w-4" />
                   </Button>
                 </div>
 
                 {profileSummary && (
-                  <div className="mt-2.5 pt-2.5 border-t border-gray-100">
-                    <div className="flex items-center justify-between gap-2 flex-wrap mb-1.5">
-                      <span className="text-xs font-medium text-gray-600">Profile pending summary</span>
-                      <span className="text-[11px] text-gray-500">
+                  <div className="mt-2 pt-2 border-t border-[#c9a227]/25">
+                    <div className="flex items-center justify-between gap-2 flex-wrap mb-1">
+                      <span className="text-[11px] font-medium text-neutral-600">Profile pending summary</span>
+                      <span className="text-[11px] text-neutral-500 tabular-nums">
                         Total ledgers: {profileSummary.total_entries ?? 0}
                       </span>
                     </div>
-                    <div className="flex flex-wrap gap-1.5">
+                    <div className="flex flex-wrap gap-1">
                       {PARTY_PROFILE_PENDING_FIELDS.map((field) => {
                         const count = profileSummary[field.value] ?? 0;
                         const isActive = selectedPendingField === field.value;
@@ -733,10 +741,10 @@ export default function AdditionalLedgers() {
                             key={field.value}
                             type="button"
                             onClick={() => togglePendingFieldFilter(field.value)}
-                            className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium transition-colors ${
+                            className={`inline-flex items-center rounded border px-1.5 py-0.5 text-[10px] font-medium transition-colors ${
                               isActive
-                                ? "border-orange-500 bg-orange-50 text-orange-800"
-                                : "border-gray-200 bg-white text-gray-700 hover:border-orange-300 hover:bg-orange-50/60"
+                                ? "border-[#c9a227] bg-black text-white"
+                                : "border-[#c9a227]/40 bg-white text-neutral-700 hover:border-[#c9a227] hover:bg-neutral-50"
                             }`}
                             title={`Filter ledgers with empty ${field.label}`}
                           >
@@ -844,18 +852,19 @@ export default function AdditionalLedgers() {
               </CardContent>
             </Card>
 
-            <Card>
-              <CardHeader className="py-3">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                  <CardTitle className="text-base">
+            <Card className="border border-[#c9a227]/45 shadow-sm overflow-hidden">
+              <CardHeader className="py-2 px-2.5 border-b border-[#c9a227]/45 bg-white">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                  <CardTitle className="text-sm font-semibold text-black">
                     Additional Ledgers ({pagination.total_count})
                   </CardTitle>
-                  <div className="flex flex-wrap items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-1.5">
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={handleSelectAllLedgersOnPage}
                       disabled={ledgerEntries.length === 0}
+                      className="h-7 text-xs border-[#c9a227]/55 text-black"
                     >
                       Select all (page)
                     </Button>
@@ -864,16 +873,16 @@ export default function AdditionalLedgers() {
                       size="sm"
                       onClick={handleClearLedgerSelection}
                       disabled={selectedLedgerIds.length === 0}
+                      className="h-7 text-xs border-[#c9a227]/55 text-black"
                     >
                       Clear selection
                     </Button>
                     {selectedLedgerIds.length > 0 && (
                       <>
-                        <span className="text-sm text-muted-foreground px-1">
+                        <span className="text-xs text-neutral-600 px-1 tabular-nums">
                           {selectedLedgerIds.length} selected
                         </span>
                         <Button
-                          variant="default"
                           size="sm"
                           onClick={() => {
                             setBulkLedgerType("SUNDRY DEBTORS");
@@ -881,6 +890,7 @@ export default function AdditionalLedgers() {
                             setIsBulkTypeDialogOpen(true);
                           }}
                           disabled={bulkUpdateLedgersTypeMutation.isPending}
+                          className="h-7 text-xs bg-black text-white border border-[#c9a227]/70 hover:bg-neutral-800"
                         >
                           Update type
                         </Button>
@@ -889,12 +899,33 @@ export default function AdditionalLedgers() {
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="px-0 sm:px-2">
-                <div className="overflow-x-auto">
-                  <Table className="min-w-[1000px]">
+              <CardContent className="px-0 sm:px-1.5 py-1.5">
+                {isLoading && (
+                  <div className="flex justify-center py-8">
+                    <Loader2 className="h-6 w-6 animate-spin text-neutral-600" />
+                  </div>
+                )}
+                {isError && !isLoading && (
+                  <div className="text-center py-8 px-3">
+                    <p className="text-sm font-medium text-red-600 mb-1">Failed to load ledgers</p>
+                    <p className="text-xs text-neutral-500 mb-3 break-words">
+                      {loadError?.message || "Unexpected error"}
+                    </p>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => refetch()}
+                      className="h-8 border-[#c9a227] text-black"
+                    >
+                      Try again
+                    </Button>
+                  </div>
+                )}
+                <div className={`overflow-x-auto ${isLoading || isError ? "hidden" : ""}`}>
+                  <Table className="min-w-[960px]">
                     <TableHeader>
-                      <TableRow className="hover:bg-transparent border-b">
-                        <TableHead className="w-10 px-2 py-2">
+                      <TableRow className="hover:bg-black border-b border-[#c9a227]/50 bg-black">
+                        <TableHead className="w-9 px-1.5 py-1.5 bg-black text-white">
                           <Checkbox
                             checked={
                               areAllLedgersOnPageSelected
@@ -913,37 +944,38 @@ export default function AdditionalLedgers() {
                               }
                             }}
                             aria-label="Select all on page"
+                            className="border-white data-[state=checked]:bg-white data-[state=checked]:text-black"
                           />
                         </TableHead>
-                        <TableHead className="px-2 py-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                        <TableHead className="px-1.5 py-1.5 text-[10px] font-semibold uppercase tracking-wide bg-black text-white">
                           Ledger
                         </TableHead>
-                        <TableHead className="px-2 py-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                        <TableHead className="px-1.5 py-1.5 text-[10px] font-semibold uppercase tracking-wide bg-black text-white">
                           Ledger Type
                         </TableHead>
-                        <TableHead className="px-2 py-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                        <TableHead className="px-1.5 py-1.5 text-[10px] font-semibold uppercase tracking-wide bg-black text-white">
+                          Parent
+                        </TableHead>
+                        <TableHead className="px-1.5 py-1.5 text-[10px] font-semibold uppercase tracking-wide bg-black text-white">
                           Account Type
                         </TableHead>
                         {isTallyEnabled && (
-                          <TableHead className="px-2 py-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                          <TableHead className="px-1.5 py-1.5 text-[10px] font-semibold uppercase tracking-wide bg-black text-white">
                             Tally
                           </TableHead>
                         )}
-                        <TableHead className="px-2 py-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                        <TableHead className="px-1.5 py-1.5 text-[10px] font-semibold uppercase tracking-wide bg-black text-white">
                           Status
                         </TableHead>
-                        <TableHead className="px-2 py-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                          Parent
-                        </TableHead>
-                        <TableHead className="px-2 py-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                        <TableHead className="px-1.5 py-1.5 text-[10px] font-semibold uppercase tracking-wide bg-black text-white">
                           Created
                         </TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {ledgerEntries.map((entry) => (
-                        <TableRow key={entry.id} className="hover:bg-muted/40 border-b border-gray-100">
-                          <TableCell className="px-2 py-2 align-middle">
+                        <TableRow key={entry.id} className="hover:bg-neutral-50 border-b border-neutral-100">
+                          <TableCell className="px-1.5 py-1 align-middle">
                             <Checkbox
                               checked={selectedLedgerIds.includes(entry.id)}
                               onCheckedChange={(checked) =>
@@ -952,34 +984,39 @@ export default function AdditionalLedgers() {
                               aria-label={`Select ${entry.name}`}
                             />
                           </TableCell>
-                          <TableCell className="px-2 py-2 align-middle max-w-[220px]">
-                            <p className="text-sm font-semibold truncate leading-tight">
+                          <TableCell className="px-1.5 py-1 align-middle max-w-[220px]">
+                            <p className="text-xs font-semibold text-black truncate leading-tight">
                               {entry.name || "—"}
                             </p>
-                            <p className="text-[11px] text-muted-foreground truncate leading-tight mt-0.5">
+                            <p className="text-[10px] text-neutral-500 truncate leading-tight mt-0.5">
                               {entry.branch_name || "—"}
                             </p>
                           </TableCell>
-                          <TableCell className="px-2 py-2 align-middle">
+                          <TableCell className="px-1.5 py-1 align-middle">
                             <Badge
                               variant="outline"
-                              className="w-fit text-[10px] px-1.5 py-0 h-5 font-medium gap-0.5"
+                              className="w-fit text-[10px] px-1.5 py-0 h-5 font-medium gap-0.5 border-black text-black bg-white"
                             >
                               <User className="h-2.5 w-2.5" />
                               {formatLedgerTypeLabel(entry.ledger_type, entry.is_supplier)}
                             </Badge>
                           </TableCell>
-                          <TableCell className="px-2 py-2 align-middle text-xs">
+                          <TableCell className="px-1.5 py-1 align-middle text-xs max-w-[160px]">
+                            <span className="truncate block text-black" title={entry.parent || ""}>
+                              {entry.parent || "—"}
+                            </span>
+                          </TableCell>
+                          <TableCell className="px-1.5 py-1 align-middle text-xs text-black">
                             {formatAccountTypeLabel(entry.account_type)}
                           </TableCell>
                           {isTallyEnabled && (
-                            <TableCell className="px-2 py-2 align-middle">
+                            <TableCell className="px-1.5 py-1 align-middle">
                               <Badge
                                 variant="outline"
                                 className={`w-fit text-[10px] px-1.5 py-0 h-5 gap-0.5 ${
                                   entry.is_tally_sync
-                                    ? "border-emerald-300 text-emerald-700 bg-emerald-50"
-                                    : "border-amber-300 text-amber-700 bg-amber-50"
+                                    ? "border-emerald-500 text-emerald-700 bg-emerald-50"
+                                    : "border-red-400 text-red-700 bg-red-50"
                                 }`}
                               >
                                 {entry.is_tally_sync ? (
@@ -996,29 +1033,22 @@ export default function AdditionalLedgers() {
                               </Badge>
                             </TableCell>
                           )}
-                          <TableCell className="px-2 py-2 align-middle">
+                          <TableCell className="px-1.5 py-1 align-middle">
                             <Badge
                               variant="outline"
-                              className={`w-fit text-[10px] px-1.5 py-0 h-5 gap-0.5 ${
-                                entry.is_active
-                                  ? "border-emerald-300 text-emerald-700 bg-emerald-50"
-                                  : "border-gray-300 text-gray-600 bg-gray-50"
+                              className={`w-fit text-[10px] px-1.5 py-0 h-5 gap-0.5 border-black text-black ${
+                                entry.is_active ? "bg-white" : "bg-neutral-50"
                               }`}
                             >
                               {entry.is_active ? (
-                                <CheckCircle className="h-2.5 w-2.5" />
+                                <CheckCircle className="h-2.5 w-2.5 text-black" />
                               ) : (
-                                <XCircle className="h-2.5 w-2.5" />
+                                <XCircle className="h-2.5 w-2.5 text-black" />
                               )}
                               {entry.is_active ? "Active" : "Inactive"}
                             </Badge>
                           </TableCell>
-                          <TableCell className="px-2 py-2 align-middle text-xs max-w-[160px]">
-                            <span className="truncate block" title={entry.parent || ""}>
-                              {entry.parent || "—"}
-                            </span>
-                          </TableCell>
-                          <TableCell className="px-2 py-2 align-middle text-xs text-muted-foreground whitespace-nowrap">
+                          <TableCell className="px-1.5 py-1 align-middle text-[11px] text-neutral-500 whitespace-nowrap tabular-nums">
                             {entry.created_at || "—"}
                           </TableCell>
                         </TableRow>
@@ -1026,10 +1056,10 @@ export default function AdditionalLedgers() {
                     </TableBody>
                   </Table>
 
-                  {ledgerEntries.length === 0 && !isLoading && (
-                    <div className="text-center py-10 text-gray-500">
-                      <Layers className="w-10 h-10 mx-auto mb-3 text-gray-300" />
-                      <p>No additional ledgers found matching your criteria.</p>
+                  {ledgerEntries.length === 0 && !isLoading && !isError && (
+                    <div className="text-center py-8 text-neutral-500">
+                      <Layers className="w-8 h-8 mx-auto mb-2 text-neutral-300" />
+                      <p className="text-sm">No additional ledgers found matching your criteria.</p>
                     </div>
                   )}
                 </div>

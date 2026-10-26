@@ -1584,7 +1584,7 @@ export default function ItemMasters() {
                     size="sm"
                     variant="outline"
                     onClick={() => setIsStockGroupDialogOpen(true)}
-                    className="h-9"
+                    className="h-8"
                     title="Stock Group"
                   >
                     <Building2 className="h-4 w-4" />
@@ -1593,7 +1593,7 @@ export default function ItemMasters() {
                     size="sm"
                     variant="outline"
                     onClick={() => setIsStockCategoryDialogOpen(true)}
-                    className="h-9"
+                    className="h-8"
                     title="Stock Category"
                   >
                     <Layers className="h-4 w-4" />
@@ -1604,7 +1604,7 @@ export default function ItemMasters() {
                 <Button
                   size="sm"
                   onClick={() => setIsCreateItemDialogOpen(true)}
-                  className="h-9"
+                  className="h-8"
                 >
                   <Plus className="h-4 w-4" />
                 </Button>
@@ -1631,62 +1631,64 @@ export default function ItemMasters() {
           </div>
         )}
 
-        <div className="flex-1 min-h-0 overflow-auto p-2.5 sm:p-3">
-          <div className="mb-3">
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-lg font-bold text-gray-900 dark:text-white">Item Masters</h1>
-                <p className="text-gray-600 dark:text-gray-400 mt-0.5 text-sm">
-                  Manage and view all stock item information
-                </p>
+        <div className="flex-1 min-h-0 overflow-auto p-2 sm:p-2.5">
+          <div className="mb-2">
+            <div className="flex items-center justify-between gap-2">
+              <div className="min-w-0">
+                <h1 className="text-base font-bold text-gray-900 dark:text-white">Item Masters</h1>
               </div>
               {!isMobile && (
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center gap-1.5 shrink-0">
                   {canCreateStockGroupOrCategory && (
                     <>
                       <Button
                         variant="outline"
+                        size="sm"
                         onClick={() => setIsStockGroupDialogOpen(true)}
-                        className="flex items-center space-x-2"
+                        className="h-8 text-xs flex items-center gap-1.5"
                       >
-                        <Building2 className="h-4 w-4" />
+                        <Building2 className="h-3.5 w-3.5" />
                         <span>Stock Group</span>
                       </Button>
                       <Button
                         variant="outline"
+                        size="sm"
                         onClick={() => setIsStockCategoryDialogOpen(true)}
-                        className="flex items-center space-x-2"
+                        className="h-8 text-xs flex items-center gap-1.5"
                       >
-                        <Layers className="h-4 w-4" />
+                        <Layers className="h-3.5 w-3.5" />
                         <span>Stock Category</span>
                       </Button>
                     </>
                   )}
                   {canCreateManualItem && (
                     <Button
+                      size="sm"
                       onClick={() => setIsCreateItemDialogOpen(true)}
-                      className="flex items-center space-x-2"
+                      className="h-8 text-xs flex items-center gap-1.5"
                     >
-                      <Plus className="h-4 w-4" />
+                      <Plus className="h-3.5 w-3.5" />
                       <span>Create Item</span>
                     </Button>
                   )}
                   <Button
                     variant="outline"
+                    size="sm"
                     onClick={handleRefresh}
                     disabled={isFetching}
-                    className="flex items-center space-x-2"
+                    className="h-8 text-xs flex items-center gap-1.5"
                   >
-                    <RefreshCw className={`h-4 w-4 ${isFetching ? 'animate-spin' : ''}`} />
+                    <RefreshCw className={`h-3.5 w-3.5 ${isFetching ? 'animate-spin' : ''}`} />
                     <span>Refresh</span>
                   </Button>
                   <Button
                     variant="outline"
+                    size="sm"
                     onClick={() => setLocation("/all-item-mapping")}
-                    className="flex items-center space-x-2"
+                    className="h-8 text-xs flex items-center gap-1.5"
                     title="Item Mapping"
                   >
-                    <Settings className="h-4 w-4" />
+                    <Settings className="h-3.5 w-3.5" />
                     <span>Item Mapping</span>
                   </Button>
                 </div>
@@ -1695,22 +1697,22 @@ export default function ItemMasters() {
           </div>
 
           {/* Filters Section */}
-          <Card className="mb-3">
-            <CardContent className="p-3">
-              <div className="flex flex-col gap-2 lg:flex-row lg:items-end">
+          <Card className="mb-2">
+            <CardContent className="p-2">
+              <div className="flex flex-col gap-1.5 lg:flex-row lg:items-end">
                 {/* Search */}
-                <div className="space-y-1 flex-1 min-w-0">
-                  <label className="text-xs font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
-                    <Search className="h-3.5 w-3.5 text-gray-600" />
+                <div className="space-y-0.5 flex-1 min-w-0">
+                  <label className="text-[11px] font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1">
+                    <Search className="h-3 w-3 text-gray-600" />
                     Search Items
                   </label>
                   <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-3.5 w-3.5" />
+                    <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-gray-400 h-3.5 w-3.5" />
                     <Input
                       placeholder="Search by name, group, category..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-9 pr-8 h-9 w-full"
+                      className="pl-8 pr-7 h-8 text-sm w-full"
                     />
                     {searchTerm && (
                       <button
@@ -1734,7 +1736,7 @@ export default function ItemMasters() {
                     value={selectedItemGrouping || "all"}
                     onValueChange={(value) => setSelectedItemGrouping(value === "all" ? "" : value)}
                   >
-                    <SelectTrigger className="h-9">
+                    <SelectTrigger className="h-8 text-sm">
                       <SelectValue placeholder="Select item grouping" />
                     </SelectTrigger>
                     <SelectContent>
@@ -1755,7 +1757,7 @@ export default function ItemMasters() {
                     Status
                   </label>
                   <Select value={activeStatusFilter} onValueChange={setActiveStatusFilter}>
-                    <SelectTrigger className="h-9">
+                    <SelectTrigger className="h-8 text-sm">
                       <SelectValue placeholder="Select status" />
                     </SelectTrigger>
                     <SelectContent>
@@ -1773,7 +1775,7 @@ export default function ItemMasters() {
                     Stock
                   </label>
                   <Select value={inStockFilter} onValueChange={setInStockFilter}>
-                    <SelectTrigger className="h-9">
+                    <SelectTrigger className="h-8 text-sm">
                       <SelectValue placeholder="Select stock filter" />
                     </SelectTrigger>
                     <SelectContent>
@@ -1787,7 +1789,7 @@ export default function ItemMasters() {
                   type="button"
                   variant="outline"
                   size="icon"
-                  className="h-9 w-9 shrink-0"
+                  className="h-8 w-8 shrink-0"
                   onClick={clearAllFilters}
                   title="Clear filters"
                   aria-label="Clear filters"
@@ -1800,13 +1802,13 @@ export default function ItemMasters() {
 
           {/* Items Table */}
           <Card>
-            <CardHeader className="py-2.5 px-3">
-              <CardTitle className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between text-base">
-                <div className="flex items-center space-x-2">
+            <CardHeader className="py-2 px-3">
+              <CardTitle className="flex flex-col gap-1.5 md:flex-row md:items-center md:justify-between text-sm">
+                <div className="flex items-center gap-1.5">
                   <Package className="h-4 w-4" />
                   <span>Item List</span>
                 </div>
-                <div className="flex flex-wrap items-center gap-2 text-sm font-normal text-gray-500 dark:text-gray-400">
+                <div className="flex flex-wrap items-center gap-1.5 text-xs font-normal text-gray-500 dark:text-gray-400">
                   {selectedGodownFilter?.name && (
                     <Badge variant="secondary" className="font-normal">
                       Godown: {selectedGodownFilter.name}
@@ -1839,13 +1841,13 @@ export default function ItemMasters() {
                 </div>
               </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="px-3 pb-3 pt-0">
               {showGodownWiseView && (
-                <div className="mb-4 rounded-lg border bg-slate-50/60 p-4 dark:bg-slate-900/30">
-                  <div className="mb-3 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                <div className="mb-2 rounded-md border bg-slate-50/60 p-2 dark:bg-slate-900/30">
+                  <div className="mb-1.5 flex flex-col gap-1 md:flex-row md:items-center md:justify-between">
                     <div>
-                      <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">Select Godown</p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                      <p className="text-xs font-semibold text-gray-900 dark:text-gray-100">Select Godown</p>
+                      <p className="text-[11px] text-gray-500 dark:text-gray-400">
                         Choose a godown to load item balances for that godown only.
                       </p>
                     </div>
@@ -1864,14 +1866,14 @@ export default function ItemMasters() {
                   </div>
 
                   {availableGodowns.length > 0 ? (
-                    <div className="grid max-h-80 grid-cols-1 gap-3 overflow-auto pr-1 md:grid-cols-2 xl:grid-cols-3">
+                    <div className="grid max-h-56 grid-cols-1 gap-1.5 overflow-auto pr-1 md:grid-cols-2 xl:grid-cols-3">
                       <button
                         type="button"
                         onClick={() => {
                           setSelectedGodownFilter(null);
                           setCurrentPage(1);
                         }}
-                        className={`rounded-lg border p-4 text-left transition-colors ${
+                        className={`rounded-md border px-2.5 py-2 text-left transition-colors ${
                           !selectedGodownFilter
                             ? "border-blue-500 bg-blue-50 shadow-sm dark:border-blue-400 dark:bg-blue-950/40"
                             : "border-gray-200 bg-white hover:border-blue-300 hover:bg-blue-50/40 dark:border-gray-700 dark:bg-gray-900"
@@ -1879,10 +1881,10 @@ export default function ItemMasters() {
                       >
                         <div className="flex items-start justify-between gap-2">
                           <div>
-                            <p className="font-medium text-gray-900 dark:text-gray-100">All Godowns</p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">Show stock items without godown filter</p>
+                            <p className="text-sm font-medium text-gray-900 dark:text-gray-100">All Godowns</p>
+                            <p className="text-[11px] text-gray-500 dark:text-gray-400">Show stock items without godown filter</p>
                           </div>
-                          <Warehouse className="h-4 w-4 text-gray-400" />
+                          <Warehouse className="h-3.5 w-3.5 text-gray-400" />
                         </div>
                       </button>
 
@@ -1896,24 +1898,24 @@ export default function ItemMasters() {
                               setSelectedGodownFilter(godown);
                               setCurrentPage(1);
                             }}
-                            className={`rounded-lg border p-4 text-left transition-colors ${
+                            className={`rounded-md border px-2.5 py-2 text-left transition-colors ${
                               isSelected
                                 ? "border-blue-500 bg-blue-50 shadow-sm dark:border-blue-400 dark:bg-blue-950/40"
                                 : "border-gray-200 bg-white hover:border-blue-300 hover:bg-blue-50/40 dark:border-gray-700 dark:bg-gray-900"
                             }`}
                           >
-                            <div className="flex items-start justify-between gap-3">
+                            <div className="flex items-start justify-between gap-2">
                               <div className="min-w-0">
-                                <p className="truncate font-medium text-gray-900 dark:text-gray-100">{godown.name}</p>
-                                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                <p className="truncate text-sm font-medium text-gray-900 dark:text-gray-100">{godown.name}</p>
+                                <p className="mt-0.5 text-[11px] text-gray-500 dark:text-gray-400">
                                   Branch: {godown.branch || "No branch assigned"}
                                 </p>
                               </div>
-                              <Warehouse className={`h-4 w-4 shrink-0 ${isSelected ? "text-blue-600" : "text-gray-400"}`} />
+                              <Warehouse className={`h-3.5 w-3.5 shrink-0 ${isSelected ? "text-blue-600" : "text-gray-400"}`} />
                             </div>
-                            <div className="mt-3 flex items-center justify-between gap-3 text-sm">
+                            <div className="mt-1.5 flex items-center justify-between gap-2 text-xs">
                               <div>
-                                <p className="text-xs text-gray-500 dark:text-gray-400">Godown Balance</p>
+                                <p className="text-[10px] text-gray-500 dark:text-gray-400">Godown Balance</p>
                                 <p className="font-semibold text-gray-900 dark:text-gray-100">
                                   {formatValue(godown.stock_balance)}
                                 </p>
@@ -1928,7 +1930,7 @@ export default function ItemMasters() {
                       })}
                     </div>
                   ) : (
-                    <div className="rounded-md border border-dashed px-4 py-6 text-sm text-gray-500 dark:border-gray-700 dark:text-gray-400">
+                    <div className="rounded-md border border-dashed px-3 py-3 text-xs text-gray-500 dark:border-gray-700 dark:text-gray-400">
                       No godowns available for this user.
                     </div>
                   )}
@@ -1939,15 +1941,15 @@ export default function ItemMasters() {
                 <>
                   {/* Bulk actions bar when items selected */}
                   {selectedItemIds.length > 0 && (
-                    <div className="flex flex-wrap items-center gap-3 py-3 px-4 mb-4 rounded-lg border bg-muted/50">
-                      <span className="text-sm font-medium">
+                    <div className="flex flex-wrap items-center gap-2 py-1.5 px-2.5 mb-2 rounded-md border bg-muted/50">
+                      <span className="text-xs font-medium">
                         {selectedItemIds.length} selected
                       </span>
-                      <div className="flex gap-2">
+                      <div className="flex gap-1.5">
                         <Button
                           size="sm"
                           variant="outline"
-                          className="text-green-600 hover:text-green-700 hover:bg-green-50 border-green-200"
+                          className="h-7 text-xs text-green-600 hover:text-green-700 hover:bg-green-50 border-green-200"
                           onClick={() =>
                             bulkToggleStatusMutation.mutate({
                               itemIds: selectedItemIds,
@@ -1957,16 +1959,16 @@ export default function ItemMasters() {
                           disabled={bulkToggleStatusMutation.isPending}
                         >
                           {bulkToggleStatusMutation.isPending ? (
-                            <Loader2 className="h-4 w-4 animate-spin mr-1" />
+                            <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" />
                           ) : (
-                            <CheckCircle className="h-4 w-4 mr-1" />
+                            <CheckCircle className="h-3.5 w-3.5 mr-1" />
                           )}
-                          Activate selected
+                          Activate
                         </Button>
                         <Button
                           size="sm"
                           variant="outline"
-                          className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+                          className="h-7 text-xs text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
                           onClick={() =>
                             bulkToggleStatusMutation.mutate({
                               itemIds: selectedItemIds,
@@ -1976,27 +1978,28 @@ export default function ItemMasters() {
                           disabled={bulkToggleStatusMutation.isPending}
                         >
                           {bulkToggleStatusMutation.isPending ? (
-                            <Loader2 className="h-4 w-4 animate-spin mr-1" />
+                            <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" />
                           ) : (
-                            <XCircle className="h-4 w-4 mr-1" />
+                            <XCircle className="h-3.5 w-3.5 mr-1" />
                           )}
-                          Deactivate selected
+                          Deactivate
                         </Button>
                         <Button
                           size="sm"
                           variant="ghost"
+                          className="h-7 text-xs"
                           onClick={() => setSelectedItemIds([])}
                         >
-                          Clear selection
+                          Clear
                         </Button>
                       </div>
                     </div>
                   )}
-                  <div className="w-full max-h-[min(78vh,calc(100vh-11rem))] overflow-auto relative isolate">
-                    <table className="w-full caption-bottom text-sm border-collapse [&_th]:h-9 [&_th]:px-3 [&_th]:py-2 [&_td]:px-3 [&_td]:py-1.5 [&_td]:border-b [&_td]:border-slate-200 dark:[&_td]:border-gray-700">
+                  <div className="w-full max-h-[min(82vh,calc(100vh-9.5rem))] overflow-auto relative isolate">
+                    <table className="w-full caption-bottom text-sm border-collapse">
                       <TableHeader>
                         <TableRow className="border-b border-slate-300 dark:border-gray-600">
-                          <TableHead className="w-10 pr-0 sticky top-0 z-30 bg-gray-50 dark:bg-gray-800 border-b border-slate-300 dark:border-gray-600">
+                          <TableHead className="h-8 w-9 px-2 py-1 pr-0 sticky top-0 z-30 bg-gray-50 dark:bg-gray-800 border-b border-slate-300 dark:border-gray-600">
                             <Checkbox
                               checked={
                                 displayItems.length > 0 &&
@@ -2013,49 +2016,49 @@ export default function ItemMasters() {
                               aria-label="Select all on page"
                             />
                           </TableHead>
-                          <TableHead className="w-12 sticky top-0 z-30 bg-gray-50 dark:bg-gray-800 border-b border-slate-300 dark:border-gray-600">#</TableHead>
+                          <TableHead className="h-8 w-10 px-2 py-1 sticky top-0 z-30 bg-gray-50 dark:bg-gray-800 border-b border-slate-300 dark:border-gray-600">#</TableHead>
                           <TableHead 
-                            className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors sticky top-0 z-30 bg-gray-50 dark:bg-gray-800 border-b border-slate-300 dark:border-gray-600"
+                            className="h-8 px-2 py-1 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors sticky top-0 z-30 bg-gray-50 dark:bg-gray-800 border-b border-slate-300 dark:border-gray-600"
                             onClick={() => handleSort('name')}
                           >
-                            <div className="flex items-center space-x-1">
+                            <div className="flex items-center gap-1">
                               <span>Item Name</span>
-                              <span className="text-xs">{getSortIcon('name')}</span>
+                              <span className="text-[10px]">{getSortIcon('name')}</span>
                             </div>
                             </TableHead>
-                          <TableHead className="sticky top-0 z-30 bg-gray-50 dark:bg-gray-800 border-b border-slate-300 dark:border-gray-600">
+                          <TableHead className="h-8 px-2 py-1 sticky top-0 z-30 bg-gray-50 dark:bg-gray-800 border-b border-slate-300 dark:border-gray-600">
                             APMC Head
                           </TableHead>
                           <TableHead 
-                            className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors sticky top-0 z-30 bg-gray-50 dark:bg-gray-800 border-b border-slate-300 dark:border-gray-600"
+                            className="h-8 px-2 py-1 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors sticky top-0 z-30 bg-gray-50 dark:bg-gray-800 border-b border-slate-300 dark:border-gray-600"
                             onClick={() => handleSort('parent')}
                           >
-                            <div className="flex items-center space-x-1">
+                            <div className="flex items-center gap-1">
                               <span>Group</span>
-                              <span className="text-xs">{getSortIcon('parent')}</span>
+                              <span className="text-[10px]">{getSortIcon('parent')}</span>
                             </div>
                           </TableHead>
                           <TableHead 
-                            className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors sticky top-0 z-30 bg-gray-50 dark:bg-gray-800 border-b border-slate-300 dark:border-gray-600"
+                            className="h-8 px-2 py-1 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors sticky top-0 z-30 bg-gray-50 dark:bg-gray-800 border-b border-slate-300 dark:border-gray-600"
                             onClick={() => handleSort('category')}
                           >
-                            <div className="flex items-center space-x-1">
+                            <div className="flex items-center gap-1">
                               <span>Category</span>
-                              <span className="text-xs">{getSortIcon('category')}</span>
+                              <span className="text-[10px]">{getSortIcon('category')}</span>
                             </div>
                           </TableHead>
-                          <TableHead className="sticky top-0 z-30 bg-gray-50 dark:bg-gray-800 border-b border-slate-300 dark:border-gray-600">Base Unit</TableHead>
-                          <TableHead className="sticky top-0 z-30 bg-gray-50 dark:bg-gray-800 border-b border-slate-300 dark:border-gray-600">Conversion</TableHead>
+                          <TableHead className="h-8 px-2 py-1 sticky top-0 z-30 bg-gray-50 dark:bg-gray-800 border-b border-slate-300 dark:border-gray-600">Base Unit</TableHead>
+                          <TableHead className="h-8 px-2 py-1 sticky top-0 z-30 bg-gray-50 dark:bg-gray-800 border-b border-slate-300 dark:border-gray-600">Conversion</TableHead>
                           <TableHead
-                            className="text-center cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors sticky top-0 z-30 bg-gray-50 dark:bg-gray-800 border-b border-slate-300 dark:border-gray-600"
+                            className="h-8 px-2 py-1 text-center cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors sticky top-0 z-30 bg-gray-50 dark:bg-gray-800 border-b border-slate-300 dark:border-gray-600"
                             onClick={() => handleSort('total_closing_balance')}
                           >
                             <div className="flex items-center justify-center gap-1">
                               <span>Balance</span>
-                              <span className="text-xs">{getSortIcon('total_closing_balance')}</span>
+                              <span className="text-[10px]">{getSortIcon('total_closing_balance')}</span>
                             </div>
                           </TableHead>
-                          <TableHead className="w-24 text-center sticky top-0 z-30 bg-gray-50 dark:bg-gray-800 border-b border-slate-300 dark:border-gray-600">Actions</TableHead>
+                          <TableHead className="h-8 w-16 px-2 py-1 text-center sticky top-0 z-30 bg-gray-50 dark:bg-gray-800 border-b border-slate-300 dark:border-gray-600">Actions</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -2065,7 +2068,7 @@ export default function ItemMasters() {
                             className="border-b border-slate-200 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                             onClick={() => handleRowClick(item)}
                           >
-                            <TableCell className="pr-0" onClick={(e) => e.stopPropagation()}>
+                            <TableCell className="px-2 py-1 pr-0" onClick={(e) => e.stopPropagation()}>
                               <Checkbox
                                 checked={selectedItemIds.includes(item.id)}
                                 onCheckedChange={() => {
@@ -2078,38 +2081,38 @@ export default function ItemMasters() {
                                 aria-label={`Select ${item.name}`}
                               />
                             </TableCell>
-                            <TableCell>
+                            <TableCell className="px-2 py-1 text-xs tabular-nums">
                                {startItem + index}
                             </TableCell>
-                            <TableCell className="font-medium">
-                              <div className="flex items-center gap-1.5">
-                                <Package className="h-3.5 w-3.5 text-blue-500 shrink-0" />
-                                <span className="truncate">{item.name}</span>
+                            <TableCell className="px-2 py-1 font-medium">
+                              <div className="flex items-center gap-1">
+                                <Package className="h-3 w-3 text-blue-500 shrink-0" />
+                                <span className="truncate text-sm">{item.name}</span>
                               </div>
                             </TableCell>
                             
-                            <TableCell className="text-xs text-slate-600 dark:text-slate-300">{item.apmc_head || "Not Available"}</TableCell>
-                            <TableCell>
-                              <div className="flex items-center gap-1.5">
-                                <Building2 className="h-3.5 w-3.5 text-gray-500 shrink-0" />
-                                <span className="truncate">{item.parent || "Primary"}</span>
+                            <TableCell className="px-2 py-1 text-xs text-slate-600 dark:text-slate-300">{item.apmc_head || "Not Available"}</TableCell>
+                            <TableCell className="px-2 py-1">
+                              <div className="flex items-center gap-1">
+                                <Building2 className="h-3 w-3 text-gray-500 shrink-0" />
+                                <span className="truncate text-sm">{item.parent || "Primary"}</span>
                               </div>
                             </TableCell>
-                            <TableCell>
-                              <div className="flex items-center gap-1.5">
-                                <Building2 className="h-3.5 w-3.5 text-gray-500 shrink-0" />
-                                <span className="truncate">{item.category || "General"}</span>
+                            <TableCell className="px-2 py-1">
+                              <div className="flex items-center gap-1">
+                                <Building2 className="h-3 w-3 text-gray-500 shrink-0" />
+                                <span className="truncate text-sm">{item.category || "General"}</span>
                               </div>
                             </TableCell>
-                            <TableCell>
-                              <Badge variant="outline" className="text-[10px] px-1.5 py-0">{item.base_units_name}</Badge>
+                            <TableCell className="px-2 py-1">
+                              <Badge variant="outline" className="text-[10px] px-1 py-0 h-5">{item.base_units_name}</Badge>
                             </TableCell>
-                            <TableCell className="text-center text-xs">
+                            <TableCell className="px-2 py-1 text-center text-xs">
                               {item.conversion} {item.secondary_unit || "Qtl"}
                             </TableCell>
-                            <TableCell className="text-center">
+                            <TableCell className="px-2 py-1 text-center">
                               <div className="flex items-center justify-center gap-1 flex-wrap text-xs">
-                                <TrendingUp className={`h-3.5 w-3.5 shrink-0 ${item.total_closing_balance > 0 ? 'text-green-500' : 'text-gray-400'}`} />
+                                <TrendingUp className={`h-3 w-3 shrink-0 ${item.total_closing_balance > 0 ? 'text-green-500' : 'text-gray-400'}`} />
                                 <span>
                                   {formatValue(item.total_closing_balance)}
                                   {item.base_units_name ? (
@@ -2118,13 +2121,13 @@ export default function ItemMasters() {
                                 </span>
                               </div>
                             </TableCell>
-                            <TableCell className="text-center" onClick={(e) => e.stopPropagation()}>
+                            <TableCell className="px-2 py-1 text-center" onClick={(e) => e.stopPropagation()}>
                               <Button
                                 variant="outline"
                                 size="sm"
                                 onClick={(e) => handleToggleStatus(e, item)}
                                 disabled={toggleItemStatusMutation.isPending}
-                                className={`h-7 w-7 p-0 ${
+                                className={`h-6 w-6 p-0 ${
                                   shouldShowActivate
                                     ? "text-green-600 hover:text-green-700 hover:bg-green-50 border-green-200"
                                     : "text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
@@ -2132,11 +2135,11 @@ export default function ItemMasters() {
                                 title={shouldShowActivate ? "Activate item" : "Deactivate item"}
                               >
                                 {toggleItemStatusMutation.isPending ? (
-                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
                                 ) : shouldShowActivate ? (
-                                  <CheckCircle className="h-4 w-4" />
+                                  <CheckCircle className="h-3.5 w-3.5" />
                                 ) : (
-                                  <XCircle className="h-4 w-4" />
+                                  <XCircle className="h-3.5 w-3.5" />
                                 )}
                               </Button>
                             </TableCell>
@@ -2241,41 +2244,43 @@ export default function ItemMasters() {
 
       {/* Item Details Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="flex items-center space-x-2">
-              <Package className="h-5 w-5" />
-              <span>Item Details - {itemDetails?.stock_item_name || selectedItem?.name}</span>
+        <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto p-4 gap-3">
+          <DialogHeader className="space-y-1 pb-0">
+            <DialogTitle className="flex items-center gap-1.5 text-base">
+              <Package className="h-4 w-4" />
+              <span className="truncate">Item Details - {itemDetails?.stock_item_name || selectedItem?.name}</span>
             </DialogTitle>
           </DialogHeader>
           
           {isLoadingDetails ? (
-            <div className="flex items-center justify-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-              <span className="ml-2 text-gray-600">Loading item details...</span>
+            <div className="flex items-center justify-center py-6">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900"></div>
+              <span className="ml-2 text-sm text-gray-600">Loading item details...</span>
             </div>
           ) : itemDetails ? (
-            <div className="space-y-3">
+            <div className="space-y-2">
               {/* Basic Item Information */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg flex items-center justify-between">
+              <Card className="shadow-none">
+                <CardHeader className="py-2 px-3">
+                  <CardTitle className="text-sm flex items-center justify-between gap-2">
                     <span>Basic Information</span>
                     {canEditItemUnitsConversion && (
                       !isEditingConversion ? (
                         <Button
                           variant="outline"
                           size="sm"
+                          className="h-7 text-xs"
                           onClick={() => setIsEditingConversion(true)}
                         >
-                          <Pencil className="h-4 w-4 mr-1" />
+                          <Pencil className="h-3.5 w-3.5 mr-1" />
                           Edit Units & Conversion
                         </Button>
                       ) : (
-                        <div className="flex gap-2">
+                        <div className="flex gap-1.5">
                           <Button
                             variant="outline"
                             size="sm"
+                            className="h-7 text-xs"
                             onClick={() => {
                               setIsEditingConversion(false);
                               setEditConversion(String(selectedItem?.conversion ?? ""));
@@ -2285,13 +2290,14 @@ export default function ItemMasters() {
                           </Button>
                           <Button
                             size="sm"
+                            className="h-7 text-xs"
                             onClick={handleSaveConversion}
                             disabled={updateConversionMutation.isPending}
                           >
                             {updateConversionMutation.isPending ? (
-                              <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                              <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />
                             ) : (
-                              <Save className="h-4 w-4 mr-1" />
+                              <Save className="h-3.5 w-3.5 mr-1" />
                             )}
                             Save
                           </Button>
@@ -2300,35 +2306,35 @@ export default function ItemMasters() {
                     )}
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <CardContent className="px-3 pb-3 pt-0">
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-x-3 gap-y-2">
                     <div>
-                      <label className="text-sm font-medium text-gray-500">Item Name</label>
-                      <p className="text-sm font-semibold">{itemDetails.stock_item_name || selectedItem?.name}</p>
+                      <label className="text-[11px] font-medium text-gray-500">Item Name</label>
+                      <p className="text-sm font-semibold leading-snug">{itemDetails.stock_item_name || selectedItem?.name}</p>
                     </div>
                     <div>
-                      <label className="text-sm font-medium text-gray-500">Category</label>
-                      <p className="text-sm">{selectedItem?.category || "General"}</p>
+                      <label className="text-[11px] font-medium text-gray-500">Category</label>
+                      <p className="text-sm leading-snug">{selectedItem?.category || "General"}</p>
                     </div>
                     <div>
-                      <label className="text-sm font-medium text-gray-500">APMC Head</label>
+                      <label className="text-[11px] font-medium text-gray-500">APMC Head</label>
                       {canEditItemUnitsConversion && isEditingConversion ? (
                         <Input
                           maxLength={255}
                           value={editApmcHead}
                           onChange={(e) => setEditApmcHead(e.target.value)}
                           placeholder="APMC head"
-                          className="h-9 mt-1"
+                          className="h-8 mt-0.5 text-sm"
                         />
                       ) : (
-                        <p className="text-sm">{selectedItem?.apmc_head || "Not Available"}</p>
+                        <p className="text-sm leading-snug">{selectedItem?.apmc_head || "Not Available"}</p>
                       )}
                     </div>
                     <div>
-                      <label className="text-sm font-medium text-gray-500">Base Unit</label>
+                      <label className="text-[11px] font-medium text-gray-500">Base Unit</label>
                       {canEditItemUnitsConversion && isEditingConversion ? (
                         <Select value={editBaseUnitId ? String(editBaseUnitId) : undefined} onValueChange={setEditBaseUnitId}>
-                          <SelectTrigger className="h-9 mt-1">
+                          <SelectTrigger className="h-8 mt-0.5 text-sm">
                             <SelectValue placeholder="Select base unit" />
                           </SelectTrigger>
                           <SelectContent>
@@ -2340,20 +2346,20 @@ export default function ItemMasters() {
                           </SelectContent>
                         </Select>
                       ) : (
-                        <p className="text-sm">{selectedItem?.base_units_name}</p>
+                        <p className="text-sm leading-snug">{selectedItem?.base_units_name}</p>
                       )}
                     </div>
                     {isTallyEnabledForItemDetails ? (
                       <div>
-                        <label className="text-sm font-medium text-gray-500">HSN Code</label>
-                        <p className="text-sm">{selectedItem?.hsn_code || "NA"}</p>
+                        <label className="text-[11px] font-medium text-gray-500">HSN Code</label>
+                        <p className="text-sm leading-snug">{selectedItem?.hsn_code || "NA"}</p>
                       </div>
                     ) : null}
                     <div>
-                      <label className="text-sm font-medium text-gray-500">Secondary Unit</label>
+                      <label className="text-[11px] font-medium text-gray-500">Secondary Unit</label>
                       {canEditItemUnitsConversion && isEditingConversion ? (
                         <Select value={editAlternateUnitId ? String(editAlternateUnitId) : undefined} onValueChange={setEditAlternateUnitId}>
-                          <SelectTrigger className="h-9 mt-1">
+                          <SelectTrigger className="h-8 mt-0.5 text-sm">
                             <SelectValue placeholder="Select alternate unit" />
                           </SelectTrigger>
                           <SelectContent>
@@ -2365,11 +2371,11 @@ export default function ItemMasters() {
                           </SelectContent>
                         </Select>
                       ) : (
-                        <p className="text-sm">{selectedItem?.secondary_unit || "NA"}</p>
+                        <p className="text-sm leading-snug">{selectedItem?.secondary_unit || "NA"}</p>
                       )}
                     </div>
                     <div>
-                      <label className="text-sm font-medium text-gray-500">Conversion</label>
+                      <label className="text-[11px] font-medium text-gray-500">Conversion</label>
                       {canEditItemUnitsConversion && isEditingConversion ? (
                         <Input
                           type="number"
@@ -2377,25 +2383,25 @@ export default function ItemMasters() {
                           min="0"
                           value={editConversion}
                           onChange={(e) => setEditConversion(e.target.value)}
-                          className="h-9 mt-1"
+                          className="h-8 mt-0.5 text-sm"
                         />
                       ) : (
-                        <p className="text-sm">
+                        <p className="text-sm leading-snug">
                           {selectedItem?.conversion} {selectedItem?.secondary_unit || "Qtl"}
                         </p>
                       )}
                     </div>
                     {(selectedItem?.item_groupings || "").toString().trim() ? (
                       <div>
-                        <label className="text-sm font-medium text-gray-500">Item Groupings</label>
-                        <p className="text-sm">{selectedItem.item_groupings}</p>
+                        <label className="text-[11px] font-medium text-gray-500">Item Groupings</label>
+                        <p className="text-sm leading-snug">{selectedItem.item_groupings}</p>
                       </div>
                     ) : (
                       <div />
                     )}
-                    <div className="md:col-span-2">
-                      <label className="text-sm font-medium text-gray-500">Unit Comparison</label>
-                      <p className="text-sm font-medium text-blue-700 dark:text-blue-300 mt-1">
+                    <div className="md:col-span-3 col-span-2">
+                      <label className="text-[11px] font-medium text-gray-500">Unit Comparison</label>
+                      <p className="text-sm font-medium text-blue-700 dark:text-blue-300 leading-snug">
                         {canEditItemUnitsConversion && isEditingConversion
                           ? conversionPreview
                           : `1 ${selectedItem?.base_units_name || "Base"} = ${selectedItem?.conversion || "-"} ${selectedItem?.secondary_unit || "Alternate"}`}
@@ -2407,30 +2413,35 @@ export default function ItemMasters() {
 
               {/* Godown Details */}
               {itemDetails.data && itemDetails.data.length > 0 ? (
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg flex items-center justify-between gap-3">
-                      <span>Godown Details</span>
+                <Card className="shadow-none">
+                  <CardHeader className="py-2 px-3">
+                    <CardTitle className="text-sm flex items-center justify-between gap-2">
+                      <span>
+                        Godown Details
+                        <span className="ml-1.5 text-xs font-medium text-gray-500">
+                          ({itemDetails.count})
+                        </span>
+                      </span>
                       <Button
                         variant="outline"
                         size="sm"
+                        className="h-7 text-xs"
                         onClick={() => setIsUpdateStocksDialogOpen(true)}
                       >
-                        <Settings className="h-4 w-4 mr-1" />
+                        <Settings className="h-3.5 w-3.5 mr-1" />
                         Update stocks
                       </Button>
                     </CardTitle>
-                    <p className="text-sm text-gray-600">Total Count: {itemDetails.count} godowns</p>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="px-3 pb-3 pt-0">
                     <div className="overflow-x-auto">
                       <Table>
                         <TableHeader>
                           <TableRow>
-                            <TableHead className="w-8"></TableHead>
-                            <TableHead>Godown Name</TableHead>
-                            <TableHead>Current Balance (base unit)</TableHead>
-                            <TableHead>Status</TableHead>
+                            <TableHead className="h-8 w-8 px-2 py-1"></TableHead>
+                            <TableHead className="h-8 px-2 py-1">Godown Name</TableHead>
+                            <TableHead className="h-8 px-2 py-1">Current Balance</TableHead>
+                            <TableHead className="h-8 px-2 py-1">Status</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -2445,27 +2456,27 @@ export default function ItemMasters() {
                                   className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/40"
                                   onClick={() => toggleGodownExpansion(godownName)}
                                 >
-                                  <TableCell className="w-8 align-middle">
+                                  <TableCell className="w-8 px-2 py-1 align-middle">
                                     <span
-                                      className="inline-flex items-center justify-center h-6 w-6 rounded text-gray-500"
+                                      className="inline-flex items-center justify-center h-5 w-5 rounded text-gray-500"
                                       aria-label={isExpanded ? "Collapse batches" : "Expand batches"}
                                     >
                                       {isExpanded ? (
-                                        <ChevronDown className="h-4 w-4" />
+                                        <ChevronDown className="h-3.5 w-3.5" />
                                       ) : (
-                                        <ChevronRight className="h-4 w-4" />
+                                        <ChevronRight className="h-3.5 w-3.5" />
                                       )}
                                     </span>
                                   </TableCell>
-                                  <TableCell className="font-medium">
-                                    <div className="flex items-center space-x-2">
-                                      <Building2 className="h-4 w-4 text-gray-500" />
+                                  <TableCell className="px-2 py-1 font-medium text-sm">
+                                    <div className="flex items-center gap-1.5">
+                                      <Building2 className="h-3.5 w-3.5 text-gray-500 shrink-0" />
                                       <span>{godownName || 'N/A'}</span>
                                     </div>
                                   </TableCell>
-                                  <TableCell>
-                                    <div className="flex items-center space-x-1 flex-wrap gap-x-1">
-                                      <TrendingUp className={`h-4 w-4 shrink-0 ${godown.current_balance > 0 ? 'text-green-500' : 'text-gray-400'}`} />
+                                  <TableCell className="px-2 py-1 text-sm">
+                                    <div className="flex items-center gap-1 flex-wrap">
+                                      <TrendingUp className={`h-3.5 w-3.5 shrink-0 ${godown.current_balance > 0 ? 'text-green-500' : 'text-gray-400'}`} />
                                       <span>
                                         {formatValue(godown.current_balance)}
                                         {selectedItem?.base_units_name ? (
@@ -2474,9 +2485,9 @@ export default function ItemMasters() {
                                       </span>
                                     </div>
                                   </TableCell>
-                                  <TableCell>
-                                    <div className="flex items-center gap-2">
-                                      <Badge variant={godown.current_balance > 0 ? "default" : "secondary"}>
+                                  <TableCell className="px-2 py-1">
+                                    <div className="flex items-center gap-1.5 flex-wrap">
+                                      <Badge variant={godown.current_balance > 0 ? "default" : "secondary"} className="text-[10px] px-1.5 py-0 h-5">
                                         {godown.current_balance > 0 ? 'Available' : 'Out of Stock'}
                                       </Badge>
                                       {Number(godown.locked_qty) > 0 ? (
@@ -2484,10 +2495,10 @@ export default function ItemMasters() {
                                           <Tooltip>
                                             <TooltipTrigger asChild>
                                               <span
-                                                className="inline-flex items-center gap-1 h-6 px-2 rounded-full bg-amber-100 text-amber-700 text-xs cursor-help"
+                                                className="inline-flex items-center gap-0.5 h-5 px-1.5 rounded-full bg-amber-100 text-amber-700 text-[10px] cursor-help"
                                                 aria-label="Locked stock in this godown"
                                               >
-                                                <Lock className="h-3 w-3" />
+                                                <Lock className="h-2.5 w-2.5" />
                                                 {formatValue(godown.locked_qty)}
                                                 {selectedItem?.base_units_name ? ` ${selectedItem.base_units_name}` : ''} locked
                                               </span>
@@ -2507,21 +2518,21 @@ export default function ItemMasters() {
                                     className="bg-gray-50/60 dark:bg-gray-800/30 hover:bg-gray-50/60 dark:hover:bg-gray-800/30"
                                   >
                                     <TableCell colSpan={4} className="p-0">
-                                      <div className="px-6 py-3 border-t border-gray-100 dark:border-gray-700">
+                                      <div className="px-3 py-2 border-t border-gray-100 dark:border-gray-700">
                                         {batchState?.loading ? (
-                                          <div className="inline-flex items-center text-xs text-gray-500 py-2">
+                                          <div className="inline-flex items-center text-xs text-gray-500 py-1">
                                             <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />
                                             Loading batches…
                                           </div>
                                         ) : null}
                                         {batchState?.error ? (
-                                          <div className="text-xs text-red-600 py-2">
+                                          <div className="text-xs text-red-600 py-1">
                                             {batchState.error}
                                           </div>
                                         ) : null}
                                         {!batchState?.loading && !batchState?.error && Array.isArray(batchState?.data) ? (
                                           batchState.data.length === 0 ? (
-                                            <div className="text-xs text-gray-500 py-2">
+                                            <div className="text-xs text-gray-500 py-1">
                                               No batch records found for this godown.
                                             </div>
                                           ) : (
@@ -2529,10 +2540,10 @@ export default function ItemMasters() {
                                               <Table>
                                                 <TableHeader>
                                                   <TableRow>
-                                                    <TableHead>Batch / Lot</TableHead>
-                                                    <TableHead>Current Balance</TableHead>
-                                                    <TableHead>Status</TableHead>
-                                                    <TableHead className="text-right">Action</TableHead>
+                                                    <TableHead className="h-7 px-2 py-1 text-xs">Batch / Lot</TableHead>
+                                                    <TableHead className="h-7 px-2 py-1 text-xs">Current Balance</TableHead>
+                                                    <TableHead className="h-7 px-2 py-1 text-xs">Status</TableHead>
+                                                    <TableHead className="h-7 px-2 py-1 text-xs text-right">Action</TableHead>
                                                   </TableRow>
                                                 </TableHeader>
                                                 <TableBody>
@@ -2540,27 +2551,25 @@ export default function ItemMasters() {
                                                     const isBatchLocked = Number(batch.locked_qty) > 0;
                                                     return (
                                                       <TableRow key={`batch-${batchIdx}-${batch.batch_name || ''}`}>
-                                                        <TableCell className="font-medium">
-                                                          <div className="flex items-center gap-2">
-                                                            <Layers className="h-3.5 w-3.5 text-gray-400" />
+                                                        <TableCell className="px-2 py-1 font-medium text-sm">
+                                                          <div className="flex items-center gap-1.5">
+                                                            <Layers className="h-3 w-3 text-gray-400" />
                                                             <span>{batch.batch_name || 'N/A'}</span>
                                                           </div>
                                                         </TableCell>
-                                                        <TableCell>
-                                                          <span className="text-sm">
-                                                            {batch.current_balance_full || batch.current_balance || formatValue(batch.balance)}
-                                                          </span>
+                                                        <TableCell className="px-2 py-1 text-sm">
+                                                          {batch.current_balance_full || batch.current_balance || formatValue(batch.balance)}
                                                         </TableCell>
-                                                        <TableCell>
+                                                        <TableCell className="px-2 py-1">
                                                           {isBatchLocked ? (
                                                             <TooltipProvider delayDuration={100}>
                                                               <Tooltip>
                                                                 <TooltipTrigger asChild>
                                                                   <span
-                                                                    className="inline-flex items-center gap-1 h-6 px-2 rounded-full bg-amber-100 text-amber-700 text-xs cursor-help"
+                                                                    className="inline-flex items-center gap-0.5 h-5 px-1.5 rounded-full bg-amber-100 text-amber-700 text-[10px] cursor-help"
                                                                     aria-label="Batch is locked"
                                                                   >
-                                                                    <Lock className="h-3 w-3" />
+                                                                    <Lock className="h-2.5 w-2.5" />
                                                                     {formatValue(batch.locked_qty)}
                                                                     {selectedItem?.base_units_name ? ` ${selectedItem.base_units_name}` : ''} locked
                                                                   </span>
@@ -2571,16 +2580,16 @@ export default function ItemMasters() {
                                                               </Tooltip>
                                                             </TooltipProvider>
                                                           ) : (
-                                                            <Badge variant="default">Available</Badge>
+                                                            <Badge variant="default" className="text-[10px] px-1.5 py-0 h-5">Available</Badge>
                                                           )}
                                                         </TableCell>
-                                                        <TableCell className="text-right">
+                                                        <TableCell className="px-2 py-1 text-right">
                                                           {isBatchLocked ? (
                                                             <Button
                                                               type="button"
                                                               variant="outline"
                                                               size="sm"
-                                                              className="h-7 px-2 text-xs border-emerald-200 text-emerald-700 hover:bg-emerald-50"
+                                                              className="h-6 px-1.5 text-[10px] border-emerald-200 text-emerald-700 hover:bg-emerald-50"
                                                               onClick={() =>
                                                                 setReleaseLockConfirm({
                                                                   godownName: godownName || "this godown",
@@ -2590,7 +2599,7 @@ export default function ItemMasters() {
                                                               }
                                                               disabled={releaseStockMutation.isPending}
                                                             >
-                                                              <Unlock className="h-3.5 w-3.5 mr-1" />
+                                                              <Unlock className="h-3 w-3 mr-0.5" />
                                                               Release
                                                             </Button>
                                                           ) : (
@@ -2618,20 +2627,20 @@ export default function ItemMasters() {
                   </CardContent>
                 </Card>
               ) : (
-                <Card>
-                  <CardContent className="text-center py-8">
-                    <Building2 className="mx-auto h-12 w-12 text-gray-400" />
-                    <h3 className="mt-0.5 text-sm font-semibold text-gray-900 dark:text-white">No Godown Data</h3>
-                    <p className="mt-1 text-sm text-gray-500">
+                <Card className="shadow-none">
+                  <CardContent className="text-center py-4 px-3">
+                    <Building2 className="mx-auto h-8 w-8 text-gray-400" />
+                    <h3 className="mt-1 text-sm font-semibold text-gray-900 dark:text-white">No Godown Data</h3>
+                    <p className="mt-0.5 text-xs text-gray-500">
                       No godown information available for this item.
                     </p>
                     <Button
                       variant="outline"
                       size="sm"
-                      className="mt-4"
+                      className="mt-2 h-7 text-xs"
                       onClick={() => setIsUpdateStocksDialogOpen(true)}
                     >
-                      <Settings className="h-4 w-4 mr-1" />
+                      <Settings className="h-3.5 w-3.5 mr-1" />
                       Update stocks
                     </Button>
                   </CardContent>

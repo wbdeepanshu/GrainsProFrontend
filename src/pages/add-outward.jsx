@@ -27,6 +27,7 @@ import {
   Package,
   Building2,
   Users,
+  UserPlus,
   Hash,
   Trash2,
   Save,
@@ -51,11 +52,11 @@ import { apiRequest } from "@/lib/queryClient";
 import Loader from "@/components/common/loader";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from "@/components/ui/dialog";
 import { ChevronsUpDown, Search } from "lucide-react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useUserPermissions } from "@/hooks/useUserPermissions";
-import { createOutwardEntry } from "@/lib/outward_api";
+import { createOutwardEntry, fetchOutwardEntries, fetchOutwardEntryDetail } from "@/lib/outward_api";
 import ManageVehicleSplitModal from "@/components/outward/ManageVehicleSplitModal";
 
 const API_BASE_URL = import.meta.env.VITE_BASE_URL;
@@ -451,6 +452,9 @@ export default function AddOutward() {
   const [splitCreating, setSplitCreating] = useState(false);
   const [manageVehicleSalesOrders, setManageVehicleSalesOrders] = useState([]);
   const manageVehicleEnabled = true; // Split loading UI; gate with manage_vehilce_settings later if needed
+  const [assignSupervisorOpen, setAssignSupervisorOpen] = useState(false);
+  const [assignSupervisorDraft, setAssignSupervisorDraft] = useState([]); // [{ godownKey, godownName, supervisor_id }]
+  const [assignSupervisorLoading, setAssignSupervisorLoading] = useState(false);
 
   // Edit mode state (set when ?edit_id=... is present in the URL)
   const editId = useMemo(() => {
@@ -1292,8 +1296,9 @@ export default function AddOutward() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editId, isEditMode, editPrefillApplied]);
 
-  // Watch sales orders to keep cache in sync
+  // Watch sales orders / vehicle to keep cache + supervisor UI in sync
   const watchedSalesOrders = form.watch("sales_orders");
+  const watchedVehicleNo = form.watch("vehicle_no");
 
   // Keep cache in sync with form data - extract godowns from all items
   useEffect(() => {
@@ -2139,6 +2144,245 @@ export default function AddOutward() {
     setManageVehicleOpen(true);
   };
 
+  /** Collect configured godown sections from the form (with resolved names). */
+  const collectFormGodownSections = () => {
+    const salesOrders = form.getValues("sales_orders") || [];
+    const sections = [];
+    salesOrders.forEach((so, soIndex) => {
+      (so?.items || []).forEach((item, itemIndex) => {
+        (item?.godowns || []).forEach((g, godownIndex) => {
+          if (g?.godown_id === "" || g?.godown_id == null) return;
+          const resolvedId = coerceGodownId(
+            g.godown_id,
+            itemGodowns,
+            allGodownsMaster,
+            null
+          );
+          const godownName = resolvedId
+            ? resolveGodownName(resolvedId, itemGodowns, allGodownsMaster, null)
+            : String(g.godown_id);
+          sections.push({
+            soIndex,
+            itemIndex,
+            godownIndex,
+            godownKey: String(resolvedId || godownName).toLowerCase(),
+            godownName,
+            supervisor_id: g.supervisor_id != null && g.supervisor_id !== ""
+              ? String(g.supervisor_id)
+              : "",
+          });
+        });
+      });
+    });
+    return sections;
+  };
+
+  const buildUniqueGodownDraft = (sections) => {
+    const map = new Map();
+    sections.forEach((s) => {
+      if (!map.has(s.godownKey)) {
+        map.set(s.godownKey, {
+          godownKey: s.godownKey,
+          godownName: s.godownName,
+          supervisor_id: s.supervisor_id || "",
+        });
+      } else if (s.supervisor_id && !map.get(s.godownKey).supervisor_id) {
+        map.get(s.godownKey).supervisor_id = s.supervisor_id;
+      }
+    });
+    return Array.from(map.values());
+  };
+
+  const applySupervisorDraftToForm = (draft) => {
+    const byKey = new Map(draft.map((d) => [d.godownKey, d.supervisor_id || ""]));
+    const salesOrders = form.getValues("sales_orders") || [];
+    const next = salesOrders.map((so) => ({
+      ...so,
+      items: (so.items || []).map((item) => ({
+        ...item,
+        godowns: (item.godowns || []).map((g) => {
+          if (g?.godown_id === "" || g?.godown_id == null) return g;
+          const resolvedId = coerceGodownId(
+            g.godown_id,
+            itemGodowns,
+            allGodownsMaster,
+            null
+          );
+          const godownName = resolvedId
+            ? resolveGodownName(resolvedId, itemGodowns, allGodownsMaster, null)
+            : String(g.godown_id);
+          const key = String(resolvedId || godownName).toLowerCase();
+          if (!byKey.has(key)) return g;
+          const supervisorId = byKey.get(key);
+          return {
+            ...g,
+            supervisor_id: supervisorId ? supervisorId : undefined,
+          };
+        }),
+      })),
+    }));
+    form.setValue("sales_orders", next, { shouldDirty: true, shouldValidate: true });
+  };
+
+  /** Prefer supervisors used on the last gate pass for this vehicle number. */
+  const fetchVehicleSupervisorMap = async (vehicleNo) => {
+    const vehicle = String(vehicleNo || "").trim();
+    if (!vehicle) return {};
+    try {
+      const listRes = await fetchOutwardEntries({
+        vehicle_no: vehicle,
+        page: 1,
+        per_page: 1,
+      });
+      const first = (listRes?.data || [])[0];
+      const outwardId = first?.id ?? first?.outward_id ?? first?.outward_entry_id;
+      if (!outwardId) return {};
+      const detail = await fetchOutwardEntryDetail(outwardId);
+      const sources =
+        Array.isArray(detail?.purchase_returns) && detail.purchase_returns.length > 0
+          ? detail.purchase_returns
+          : Array.isArray(detail?.sales_orders)
+            ? detail.sales_orders
+            : [];
+      const map = {};
+      sources.forEach((source) => {
+        (source?.items || []).forEach((item) => {
+          (item?.godowns || []).forEach((godown) => {
+            const sid = godown?.supervisor_id;
+            if (sid == null || sid === "") return;
+            const resolvedId = coerceGodownId(
+              godown.godown_id,
+              itemGodowns,
+              allGodownsMaster,
+              null
+            );
+            const godownName =
+              godown.godown_name ||
+              (resolvedId
+                ? resolveGodownName(resolvedId, itemGodowns, allGodownsMaster, null)
+                : String(godown.godown_id || ""));
+            const key = String(resolvedId || godownName).toLowerCase();
+            if (key && key !== "undefined") {
+              map[key] = String(sid);
+            }
+            if (godownName) {
+              map[String(godownName).toLowerCase()] = String(sid);
+            }
+          });
+        });
+      });
+      return map;
+    } catch (err) {
+      console.error("Failed to load vehicle supervisor history:", err);
+      return {};
+    }
+  };
+
+  const openAssignSupervisor = async () => {
+    const sections = collectFormGodownSections();
+    if (sections.length === 0) {
+      toast({
+        title: "Add batches first",
+        description: "Configure godown/batches on items before assigning supervisors.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setAssignSupervisorLoading(true);
+    try {
+      let draft = buildUniqueGodownDraft(sections);
+      const vehicleMap = await fetchVehicleSupervisorMap(form.getValues("vehicle_no"));
+      draft = draft.map((row) => {
+        if (row.supervisor_id) return row;
+        const fromVehicle =
+          vehicleMap[row.godownKey] ||
+          vehicleMap[String(row.godownName || "").toLowerCase()];
+        return fromVehicle ? { ...row, supervisor_id: fromVehicle } : row;
+      });
+      // Fill remaining blanks from godown-specific / all supervisors
+      const filled = await Promise.all(
+        draft.map(async (row) => {
+          if (row.supervisor_id) return row;
+          const byGodown = await fetchSupervisorsByGodown(row.godownName);
+          const pick = (byGodown?.[0] || allSupervisors?.[0])?.user_id;
+          return pick ? { ...row, supervisor_id: String(pick) } : row;
+        })
+      );
+      setAssignSupervisorDraft(filled);
+      setAssignSupervisorOpen(true);
+    } finally {
+      setAssignSupervisorLoading(false);
+    }
+  };
+
+  const handleAutoAssignSupervisors = async () => {
+    setAssignSupervisorLoading(true);
+    try {
+      const vehicleMap = await fetchVehicleSupervisorMap(form.getValues("vehicle_no"));
+      const next = await Promise.all(
+        assignSupervisorDraft.map(async (row) => {
+          const fromVehicle =
+            vehicleMap[row.godownKey] ||
+            vehicleMap[String(row.godownName || "").toLowerCase()];
+          if (fromVehicle) return { ...row, supervisor_id: fromVehicle };
+          const byGodown = await fetchSupervisorsByGodown(row.godownName);
+          const pick = (byGodown?.[0] || allSupervisors?.[0])?.user_id;
+          return pick ? { ...row, supervisor_id: String(pick) } : row;
+        })
+      );
+      setAssignSupervisorDraft(next);
+      toast({
+        title: "Supervisors auto-assigned",
+        description: form.getValues("vehicle_no")
+          ? "Used last gate pass for this vehicle where available, otherwise godown supervisors."
+          : "Assigned first available supervisor per godown.",
+      });
+    } finally {
+      setAssignSupervisorLoading(false);
+    }
+  };
+
+  const handleApplyAssignSupervisors = () => {
+    applySupervisorDraftToForm(assignSupervisorDraft);
+    setAssignSupervisorOpen(false);
+    toast({
+      title: "Supervisors applied",
+      description: "Godown supervisors updated across sales order items.",
+    });
+  };
+
+  const supervisorAssignmentStatus = useMemo(() => {
+    let configured = 0;
+    let missing = 0;
+    let selectedOrders = 0;
+    (watchedSalesOrders || []).forEach((so) => {
+      if (so?.sales_order_id) selectedOrders += 1;
+      (so?.items || []).forEach((item) => {
+        (item?.godowns || []).forEach((g) => {
+          if (g?.godown_id === "" || g?.godown_id == null) return;
+          configured += 1;
+          if (!g.supervisor_id || g.supervisor_id === "") missing += 1;
+        });
+      });
+    });
+    return {
+      hasGodowns: configured > 0,
+      allAssigned: configured > 0 && missing === 0,
+      missingCount: missing,
+      selectedOrders,
+    };
+  }, [watchedSalesOrders]);
+
+  // Highlight Manage Vehicle when vehicle + SO are set but supervisors are incomplete
+  const highlightManageVehicle =
+    manageVehicleEnabled &&
+    !isEditMode &&
+    entryMode === "sales_order" &&
+    Boolean(String(watchedVehicleNo || "").trim()) &&
+    supervisorAssignmentStatus.selectedOrders > 0 &&
+    supervisorAssignmentStatus.hasGodowns &&
+    !supervisorAssignmentStatus.allAssigned;
+
   const addSalesOrder = () => {
     appendSalesOrder({
       sales_order_id: "",
@@ -2332,130 +2576,156 @@ export default function AddOutward() {
 
       <div className="flex-1 flex flex-col overflow-hidden min-w-0 h-full">
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-3 border-b bg-white flex-shrink-0">
-          <div className="flex items-center space-x-3">
+        <div className="flex items-center justify-between px-3 py-2 border-b border-zinc-200 bg-white flex-shrink-0">
+          <div className="flex items-center gap-2">
             {isMobile && (
               <Button
                 variant="outline"
                 size="sm"
+                className="h-8 w-8 p-0"
                 onClick={() => setIsMobileSidebarOpen(true)}
               >
                 <Menu className="h-4 w-4" />
               </Button>
             )}
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center gap-1.5">
               <Button
                 variant="outline"
                 size="icon"
-                className="h-9 w-9"
-                // onClick={() => setLocation("/outward/outward-list")}
+                className="h-8 w-8"
                 onClick={() => setLocation("/reports/sales-order-list")}
               >
                 <ChevronLeft className="h-4 w-4" />
               </Button>
-              {createOutwardMutation.isPending && <Loader2 className="h-4 w-4 animate-spin text-gray-600" />}
+              {createOutwardMutation.isPending && <Loader2 className="h-3.5 w-3.5 animate-spin text-zinc-600" />}
             </div>
-            <div>
-              <h1 className="text-xl font-bold text-gray-900 leading-tight">
+            <div className="min-w-0">
+              <h1 className="text-base sm:text-lg font-bold text-zinc-900 leading-tight">
                 {isEditMode ? "Edit Gate Pass" : "Add Gate Pass"}
               </h1>
-              <p className="text-sm text-gray-600 leading-tight">
+              <p className="text-[11px] text-zinc-500 leading-tight">
                 {isEditMode
                   ? "Update an existing gate pass entry"
                   : "Create new gate pass entry"}
               </p>
             </div>
           </div>
-          <Badge variant="outline" className="text-sm">
-            <Calendar className="h-4 w-4 mr-1" />
+          <Badge variant="outline" className="text-[11px] h-6 border-amber-300 text-amber-800 bg-amber-50">
+            <Calendar className="h-3 w-3 mr-1 text-amber-700" />
             {new Date().toLocaleDateString('en-GB')}
           </Badge>
         </div>
 
         {/* Main Content */}
-        <main className="flex-1 overflow-y-auto bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 p-4 sm:p-5 min-h-0">
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <main className="flex-1 overflow-y-auto bg-zinc-50 p-2 sm:p-3 min-h-0">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-2.5">
             {/* Basic Information */}
-            <div className="bg-white rounded-lg border shadow-sm overflow-hidden">
-              <div className="flex items-center gap-2 px-4 py-2.5 border-b bg-gray-50">
-                <Truck className="h-4 w-4 text-gray-600" />
-                <h2 className="text-sm font-semibold text-gray-800">Basic Information</h2>
+            <div className="bg-white rounded-md border border-zinc-200 shadow-none overflow-hidden">
+              <div className="flex flex-wrap items-center justify-between gap-1.5 px-3 py-1.5 border-b border-zinc-200 bg-zinc-50">
+                <div className="flex items-center gap-1.5">
+                  <Truck className="h-3.5 w-3.5 text-amber-600" />
+                  <h2 className="text-sm font-semibold text-zinc-900">Basic Information</h2>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    className="h-7 text-xs border-emerald-300 bg-emerald-50 text-emerald-800 hover:bg-emerald-100"
+                    onClick={openAssignSupervisor}
+                    disabled={assignSupervisorLoading}
+                  >
+                    {assignSupervisorLoading ? (
+                      <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />
+                    ) : (
+                      <UserPlus className="h-3.5 w-3.5 mr-1" />
+                    )}
+                    Assign Supervisor
+                    {supervisorAssignmentStatus.missingCount > 0 ? (
+                      <span className="ml-1 tabular-nums">({supervisorAssignmentStatus.missingCount})</span>
+                    ) : null}
+                  </Button>
+                  {!isEditMode && entryMode === "sales_order" && manageVehicleEnabled && (
+                    <Button
+                      type="button"
+                      size="sm"
+                      className={`h-7 text-xs ${
+                        highlightManageVehicle
+                          ? "bg-violet-600 hover:bg-violet-700 text-white ring-2 ring-violet-300 ring-offset-1 animate-pulse"
+                          : "bg-violet-100 hover:bg-violet-200 text-violet-800 border border-violet-300"
+                      }`}
+                      onClick={openManageVehicle}
+                      title={
+                        highlightManageVehicle
+                          ? "Supervisors incomplete — open Manage Vehicle / split loading"
+                          : "Manage Vehicle / Split Loading"
+                      }
+                    >
+                      <Truck className="h-3.5 w-3.5 mr-1" />
+                      Manage Vehicle
+                    </Button>
+                  )}
+                </div>
               </div>
-              <div className="p-4 grid grid-cols-1 sm:grid-cols-[11rem_minmax(0,1.2fr)_minmax(0,1fr)] gap-4 items-start">
+              <div className="p-2.5 grid grid-cols-1 sm:grid-cols-[10rem_minmax(0,1.2fr)_minmax(0,1fr)] gap-2 items-end">
                 <div>
-                  <Label htmlFor="date" className="text-sm font-medium text-gray-700 mb-1.5 block">Date</Label>
+                  <Label htmlFor="date" className="text-[11px] font-medium text-zinc-600 mb-0.5 block">Date</Label>
                   <Input
                     id="date"
                     type="date"
                     {...form.register("date")}
-                    className={`h-10 text-sm ${form.formState.errors.date ? "border-red-500" : ""}`}
+                    className={`h-8 text-sm ${form.formState.errors.date ? "border-red-500" : ""}`}
                   />
                   {form.formState.errors.date && (
-                    <p className="text-red-500 text-xs mt-1">{form.formState.errors.date.message}</p>
+                    <p className="text-red-500 text-xs mt-0.5">{form.formState.errors.date.message}</p>
                   )}
                 </div>
                 <div className="min-w-0">
-                  <Label htmlFor="vehicle_no" className="text-sm font-medium text-gray-700 mb-1.5 block">Vehicle Number *</Label>
-                  <div className="flex items-center gap-2">
-                    <Controller
-                      name="vehicle_no"
-                      control={form.control}
-                      render={({ field }) => (
-                        <Input
-                          id="vehicle_no"
-                          placeholder="Enter vehicle number"
-                          maxLength={10}
-                          {...field}
-                          onChange={(e) => {
-                            // Convert to uppercase and filter out special characters (only alphanumeric)
-                            const value = e.target.value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase().slice(0, 10);
-                            field.onChange(value);
-                          }}
-                          className={`h-10 min-w-0 flex-1 ${form.formState.errors.vehicle_no ? "border-red-500" : ""}`}
-                        />
-                      )}
-                    />
-                    {!isEditMode && entryMode === "sales_order" && manageVehicleEnabled && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        className="h-10 w-10 shrink-0"
-                        title="Manage Vehicle / Split Loading"
-                        aria-label="Manage Vehicle"
-                        onClick={openManageVehicle}
-                      >
-                        <Truck className="h-4 w-4" />
-                      </Button>
+                  <Label htmlFor="vehicle_no" className="text-[11px] font-medium text-zinc-600 mb-0.5 block">Vehicle *</Label>
+                  <Controller
+                    name="vehicle_no"
+                    control={form.control}
+                    render={({ field }) => (
+                      <Input
+                        id="vehicle_no"
+                        placeholder="Enter Vehicle Number"
+                        maxLength={10}
+                        {...field}
+                        onChange={(e) => {
+                          const value = e.target.value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase().slice(0, 10);
+                          field.onChange(value);
+                        }}
+                        className={`h-8 min-w-0 w-full text-sm ${form.formState.errors.vehicle_no ? "border-red-500" : ""}`}
+                      />
                     )}
-                  </div>
+                  />
                   {form.formState.errors.vehicle_no && (
-                    <p className="text-red-500 text-xs mt-1">{form.formState.errors.vehicle_no.message}</p>
+                    <p className="text-red-500 text-xs mt-0.5">{form.formState.errors.vehicle_no.message}</p>
                   )}
                 </div>
                 <div className="min-w-0">
-                  <Label className="text-sm font-medium text-gray-700 mb-1.5 block">Godown Sequence</Label>
+                  <Label className="text-[11px] font-medium text-zinc-600 mb-0.5 block">Godown Sequence</Label>
                   <GodownSequenceSelector form={form} itemGodowns={itemGodowns} allGodownsMaster={allGodownsMaster} cachedSelectedGodowns={cachedSelectedGodowns} />
                 </div>
               </div>
             </div>
 
             {/* Sales Orders Section */}
-            <Card>
-              <CardHeader className="px-4 py-2.5 border-b bg-gray-50 rounded-t-lg">
-                <CardTitle className="flex items-center justify-between text-sm font-semibold text-gray-800">
-                  <span className="flex items-center gap-2">
-                    <FileText className="h-4 w-4" />
+            <Card className="border-zinc-200 shadow-none">
+              <CardHeader className="px-3 py-1.5 border-b border-zinc-200 bg-zinc-50 rounded-t-md">
+                <CardTitle className="flex flex-wrap items-center justify-between gap-1.5 text-sm font-semibold text-zinc-900">
+                  <span className="flex items-center gap-1.5">
+                    <FileText className="h-3.5 w-3.5 text-amber-600" />
                     {modeLabelPlural} ({salesOrderFields.length})
                   </span>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1.5">
                     {canCreatePurchaseReturn && (
-                      <div className="flex items-center rounded-md border p-1">
+                      <div className="flex items-center rounded-md border border-zinc-200 p-0.5 bg-white">
                         <Button
                           type="button"
                           variant={entryMode === "sales_order" ? "default" : "ghost"}
                           size="sm"
-                          className="h-7"
+                          className={`h-7 text-xs ${entryMode === "sales_order" ? "bg-violet-600 hover:bg-violet-700" : ""}`}
                           onClick={() => {
                             if (entryMode !== "sales_order") {
                               setEntryMode("sales_order");
@@ -2477,7 +2747,7 @@ export default function AddOutward() {
                           type="button"
                           variant={entryMode === "purchase_return" ? "default" : "ghost"}
                           size="sm"
-                          className="h-7"
+                          className={`h-7 text-xs ${entryMode === "purchase_return" ? "bg-violet-600 hover:bg-violet-700" : ""}`}
                           onClick={() => {
                             if (entryMode !== "purchase_return") {
                               setEntryMode("purchase_return");
@@ -2497,17 +2767,17 @@ export default function AddOutward() {
                         </Button>
                       </div>
                     )}
-                  <Button type="button" onClick={addSalesOrder} variant="outline" size="sm" className="h-8">
-                    <Plus className="h-4 w-4 mr-1" />
+                  <Button type="button" onClick={addSalesOrder} variant="outline" size="sm" className="h-7 text-xs border-violet-200 text-violet-800 hover:bg-violet-50">
+                    <Plus className="h-3.5 w-3.5 mr-1" />
                     Add {modeLabelSingular}
                   </Button>
                   </div>
                 </CardTitle>
               </CardHeader>
-              <CardContent className="p-4">
-                <div className="space-y-3">
+              <CardContent className="p-2.5">
+                <div className="space-y-2">
                   {salesOrderFields.length === 0 ? (
-                    <div className="text-center text-gray-500 py-4 text-sm">
+                    <div className="text-center text-zinc-500 py-3 text-sm">
                       No {modeLabelPlural.toLowerCase()} added. Click "Add {modeLabelSingular}" to get started.
                     </div>
                   ) : (
@@ -2515,12 +2785,12 @@ export default function AddOutward() {
                       const currentItems = form.watch(`sales_orders.${soIndex}.items`) || [];
                       const salesOrderId = form.watch(`sales_orders.${soIndex}.sales_order_id`);
                       return (
-                        <Card key={salesOrderField.id} className="border">
-                          <CardHeader className="pb-2 pt-3 px-4 bg-gray-50/60 border-b">
-                            <div className="flex items-center justify-between">
-                              <div className="flex-1">
+                        <Card key={salesOrderField.id} className="border border-zinc-200 shadow-none">
+                          <CardHeader className="py-1.5 px-2.5 bg-zinc-50/80 border-b border-zinc-200">
+                            <div className="flex items-center justify-between gap-2">
+                              <div className="flex-1 min-w-0">
                                 {salesOrderId ? (
-                                  <span className="text-sm font-semibold text-gray-700">
+                                  <span className="text-xs sm:text-sm font-semibold text-zinc-800 break-words">
                                     {getSalesOrderName(salesOrderId)}
                                   </span>
                                 ) : (
@@ -2636,13 +2906,13 @@ export default function AddOutward() {
                               )}
                             </div>
                           </CardHeader>
-                          <CardContent className="pt-3 px-4 pb-3">
+                          <CardContent className="pt-0 px-0 pb-0">
                             {currentItems.length === 0 ? (
-                              <div className="text-center text-gray-500 py-3 text-sm">
+                              <div className="text-center text-zinc-500 py-3 text-sm px-2.5">
                                 No items. Select sales order to auto-fill items.
                               </div>
                             ) : (
-                              <div className="space-y-2">
+                              <div className="divide-y divide-zinc-200 border-t border-zinc-100">
                                 {currentItems.map((item, itemIndex) => {
                                   // Check if batches are saved for this item
                                   const godowns = form.watch(`sales_orders.${soIndex}.items.${itemIndex}.godowns`) || [];
@@ -2737,13 +3007,13 @@ export default function AddOutward() {
                                     <div
                                       key={`so-${soIndex}-item-${currentItemId ?? itemIndex}`}
                                       onClick={handleRowClick}
-                                      className={`px-3 py-2.5 border rounded-md cursor-pointer transition-colors ${
+                                      className={`px-2 py-1.5 border-b border-zinc-200 last:border-b-0 cursor-pointer transition-colors ${
                                         hasSavedBatches
-                                          ? "bg-green-50 border-green-300 hover:bg-green-100"
-                                          : "bg-white border-gray-200 hover:bg-gray-50"
+                                          ? "bg-emerald-50/70 hover:bg-emerald-50"
+                                          : "bg-white hover:bg-amber-50/40"
                                       }`}
                                     >
-                                      <div className="grid grid-cols-12 gap-3 items-center">
+                                      <div className="grid grid-cols-12 gap-2 items-center">
                                         {/* Delete Button */}
                                         <div className="col-span-1 flex items-center justify-center">
                                           <Button
@@ -2757,26 +3027,26 @@ export default function AddOutward() {
                                             className="h-7 w-7 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
                                             title="Remove item"
                                           >
-                                            <Trash2 className="h-4 w-4" />
+                                            <Trash2 className="h-3.5 w-3.5" />
                                           </Button>
                                         </div>
 
                                         {/* Item Name - Read Only (full name, wrap if needed) */}
                                         <div className="col-span-3 min-w-0">
-                                          <div className="text-sm font-medium text-gray-900 break-words">
+                                          <div className="text-sm font-medium text-zinc-900 leading-snug break-words">
                                             {itemName}
                                           </div>
                                         </div>
 
                                         {/* Approved Quantity - Read Only */}
                                         <div className="col-span-2">
-                                          <div className="flex flex-col">
-                                            <Label className="text-xs font-medium text-gray-500 mb-1">APPROVED QTY</Label>
+                                          <div className="flex flex-col leading-tight">
+                                            <span className="text-[10px] font-medium uppercase tracking-wide text-zinc-500">Approved</span>
                                             {(() => {
                                               const itemKey = currentItemId ? `${soIndex}-${currentItemId}` : `${soIndex}-${itemIndex}`;
                                               const approvedQty = salesOrderItemApprovedQuantities[itemKey] || 0;
                                               return (
-                                                <div className="text-sm font-semibold text-gray-700">
+                                                <div className="text-sm font-semibold text-zinc-700 tabular-nums">
                                                   {Math.floor(approvedQty)} {baseUnitName || ''}
                                                 </div>
                                               );
@@ -2818,9 +3088,9 @@ export default function AddOutward() {
                                               const displayValue = rawValue ? Math.floor(parseFloat(rawValue) || 0).toString() : "";
 
                                               return (
-                                                <div onClick={(e) => e.stopPropagation()} className="flex flex-col">
-                                                  <Label className="text-xs font-medium text-gray-500 mb-1">LOADING QTY</Label>
-                                                  <div className="flex items-center gap-1.5">
+                                                <div onClick={(e) => e.stopPropagation()} className="flex flex-col leading-tight">
+                                                  <span className="text-[10px] font-medium uppercase tracking-wide text-zinc-500 mb-0.5">Loading</span>
+                                                  <div className="flex items-center gap-1">
                                                     <Input
                                                       type="text"
                                                       inputMode="numeric"
@@ -2877,10 +3147,10 @@ export default function AddOutward() {
                                                         );
                                                       }
                                                     }}
-                                                    className={`flex-1 h-9 text-sm ${form.formState.errors.sales_orders?.[soIndex]?.items?.[itemIndex]?.total_quantity ? "border-red-500" : ""}`}
+                                                    className={`flex-1 h-8 text-sm ${form.formState.errors.sales_orders?.[soIndex]?.items?.[itemIndex]?.total_quantity ? "border-red-500" : ""}`}
                                                   />
                                                   {baseUnitName && (
-                                                    <div className="px-1.5 py-1 bg-gray-100 border border-gray-300 rounded text-xs font-medium text-gray-700 min-w-[45px] text-center whitespace-nowrap">
+                                                    <div className="px-1.5 py-0.5 bg-zinc-100 border border-zinc-300 rounded text-[10px] font-medium text-zinc-700 min-w-[40px] text-center whitespace-nowrap">
                                                       {baseUnitName}
                                                     </div>
                                                   )}
@@ -2896,16 +3166,25 @@ export default function AddOutward() {
                                           {(() => {
                                             const godowns = form.watch(`sales_orders.${soIndex}.items.${itemIndex}.godowns`) || [];
                                             const totalBatches = godowns.reduce((sum, godown) => sum + (godown.batches?.length || 0), 0);
+                                            const missingSupervisor = godowns.some(
+                                              (g) => g?.godown_id && (!g.supervisor_id || g.supervisor_id === "")
+                                            );
                                             return (
-                                              <div className="flex items-center gap-2">
+                                              <div className="flex items-center gap-1.5">
+                                                {missingSupervisor ? (
+                                                  <Badge variant="outline" className="bg-amber-50 text-amber-800 border-amber-300 text-[10px] h-5 px-1.5">
+                                                    <UserPlus className="h-3 w-3 mr-0.5" />
+                                                    Supervisor
+                                                  </Badge>
+                                                ) : null}
                                                 {hasSavedBatches ? (
-                                                  <Badge variant="outline" className="bg-green-100 text-green-800 border-green-300 text-xs">
-                                                    <CheckCircle className="h-3 w-3 mr-1" />
+                                                  <Badge variant="outline" className="bg-emerald-100 text-emerald-800 border-emerald-300 text-[10px] h-5 px-1.5">
+                                                    <CheckCircle className="h-3 w-3 mr-0.5" />
                                                     {totalBatches} Batch{totalBatches !== 1 ? 'es' : ''}
                                                   </Badge>
                                                 ) : (
-                                                  <Badge variant="outline" className="text-gray-600 text-xs">
-                                                    <Tag className="h-3 w-3 mr-1" />
+                                                  <Badge variant="outline" className="text-zinc-600 text-[10px] h-5 px-1.5">
+                                                    <Tag className="h-3 w-3 mr-0.5" />
                                                     Add Batches
                                                   </Badge>
                                                 )}
@@ -2933,9 +3212,9 @@ export default function AddOutward() {
               const messages = collectFormErrorMessages(form.formState.errors, [], sectionName);
               if (!messages.length) return null;
               return (
-                <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-                  <p className="mb-1 font-medium">Fix these before creating the gate pass:</p>
-                  <ul className="list-disc space-y-0.5 pl-5">
+                <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
+                  <p className="mb-0.5 font-medium">Fix these before creating the gate pass:</p>
+                  <ul className="list-disc space-y-0.5 pl-4">
                     {messages.map((message) => (
                       <li key={message}>{message}</li>
                     ))}
@@ -2945,18 +3224,21 @@ export default function AddOutward() {
             })()}
 
             {/* Submit Button */}
-            <div className="flex justify-end space-x-3 pb-4">
+            <div className="flex justify-end gap-2 pb-2">
               <Button
                 type="button"
                 variant="outline"
+                size="sm"
+                className="h-8 text-xs"
                 onClick={() => setLocation("/outward/outward-list")}
               >
                 Cancel
               </Button>
               <Button
                 type="submit"
+                size="sm"
                 disabled={createOutwardMutation.isPending}
-                className=""
+                className="h-8 text-xs bg-zinc-900 hover:bg-black text-white border border-amber-500/30"
               >
                 {createOutwardMutation.isPending ? (
                   <>
@@ -3880,6 +4162,103 @@ export default function AddOutward() {
             </Button>
             <Button type="button" size="sm" onClick={handleConfirmExceedApprovedQty}>
               OK
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={assignSupervisorOpen} onOpenChange={setAssignSupervisorOpen}>
+        <DialogContent className="sm:max-w-lg p-4 gap-3">
+          <DialogHeader className="space-y-1">
+            <DialogTitle className="text-base flex items-center gap-1.5">
+              <UserPlus className="h-4 w-4 text-emerald-700" />
+              Assign Supervisor
+            </DialogTitle>
+            <DialogDescription className="text-xs">
+              Auto-assign uses the last gate pass for this vehicle when available, otherwise the first godown supervisor.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2 max-h-[50vh] overflow-auto">
+            {assignSupervisorDraft.length === 0 ? (
+              <p className="text-sm text-muted-foreground py-4 text-center">No godowns configured yet.</p>
+            ) : (
+              assignSupervisorDraft.map((row) => (
+                <div
+                  key={row.godownKey}
+                  className="flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-2 border-b border-zinc-200 pb-2 last:border-b-0"
+                >
+                  <div className="sm:w-[40%] min-w-0">
+                    <p className="text-[11px] text-zinc-500 uppercase tracking-wide">Godown</p>
+                    <p className="text-sm font-medium text-zinc-900 truncate" title={row.godownName}>
+                      {row.godownName}
+                    </p>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[11px] text-zinc-500 uppercase tracking-wide mb-0.5">Supervisor</p>
+                    <Select
+                      value={row.supervisor_id || undefined}
+                      onValueChange={(value) => {
+                        setAssignSupervisorDraft((prev) =>
+                          prev.map((r) =>
+                            r.godownKey === row.godownKey
+                              ? { ...r, supervisor_id: value }
+                              : r
+                          )
+                        );
+                      }}
+                    >
+                      <SelectTrigger className="h-8 text-sm">
+                        <SelectValue placeholder="Select supervisor" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {(allSupervisors || []).map((sup) => (
+                          <SelectItem
+                            key={sup.user_id}
+                            value={String(sup.user_id)}
+                          >
+                            {sup.name || sup.username || `User ${sup.user_id}`}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+          <div className="flex flex-wrap justify-end gap-1.5 pt-1">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="h-8 text-xs"
+              onClick={() => setAssignSupervisorOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="h-8 text-xs border-emerald-300 text-emerald-800 hover:bg-emerald-50"
+              onClick={handleAutoAssignSupervisors}
+              disabled={assignSupervisorLoading || assignSupervisorDraft.length === 0}
+            >
+              {assignSupervisorLoading ? (
+                <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />
+              ) : (
+                <Users className="h-3.5 w-3.5 mr-1" />
+              )}
+              Auto Assign
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              className="h-8 text-xs bg-emerald-700 hover:bg-emerald-800 text-white"
+              onClick={handleApplyAssignSupervisors}
+              disabled={assignSupervisorDraft.length === 0}
+            >
+              Apply
             </Button>
           </div>
         </DialogContent>

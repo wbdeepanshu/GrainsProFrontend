@@ -29,3 +29,13 @@ export async function fetchUsersForFilter() {
 export async function fetchUsers(params = {}) {
   return fetchUsersForFilter(params);
 }
+
+export async function fetchBranches() {
+  const res = await apiRequest("GET", apiUrl("/api/get-branches/"));
+  const data = await parseJsonResponse(res);
+  if (data.status && Number(data.status) >= 400) {
+    throw new Error(data.message || "Failed to load branches");
+  }
+  const rows = data.data ?? data.results ?? [];
+  return Array.isArray(rows) ? rows : [];
+}

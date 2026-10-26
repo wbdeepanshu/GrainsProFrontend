@@ -42,6 +42,15 @@ export async function fetchLedgersBreakdown(params = {}) {
   return fetchLedgers(params);
 }
 
+export async function fetchLedgerDetail(partyId) {
+  const res = await apiRequest(
+    "GET",
+    apiUrl(`/api/report/get-ledgers/${encodeURIComponent(partyId)}/`),
+  );
+  const data = await parseJsonResponse(res);
+  return data.data ?? data ?? null;
+}
+
 export async function fetchLedgerGroups(params = {}) {
   try {
     const res = await apiRequest(

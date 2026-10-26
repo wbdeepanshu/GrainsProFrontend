@@ -1,5 +1,10 @@
 import { useToast } from "@/hooks/use-toast";
 
+export function getApiSuccessMessage(result, fallback = "Operation completed successfully.") {
+  if (typeof result === "string") return result;
+  return result?.message || fallback;
+}
+
 export function getApiErrorMessage(error, fallback = "Something went wrong") {
   if (!error) return fallback;
   if (typeof error === "string") return error;

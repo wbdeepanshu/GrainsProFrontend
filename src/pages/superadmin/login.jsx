@@ -7,30 +7,27 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Card, CardContent } from "@/components/ui/card";
-import { Eye, EyeOff, Shield, Lock, User, CheckCircle, Phone } from "lucide-react";
+import { Eye, EyeOff, Lock, Phone, Shield } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient } from "@/lib/queryClient";
 import Loader from "@/components/common/loader";
-import logo from "@/assets/gp_logo1.png";
+import logo from "@/assets/new_logo.png";
+import loginBg from "@/assets/login_bg.png";
 
 const API_BASE_URL = import.meta.env.VITE_BASE_URL;
 
 export default function SuperAdminLogin() {
   const [, setLocation] = useLocation();
   const [showPassword, setShowPassword] = useState(false);
-  const [animatedElements, setAnimatedElements] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  // Add login page class to body and html for proper scrolling
   useEffect(() => {
-    document.body.classList.add('login-page-active');
-    document.documentElement.classList.add('login-page-active');
-
+    document.body.classList.add("login-page-active");
+    document.documentElement.classList.add("login-page-active");
     return () => {
-      document.body.classList.remove('login-page-active');
-      document.documentElement.classList.remove('login-page-active');
+      document.body.classList.remove("login-page-active");
+      document.documentElement.classList.remove("login-page-active");
     };
   }, []);
 
@@ -43,66 +40,43 @@ export default function SuperAdminLogin() {
     },
   });
 
-  // Floating animation elements
-  useEffect(() => {
-    const elements = Array.from({ length: 8 }, (_, i) => ({
-      id: i,
-      size: Math.random() * 60 + 20,
-      left: Math.random() * 100,
-      delay: Math.random() * 4,
-      duration: Math.random() * 10 + 10,
-    }));
-    setAnimatedElements(elements);
-  }, []);
-
   const handleRememberMeChange = (checked) => {
     if (checked) {
-      const mobile = form.getValues("mobile")
-      const password = form.getValues("password")
+      const mobile = form.getValues("mobile");
+      const password = form.getValues("password");
       localStorage.setItem(
         "superadmin_credentials",
         JSON.stringify({ mobile, password })
-      )
-    }
-    else {
-      form.setValue("mobile", "")
-      form.setValue("password", "")
-      localStorage.removeItem("superadmin_credentials")
+      );
+    } else {
+      form.setValue("mobile", "");
+      form.setValue("password", "");
+      localStorage.removeItem("superadmin_credentials");
     }
   };
 
   useEffect(() => {
-    const savedCredentials = localStorage.getItem("superadmin_credentials")
+    const savedCredentials = localStorage.getItem("superadmin_credentials");
 
     if (savedCredentials) {
       try {
-        const { mobile } = JSON.parse(savedCredentials)
-        const { password } = JSON.parse(savedCredentials)
-
-        if (mobile) {
-          form.setValue("rememberMe", true)
-          form.setValue("mobile", mobile)
-        } else {
-          form.setValue("mobile", "")
-        }
-        if (password) {
-          form.setValue("password", password)
-        } else {
-          form.setValue("password", "")
-        }
+        const { mobile, password } = JSON.parse(savedCredentials);
+        form.setValue("rememberMe", Boolean(mobile));
+        form.setValue("mobile", mobile || "");
+        form.setValue("password", password || "");
       } catch (error) {
-        console.error("Invalid credentials format in localStorage:", error)
-        form.setValue("mobile", "")
-        form.setValue("password", "")
-        form.setValue("rememberMe", false)
+        console.error("Invalid credentials format in localStorage:", error);
+        form.setValue("mobile", "");
+        form.setValue("password", "");
+        form.setValue("rememberMe", false);
       }
     } else {
-      form.setValue("mobile", "")
-      form.setValue("password", "")
-      form.setValue("rememberMe", false)
-      localStorage.removeItem("superadmin_credentials")
+      form.setValue("mobile", "");
+      form.setValue("password", "");
+      form.setValue("rememberMe", false);
+      localStorage.removeItem("superadmin_credentials");
     }
-  }, [form])
+  }, [form]);
 
   const onSubmit = async (data) => {
     try {
@@ -121,17 +95,15 @@ export default function SuperAdminLogin() {
       });
 
       const result = await response.json();
-     
+
       if (result.status === 200) {
-        // Store token and user data
         localStorage.setItem("superadmin_token", result.data.access_token);
         localStorage.setItem("superadmin_user", JSON.stringify(result.data));
-        
-        // Clear any existing cache
+
         queryClient.clear();
         queryClient.invalidateQueries();
         queryClient.resetQueries();
-       
+
         toast({
           title: "Login Successful",
           description: `Welcome back, ${result.data.name}!`,
@@ -159,132 +131,131 @@ export default function SuperAdminLogin() {
   };
 
   return (
-    <div className="login-page login-container h-screen min-h-0 overflow-hidden bg-gradient-to-br from-gray-900 via-black to-gray-800 px-3 sm:px-6 lg:px-8 relative flex flex-col">
-      {/* Animated Background Elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {animatedElements.map((element) => (
-          <div
-            key={element.id}
-            className="absolute bg-white bg-opacity-5 rounded-full animate-float"
-            style={{
-              width: `${element.size}px`,
-              height: `${element.size}px`,
-              left: `${element.left}%`,
-              '--delay': `${element.delay}s`,
-              '--duration': `${element.duration}s`,
-            }}
+    <div className="login-page login-container relative h-screen min-h-0 w-full overflow-hidden bg-[#141414]">
+      <div className="flex h-full min-h-0 w-full flex-col lg:flex-row">
+        <section className="relative hidden h-full min-h-0 min-w-0 flex-1 bg-[#141414] lg:flex lg:items-center lg:justify-center">
+          <img
+            src={loginBg}
+            alt=""
+            width={2528}
+            height={1696}
+            className="max-h-full max-w-full h-auto w-auto object-contain object-center"
+            draggable={false}
           />
-        ))}
-      </div>
+        </section>
 
-      {/* Geometric shapes */}
-      <div className="absolute top-10 left-10 w-32 h-32 border border-white border-opacity-20 rotate-45 animate-spin-slow"></div>
-      <div className="absolute bottom-10 right-10 w-24 h-24 border border-white border-opacity-20 rotate-12 animate-pulse-gentle"></div>
+        <section className="relative z-20 flex h-full min-h-0 w-full flex-col border-[#c9a227] bg-white lg:w-[420px] lg:shrink-0 lg:border-l-2 xl:w-[460px]">
+          <div className="relative flex h-40 w-full shrink-0 items-center justify-center overflow-hidden bg-[#141414] lg:hidden">
+            <img
+              src={loginBg}
+              alt=""
+              width={2528}
+              height={1696}
+              className="max-h-full max-w-full object-contain object-center"
+              draggable={false}
+            />
+          </div>
 
-      {/* Organization admin login link - right bottom corner */}
-      {/* <button
-        type="button"
-        onClick={() => setLocation("/login")}
-        className="fixed bottom-3 right-3 sm:bottom-4 sm:right-4 z-20 text-xs sm:text-sm text-white/80 hover:text-white underline transition-colors"
-      >
-        Organization admin login
-      </button> */}
-      <div className="absolute top-1/3 right-20 w-16 h-16 bg-white bg-opacity-10 rounded-full animate-bounce-gentle"></div>
-
-      <div className="flex-1 min-h-0 flex items-center justify-center py-4 sm:py-6">
-        <div className="w-full max-w-md relative z-10 px-2 sm:px-4 flex items-center justify-center">
-          <Card className="shadow-2xl border-0 backdrop-blur-sm bg-white bg-opacity-95 animate-slide-up w-full max-w-md">
-            <CardContent className="p-4 sm:p-6 md:p-8">
-              <div className="text-center mb-4 sm:mb-6">
-                <div className="flex justify-center mb-3 sm:mb-4">
-                  <div className="bg-gradient-to-r from-black to-gray-600 p-2 sm:p-3 rounded-full animate-bounce-gentle">
-                    <div className="bg-white p-3 sm:p-4 rounded-full">
-                      <img src={logo} alt="App Logo" className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24" />
-                    </div>
-                  </div>
+          <div className="flex min-h-0 flex-1 flex-col px-6 py-6 sm:px-8 sm:py-8 lg:px-8 lg:py-9">
+            <div className="mx-auto flex w-full max-w-[340px] flex-1 flex-col justify-center xl:max-w-[360px]">
+              <div className="mb-7 flex flex-col items-center text-center">
+                <img
+                  src={logo}
+                  alt="GrainsPro ERP"
+                  className="mb-5 h-28 w-28 object-contain sm:h-32 sm:w-32"
+                />
+                <div className="mb-2 inline-flex items-center gap-1.5 rounded-full border border-[#c9a227]/50 bg-[#141414] px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[#c9a227]">
+                  <Shield className="h-3 w-3" />
+                  Super Admin
                 </div>
-                <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 animate-fade-in">Sign In</h2>
+                <h2 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+                  Sign In
+                </h2>
+                <p className="mt-1.5 text-sm leading-relaxed text-slate-500">
+                  Mobile number and password for super admin access.
+                </p>
               </div>
 
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3 sm:space-y-4">
-                <div className="animate-slide-in-left">
-                  <Label htmlFor="mobile" className="block text-sm font-medium text-gray-700 mb-2">
-                    <div className="flex items-center space-x-2">
-                      <Phone className="h-4 w-4" />
-                      <span>Mobile Number</span>
-                    </div>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3.5">
+                <div>
+                  <Label htmlFor="mobile" className="mb-1.5 block text-sm font-medium text-slate-700">
+                    Mobile Number
                   </Label>
-                  <Input
-                    id="mobile"
-                    type="tel"
-                    placeholder="Enter your 10-digit mobile number"
-                    {...form.register("mobile")}
-                    className="w-full px-3 sm:px-4 py-2 sm:py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent transition-all text-base"
-                    maxLength={10}
-                    disabled={isLoading}
-                  />
+                  <div className="relative">
+                    <Phone className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#c9a227]" />
+                    <Input
+                      id="mobile"
+                      type="tel"
+                      placeholder="Enter 10-digit mobile number"
+                      {...form.register("mobile")}
+                      className="h-10 w-full rounded-lg border-slate-200 bg-slate-50 pl-10 pr-3 text-sm text-slate-900 placeholder:text-slate-400 focus-visible:border-[#c9a227] focus-visible:ring-[#c9a227]/35"
+                      maxLength={10}
+                      disabled={isLoading}
+                    />
+                  </div>
                   {form.formState.errors.mobile && (
-                    <p className="text-red-500 text-sm mt-1 animate-shake">{form.formState.errors.mobile.message}</p>
+                    <p className="mt-1 text-sm text-red-500">
+                      {form.formState.errors.mobile.message}
+                    </p>
                   )}
                 </div>
 
-                <div className="animate-slide-in-right">
-                  <Label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                    <div className="flex items-center space-x-2">
-                      <Lock className="h-4 w-4" />
-                      <span>Password</span>
-                    </div>
+                <div>
+                  <Label htmlFor="password" className="mb-1.5 block text-sm font-medium text-slate-700">
+                    Password
                   </Label>
                   <div className="relative">
+                    <Lock className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#c9a227]" />
                     <Input
                       id="password"
                       type={showPassword ? "text" : "password"}
                       placeholder="Enter your password"
                       {...form.register("password")}
-                      className="w-full px-3 sm:px-4 py-2 sm:py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent transition-all text-base pr-10 sm:pr-12"
+                      className="h-10 w-full rounded-lg border-slate-200 bg-slate-50 pl-10 pr-11 text-sm text-slate-900 placeholder:text-slate-400 focus-visible:border-[#c9a227] focus-visible:ring-[#c9a227]/35"
                       disabled={isLoading}
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 transition-colors hover:text-[#c9a227]"
+                      aria-label={showPassword ? "Hide password" : "Show password"}
                     >
-                      {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                     </button>
                   </div>
                   {form.formState.errors.password && (
-                    <p className="text-red-500 text-sm mt-1 animate-shake">{form.formState.errors.password.message}</p>
+                    <p className="mt-1 text-sm text-red-500">
+                      {form.formState.errors.password.message}
+                    </p>
                   )}
                 </div>
 
-                <div className="flex items-center justify-between animate-fade-in">
-                  <div className="flex items-center space-x-2">
+                <div className="flex items-center justify-between gap-2 pt-0.5">
+                  <div className="flex items-center gap-2">
                     <Checkbox
                       id="rememberMe"
                       checked={form.watch("rememberMe")}
                       onCheckedChange={(checked) => {
-                        form.setValue("rememberMe", checked)
-                        handleRememberMeChange(checked)
+                        form.setValue("rememberMe", checked);
+                        handleRememberMeChange(checked);
                       }}
                       disabled={isLoading}
+                      className="border-[#c9a227]/60 data-[state=checked]:border-[#c9a227] data-[state=checked]:bg-[#c9a227] data-[state=checked]:text-[#141414]"
                     />
-                    <Label htmlFor="rememberMe" className="text-sm text-gray-600">
-                      <div className="flex items-center space-x-2">
-                        <CheckCircle className="h-4 w-4" />
-                        <span>Remember me</span>
-                      </div>
+                    <Label htmlFor="rememberMe" className="cursor-pointer text-sm text-slate-600">
+                      Remember me
                     </Label>
                   </div>
                 </div>
 
                 <Button
                   type="submit"
-                  className="w-full py-2 sm:py-2.5 px-4 bg-gradient-to-r from-gray-900 to-black text-white font-semibold rounded-lg hover:opacity-90 transition-all focus:ring-4 focus:ring-gray-300"
-                  disabled={isLoading || form.formState.isSubmitting}
+                  className="mt-1 h-10 w-full rounded-lg border-2 border-[#c9a227] bg-[#141414] text-sm font-semibold text-white hover:bg-[#1f1f1f] hover:border-[#e8c547]"
+                  disabled={form.formState.isSubmitting || isLoading}
                 >
-                  {isLoading || form.formState.isSubmitting ? (
-                    <div className="flex items-center justify-center space-x-2">
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  {form.formState.isSubmitting || isLoading ? (
+                    <div className="flex items-center justify-center gap-2">
+                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-[#c9a227] border-t-transparent" />
                       <span>Signing In...</span>
                     </div>
                   ) : (
@@ -292,25 +263,31 @@ export default function SuperAdminLogin() {
                   )}
                 </Button>
 
-                <div className="flex justify-center" style={{ marginBottom: "-25px" }}>
+                <div className="flex justify-center pt-0.5">
                   <button
                     type="button"
                     onClick={() => setLocation("/login")}
-                    className="text-xs sm:text-sm text-gray-900 hover:text-gray-600 underline transition-colors font-semibold"
-                    style={{
-                      marginTop: "-11px",
-                    }}
+                    className="text-xs font-semibold text-slate-500 underline underline-offset-2 transition-colors hover:text-[#c9a227] sm:text-sm"
                   >
                     Organization Admin Login
                   </button>
                 </div>
               </form>
-            </CardContent>
-          </Card>
-        </div>
+            </div>
+
+            <div className="mx-auto mt-5 w-full max-w-[340px] border-t border-[#c9a227]/30 pt-3 text-center xl:max-w-[360px]">
+              <p className="text-xs text-slate-400">
+                All rights reserved, © {new Date().getFullYear()}
+              </p>
+              <p className="mt-1 text-xs text-slate-400">A Premium Product by</p>
+              <p className="mt-0.5 text-sm font-semibold text-[#c9a227]">
+                MWB Technologies India Pvt Ltd
+              </p>
+            </div>
+          </div>
+        </section>
       </div>
 
-      {/* Loader */}
       <Loader isLoading={isLoading} text="Authenticating user" />
     </div>
   );

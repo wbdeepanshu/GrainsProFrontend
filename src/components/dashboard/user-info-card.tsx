@@ -1,10 +1,9 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Building2, MapPin, Shield, Clock, CheckCircle, Star, User, Mail, Phone, LogOut, Circle } from "lucide-react";
+import { Building2, Keyboard, LogOut } from "lucide-react";
 import { AuthService } from "@/lib/auth";
-// import { useNavigate } from "react-router-dom";
-
 import { useLocation } from "wouter";
+import { KEYBOARD_SHORTCUTS_PATH } from "@/lib/appShortcuts";
 
 
 interface UserInfo {
@@ -104,12 +103,19 @@ export default function UserInfoCard({ user, tallyRunning = false }: UserInfoCar
           </div>
         </div> */}
 
-        {/* Logout Button */}
-        <div className="pt-4">
+        <div className="pt-4 space-y-2">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setLocation(KEYBOARD_SHORTCUTS_PATH)}
+            className="w-full flex items-center justify-center space-x-2 border-blue-200 text-blue-900 hover:bg-blue-50"
+          >
+            <Keyboard className="w-4 h-4" />
+            <span>Keyboard shortcuts</span>
+          </Button>
           <Button
             onClick={handleLogout}
-           
-            className="w-full flex items-center justify-center space-x-2  bg-gradient-to-r from-black to-gray-600 hover:from-gray-800 hover:to-gray-700 text-white"
+            className="w-full flex items-center justify-center space-x-2 bg-gradient-to-r from-black to-gray-600 hover:from-gray-800 hover:to-gray-700 text-white"
           >
             <LogOut className="w-4 h-4" />
             <span>Logout</span>

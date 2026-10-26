@@ -1,145 +1,73 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import {
-    Activity,
-    User,
-    Database,
-    ArrowRight
-} from "lucide-react";
+import { Activity, ArrowRight, Database, User } from "lucide-react";
 import { useLocation } from "wouter";
+import { Button } from "@/components/ui/button";
+import DashboardSection from "./DashboardSection";
 
 interface RecentActivityProps {
-    data?: {
-        activities: Array<{
-            id: number;
-            sync_module: string;
-            description: string;
-            sync_date: string;
-            sync_by: string;
-            branch: string;
-        }>;
-        error: string | null;
-    };
+  data?: {
+    activities: Array<{
+      id: number;
+      sync_module: string;
+      description: string;
+      sync_date: string;
+      sync_by: string;
+      branch: string;
+    }>;
+    error: string | null;
+  };
 }
 
 export default function RecentActivity({ data }: RecentActivityProps) {
-    const [location, setLocation] = useLocation();
+  const [, setLocation] = useLocation();
+  const activities = data?.activities || [];
 
-    const getModuleIcon = (module) => {
-        switch (module?.toLowerCase()) {
-            case 'stock items':
-                return <Database className="h-4 w-4" />;
-            case 'units':
-                return <Database className="h-4 w-4" />;
-            case 'godowns':
-                return <Database className="h-4 w-4" />;
-            case 'voucher types':
-                return <Database className="h-4 w-4" />;
-            default:
-                return <Activity className="h-4 w-4" />;
-        }
-    };
+  const viewMore = (
+    <Button
+      variant="ghost"
+      size="sm"
+      onClick={() => setLocation("/recent-activity")}
+      className="h-8 text-black hover:bg-neutral-100 border border-transparent hover:border-[#c9a227]/50"
+    >
+      View More
+      <ArrowRight className="h-3.5 w-3.5 ml-1" />
+    </Button>
+  );
 
-    const getModuleColor = (module) => {
-        switch (module?.toLowerCase()) {
-            case 'stock items':
-                return 'bg-blue-100 text-blue-800';
-            case 'units':
-                return 'bg-green-100 text-green-800';
-            case 'godowns':
-                return 'bg-purple-100 text-purple-800';
-            case 'voucher types':
-                return 'bg-orange-100 text-orange-800';
-            default:
-                return 'bg-gray-100 text-gray-800';
-        }
-    };
-
-    const handleViewMore = () => {
-        setLocation('/recent-activity');
-    };
-
-    // Handle error state from dashboard API
-    if (data?.error) {
-        return (
-            <Card>
-                <CardHeader>
-                    <CardTitle className="flex items-center">
-                        <Activity className="h-5 w-5 mr-2" />
-                        Recent Activity
-                    </CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <div className="text-center py-8">
-                        <Activity className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-                        <p className="text-sm text-gray-600">Unable to load recent activities</p>
-                    </div>
-                </CardContent>
-            </Card>
-        );
-    }
-
-    const activities = data?.activities || [];
-
+  if (data?.error) {
     return (
-        <Card>
-            <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                    <div className="flex items-center">
-                        <Activity className="h-5 w-5 mr-2" />
-                        Recent Activity
-                    </div>
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={handleViewMore}
-                        className="text-blue-600 hover:text-blue-700"
-                    >
-                        View More
-                        <ArrowRight className="h-4 w-4 ml-1" />
-                    </Button>
-                </CardTitle>
-            </CardHeader>
-            <CardContent>
-                {activities.length === 0 ? (
-                    <div className="text-center py-8">
-                        <Activity className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-                        <p className="text-sm text-gray-600">No recent activities</p>
-                    </div>
-                ) : (
-                    <div className="space-y-3">
-                        {activities.map((activity) => (
-                            <div key={activity.id} className="flex items-center space-x-3 p-3 rounded-lg border border-gray-100 hover:bg-gray-50 transition-colors">
-                                <div className="flex-shrink-0">
-                                    <div className={`p-2 rounded-lg ${getModuleColor(activity.sync_module)}`}>
-                                        {getModuleIcon(activity.sync_module)}
-                                    </div>
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                    <div className="flex items-center justify-between">
-                                        <h4 className="text-sm font-semibold text-gray-900 truncate">
-                                            {activity.sync_module}
-                                        </h4>
-                                        {/* <Badge variant="outline" className="text-xs ml-2">
-                                            {activity.sync_date}
-                                        </Badge> */}
-                                    </div>
-                                    <div className="flex items-center space-x-1 mt-1">
-                                        <User className="h-3 w-3 text-gray-400" />
-                                        <span className="text-xs text-gray-500 ">
-                                            {activity.sync_by || 'Unknown User'}
-                                        </span>
-                                        <span className="text-xs text-gray-500">
-                                            {activity.sync_date}
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                )}
-            </CardContent>
-        </Card>
+      <DashboardSection title="Recent Activity" icon={Activity} headerAction={viewMore}>
+        <p className="text-center text-sm text-neutral-500 py-4">Unable to load recent activities</p>
+      </DashboardSection>
     );
+  }
+
+  return (
+    <DashboardSection title="Recent Activity" icon={Activity} headerAction={viewMore}>
+      {activities.length === 0 ? (
+        <p className="text-center text-sm text-neutral-500 py-4">No recent activities</p>
+      ) : (
+        <div className="space-y-1.5">
+          {activities.map((activity) => (
+            <div
+              key={activity.id}
+              className="flex items-center gap-2 rounded-lg border border-[#c9a227]/35 bg-gradient-to-br from-white to-neutral-50 px-2.5 py-1.5 hover:border-[#c9a227] transition-colors"
+            >
+              <div className="h-7 w-7 rounded-md bg-black text-white border border-[#c9a227]/55 shrink-0 flex items-center justify-center">
+                <Database className="h-3.5 w-3.5" strokeWidth={2.25} />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-semibold text-black truncate">{activity.sync_module}</p>
+                <div className="flex items-center gap-1 mt-0.5 text-[10px] text-neutral-500">
+                  <User className="h-3 w-3 shrink-0" />
+                  <span className="truncate">{activity.sync_by || "Unknown User"}</span>
+                  <span className="shrink-0">·</span>
+                  <span className="shrink-0 tabular-nums">{activity.sync_date}</span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </DashboardSection>
+  );
 }

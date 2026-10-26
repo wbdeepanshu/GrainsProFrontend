@@ -21,6 +21,7 @@ import StockMasters from "@/pages/stock-masters.jsx";
 import BrokerMasters from "@/pages/broker-masters.jsx";
 import ItemMasters from "@/pages/item-masters.jsx";
 import LedgerMasters from "@/pages/ledger-masters.jsx";
+import LedgersGroup from "@/pages/ledgers-group.jsx";
 import AdditionalLedgers from "@/pages/additional-ledgers.jsx";
 import LedgerCreditSettings from "@/pages/ledger-credit-settings.jsx";
 import LabTestParams from "@/pages/lab-test-params.jsx";
@@ -91,15 +92,11 @@ import UpdateReceipt from "@/pages/update-receipt.jsx";
 import HamaliTypeMasters from "@/pages/hamali-type-masters.jsx";
 import ExpenseTypeMasters from "@/pages/expense-type-masters.jsx";
 import KycDocumentTypeMasters from "@/pages/kyc-document-type-masters.jsx";
+import RetailersInfo from "@/pages/retailers-info.jsx";
 import GstMasters from "@/pages/gst-masters.jsx";
-import BusinessTypes from "@/pages/business-types.jsx";
-import CreditTypes from "@/pages/credit-types.jsx";
 import BranchSettings from "@/pages/branch-settings.jsx";
-import States from "@/pages/states.jsx";
-import Districts from "@/pages/districts.jsx";
-import Cities from "@/pages/cities.jsx";
-import PriceRules from "@/pages/price-rules.jsx";
-import StockItemPricing from "@/pages/stock-item-pricing.jsx";
+import ItemPriceMargin from "@/pages/item-price-margin.jsx";
+import PriceMaster from "@/pages/price-master.jsx";
 import BrokerageConfiguration from "@/pages/brokerage-configuration.jsx";
 import BrokerageReports from "@/pages/brokerage-reports.jsx";
 import BrokerageReportBrokerDetail from "@/pages/brokerage-report-broker-detail.jsx";
@@ -145,7 +142,9 @@ import SuperAdminStockJournalReports from "@/pages/superadmin/stock-journal-repo
 import SuperAdminOnboardingDesign from "@/pages/superadmin/onboarding-design.jsx";
 import SuperAdminAdminSettings from "@/pages/superadmin/admin-settings.jsx";
 import Sidebar, { SidebarShellContext } from "@/components/layout/sidebar";
+import AppNavigationShortcuts from "@/components/layout/AppNavigationShortcuts";
 import { PageLoaderHost } from "@/components/common/loader";
+import KeyboardShortcuts from "@/pages/keyboard-shortcuts.jsx";
 
 // import ComprehensivePricingAnalysis from "@/pages/comprehensive-pricing-analysis.jsx";
 
@@ -186,6 +185,7 @@ function ShellGate({ children }: { children: ReactNode }) {
 
   return (
     <SidebarShellContext.Provider value={true}>
+      <AppNavigationShortcuts />
       <div className="flex h-screen w-full overflow-hidden">
         {showSidebar && <Sidebar owner="shell" />}
         <PageLoaderHost>
@@ -209,6 +209,9 @@ function Router() {
         <Route path="/forgot-password" component={ForgotPassword} />
         <Route path="/dashboard">
           <ProtectedRoute component={Dashboard} />
+        </Route>
+        <Route path="/keyboard-shortcuts">
+          <ProtectedRoute component={KeyboardShortcuts} />
         </Route>
 
         <Route path="/import">
@@ -244,6 +247,9 @@ function Router() {
         <Route path="/ledger-masters">
           <ProtectedRoute component={LedgerMasters} />
         </Route>
+        <Route path="/ledgers-group">
+          <ProtectedRoute component={LedgersGroup} />
+        </Route>
         <Route path="/additional-ledgers">
           <ProtectedRoute component={AdditionalLedgers} />
         </Route>
@@ -258,6 +264,9 @@ function Router() {
         </Route>
         <Route path="/kyc-document-type-masters">
           <ProtectedRoute component={KycDocumentTypeMasters} />
+        </Route>
+        <Route path="/retailers-info">
+          <ProtectedRoute component={RetailersInfo} />
         </Route>
         <Route path="/gst-masters">
           <ProtectedRoute component={GstMasters} />
@@ -527,33 +536,15 @@ function Router() {
           <ProtectedRoute component={UpdateReceipt} />
         </Route>
 
-        {/* Margin Settings Routes */}
-        <Route path="/margin-settings/business-types">
-          <ProtectedRoute component={BusinessTypes} />
-        </Route>
-        <Route path="/margin-settings/credit-types">
-          <ProtectedRoute component={CreditTypes} />
-        </Route>
-        <Route path="/margin-settings/branch-settings">
-          <ProtectedRoute component={BranchSettings} />
-        </Route>
+        {/* Branch + Margin Settings Routes */}
         <Route path="/branches">
           <ProtectedRoute component={BranchSettings} />
         </Route>
-        <Route path="/margin-settings/states">
-          <ProtectedRoute component={States} />
+        <Route path="/margin-settings/item-price-margin">
+          <ProtectedRoute component={ItemPriceMargin} />
         </Route>
-        <Route path="/margin-settings/districts">
-          <ProtectedRoute component={Districts} />
-        </Route>
-        <Route path="/margin-settings/cities">
-          <ProtectedRoute component={Cities} />
-        </Route>
-        <Route path="/margin-settings/price-rules">
-          <ProtectedRoute component={PriceRules} />
-        </Route>
-        <Route path="/margin-settings/stock-item-pricing">
-          <ProtectedRoute component={StockItemPricing} />
+        <Route path="/price-master">
+          <ProtectedRoute component={PriceMaster} />
         </Route>
         <Route path="/margin-settings/brokerage-configuration">
           <ProtectedRoute component={BrokerageConfiguration} />

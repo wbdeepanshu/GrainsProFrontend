@@ -52,6 +52,7 @@ export async function fetchQuotationStockItems({ search = '', page = 1, perPage 
     page,
     per_page: perPage,
     branch_id: branchId || undefined,
+    include_zero_selling_stock: true,
   })
   return parseJsonResponse(response)
 }

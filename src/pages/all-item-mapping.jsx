@@ -412,82 +412,86 @@ export default function AllItemMapping() {
       />
 
       <div className="app-main-content flex flex-col overflow-hidden">
-        <header className="border-b bg-white dark:bg-gray-900 px-4 py-4 sm:px-6 shrink-0">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="flex items-center gap-3 min-w-0">
+        <header className="border-b bg-white dark:bg-gray-900 px-3 py-2 sm:px-4 shrink-0">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center gap-2 min-w-0">
               {isMobile && (
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="shrink-0"
+                  className="shrink-0 h-8 w-8"
                   onClick={() => setIsMobileSidebarOpen(true)}
                 >
-                  <Menu className="h-5 w-5" />
+                  <Menu className="h-4 w-4" />
                 </Button>
               )}
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 shrink-0">
-                <Link2 className="h-5 w-5 text-primary" />
+              <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary/10 shrink-0">
+                <Link2 className="h-4 w-4 text-primary" />
               </div>
               <div className="min-w-0">
-                <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white truncate">
+                <h1 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white truncate leading-tight">
                   Item Mapping
                 </h1>
-                <p className="text-sm text-muted-foreground hidden sm:block">
+                <p className="text-[11px] text-muted-foreground hidden sm:block leading-tight">
                   Map items to Raw material, Process, Finished goods, PO, and SO.
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-2 shrink-0">
+            <div className="flex items-center gap-1.5 shrink-0">
               <Button
                 variant="outline"
                 size="sm"
+                className="h-8 text-xs"
                 onClick={() => setLocation("/item-masters")}
               >
-                <Package className="h-4 w-4 mr-2" />
+                <Package className="h-3.5 w-3.5 mr-1" />
                 Item Masters
               </Button>
               <Button
                 variant="outline"
                 size="sm"
+                className="h-8 w-8 p-0"
                 onClick={handleRefresh}
                 disabled={isFetching}
                 title="Refresh list"
               >
-                <RefreshCw className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`} />
+                <RefreshCw className={`h-3.5 w-3.5 ${isFetching ? "animate-spin" : ""}`} />
               </Button>
               <Button
                 size="sm"
+                className="h-8 text-xs"
                 disabled={saveMutation.isPending || changedItemIds.size === 0}
                 onClick={() => saveMutation.mutate()}
               >
                 {saveMutation.isPending ? (
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />
                 ) : (
-                  <Save className="h-4 w-4 mr-2" />
+                  <Save className="h-3.5 w-3.5 mr-1" />
                 )}
                 Save
+                {changedItemIds.size > 0 ? ` (${changedItemIds.size})` : ""}
               </Button>
             </div>
           </div>
         </header>
 
-        <main className="flex-1 overflow-auto p-4 sm:p-6">
-          <Card className="mb-6">
-            <CardContent className="p-6">
-              <div className="flex flex-col gap-4 lg:flex-row lg:items-end">
-                <div className="space-y-2 flex-1 min-w-0">
-                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                    <Search className="h-4 w-4 text-gray-600" />
+        <main className="flex-1 overflow-auto p-2 sm:p-3">
+          <Card className="mb-2">
+            <CardContent className="p-2">
+              <div className="flex flex-col gap-1.5 lg:flex-row lg:items-end">
+                <div className="space-y-0.5 flex-1 min-w-0">
+                  <label className="text-[11px] font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1">
+                    <Search className="h-3 w-3 text-gray-600" />
                     Search Items
                   </label>
                   <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                    <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-gray-400 h-3.5 w-3.5" />
                     <Input
                       id="mapping-search"
                       placeholder="Search by name, group, category..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10 pr-8 h-11 w-full"
+                      className="pl-8 pr-7 h-8 text-sm w-full"
                     />
                     {searchTerm && (
                       <button
@@ -495,22 +499,22 @@ export default function AllItemMapping() {
                         onClick={() => setSearchTerm("")}
                         className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
                       >
-                        <X className="h-4 w-4" />
+                        <X className="h-3.5 w-3.5" />
                       </button>
                     )}
                   </div>
                 </div>
 
-                <div className="space-y-2 w-full lg:w-52 shrink-0">
-                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                    <Filter className="h-4 w-4 text-purple-600" />
+                <div className="space-y-0.5 w-full lg:w-48 shrink-0">
+                  <label className="text-[11px] font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1">
+                    <Filter className="h-3 w-3 text-purple-600" />
                     Item Grouping
                   </label>
                   <Select
                     value={selectedItemGrouping || "all"}
                     onValueChange={(value) => setSelectedItemGrouping(value === "all" ? "" : value)}
                   >
-                    <SelectTrigger className="h-11">
+                    <SelectTrigger className="h-8 text-sm">
                       <SelectValue placeholder="Select item grouping" />
                     </SelectTrigger>
                     <SelectContent>
@@ -524,13 +528,13 @@ export default function AllItemMapping() {
                   </Select>
                 </div>
 
-                <div className="space-y-2 w-full lg:w-40 shrink-0">
-                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-blue-600" />
+                <div className="space-y-0.5 w-full lg:w-36 shrink-0">
+                  <label className="text-[11px] font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1">
+                    <CheckCircle className="h-3 w-3 text-blue-600" />
                     Status
                   </label>
                   <Select value={activeStatusFilter} onValueChange={setActiveStatusFilter}>
-                    <SelectTrigger className="h-11">
+                    <SelectTrigger className="h-8 text-sm">
                       <SelectValue placeholder="Select status" />
                     </SelectTrigger>
                     <SelectContent>
@@ -540,13 +544,13 @@ export default function AllItemMapping() {
                   </Select>
                 </div>
 
-                <div className="space-y-2 w-full lg:w-44 shrink-0">
-                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                    <TrendingUp className="h-4 w-4 text-emerald-600" />
+                <div className="space-y-0.5 w-full lg:w-40 shrink-0">
+                  <label className="text-[11px] font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1">
+                    <TrendingUp className="h-3 w-3 text-emerald-600" />
                     Stock
                   </label>
                   <Select value={inStockFilter} onValueChange={setInStockFilter}>
-                    <SelectTrigger className="h-11">
+                    <SelectTrigger className="h-8 text-sm">
                       <SelectValue placeholder="Select stock" />
                     </SelectTrigger>
                     <SelectContent>
@@ -561,51 +565,38 @@ export default function AllItemMapping() {
                   type="button"
                   variant="outline"
                   size="icon"
-                  className="h-11 w-11 shrink-0"
+                  className="h-8 w-8 shrink-0"
                   onClick={clearAllFilters}
                   title="Clear filters"
                   aria-label="Clear filters"
                 >
-                  <X className="h-4 w-4" />
+                  <X className="h-3.5 w-3.5" />
                 </Button>
               </div>
-
             </CardContent>
           </Card>
 
           <Card>
-            <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2 pb-2">
-              <CardTitle className="text-lg">All item mapping</CardTitle>
+            <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-1.5 py-2 px-3">
+              <CardTitle className="text-sm">All item mapping</CardTitle>
               {changedItemIds.size > 0 && (
-                <span className="text-sm text-muted-foreground">
-                  {changedItemIds.size} item(s) modified — click Save to apply
+                <span className="text-xs text-muted-foreground">
+                  {changedItemIds.size} modified — Save to apply
                 </span>
               )}
             </CardHeader>
-            <CardContent className="space-y-4">
-              {/* Group cards (visual header for checkbox columns) */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                {COLUMN_ORDER.map((key) => (
-                  <div
-                    key={`group-card-${key}`}
-                    className="rounded-lg border bg-white dark:bg-gray-900 px-4 py-3 text-sm font-semibold text-gray-900 dark:text-gray-100"
-                  >
-                    {COLUMN_LABELS[key]}
-                  </div>
-                ))}
-              </div>
-
-              <div className="rounded-md border w-full max-h-[min(72vh,calc(100vh-14rem))] overflow-auto relative isolate">
-                <table className="w-full caption-bottom text-sm border-separate border-spacing-0">
+            <CardContent className="px-3 pb-3 pt-0 space-y-2">
+              <div className="rounded-md border w-full max-h-[min(78vh,calc(100vh-11rem))] overflow-auto relative isolate">
+                <table className="w-full caption-bottom text-sm border-collapse">
                   <TableHeader>
-                    <TableRow>
-                      <TableHead className="text-center whitespace-nowrap w-14 sticky top-0 z-30 bg-gray-50 dark:bg-gray-800 shadow-[inset_0_-1px_0_0_rgb(229_231_235)]">
-                        <span className="text-xs font-medium">All</span>
+                    <TableRow className="border-b border-slate-300 dark:border-gray-600">
+                      <TableHead className="h-8 px-1.5 py-1 text-center whitespace-nowrap w-10 sticky top-0 z-30 bg-gray-50 dark:bg-gray-800 border-b border-slate-300 dark:border-gray-600">
+                        <span className="text-[10px] font-medium">All</span>
                       </TableHead>
-                      <TableHead className="w-14 whitespace-nowrap sticky top-0 z-30 bg-gray-50 dark:bg-gray-800 shadow-[inset_0_-1px_0_0_rgb(229_231_235)]">
-                        Sl No
+                      <TableHead className="h-8 px-1.5 py-1 w-12 whitespace-nowrap text-xs sticky top-0 z-30 bg-gray-50 dark:bg-gray-800 border-b border-slate-300 dark:border-gray-600">
+                        #
                       </TableHead>
-                      <TableHead className="min-w-[180px] sticky top-0 z-30 bg-gray-50 dark:bg-gray-800 shadow-[inset_0_-1px_0_0_rgb(229_231_235)]">
+                      <TableHead className="h-8 px-2 py-1 min-w-[160px] text-xs sticky top-0 z-30 bg-gray-50 dark:bg-gray-800 border-b border-slate-300 dark:border-gray-600">
                         Item name
                       </TableHead>
                       {COLUMN_ORDER.map((key) => {
@@ -613,11 +604,14 @@ export default function AllItemMapping() {
                         return (
                           <TableHead
                             key={key}
-                            className="text-center whitespace-nowrap min-w-[100px] sticky top-0 z-30 bg-gray-50 dark:bg-gray-800 shadow-[inset_0_-1px_0_0_rgb(229_231_235)]"
+                            className="h-8 px-1 py-1 text-center whitespace-nowrap min-w-[72px] sticky top-0 z-30 bg-gray-50 dark:bg-gray-800 border-b border-slate-300 dark:border-gray-600"
                           >
-                            <div className="flex flex-col items-center gap-1.5">
-                              <span>{COLUMN_LABELS[key]}</span>
+                            <div className="flex flex-col items-center gap-0.5">
+                              <span className="text-[10px] leading-tight font-medium">
+                                {COLUMN_LABELS[key]}
+                              </span>
                               <Checkbox
+                                className="h-3.5 w-3.5"
                                 checked={
                                   columnState.indeterminate
                                     ? "indeterminate"
@@ -638,7 +632,7 @@ export default function AllItemMapping() {
                   <TableBody>
                     {displayItems.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={3 + COLUMN_ORDER.length} className="text-center text-muted-foreground py-8">
+                        <TableCell colSpan={3 + COLUMN_ORDER.length} className="text-center text-muted-foreground py-4 text-sm">
                           No items found.
                         </TableCell>
                       </TableRow>
@@ -649,10 +643,14 @@ export default function AllItemMapping() {
                         const rowState = getRowSelectState(item);
                         const sl = startSl + idx;
                         return (
-                          <TableRow key={item.id ?? idx}>
-                            <TableCell className="text-center">
+                          <TableRow
+                            key={item.id ?? idx}
+                            className="border-b border-slate-200 dark:border-gray-700 hover:bg-muted/40"
+                          >
+                            <TableCell className="px-1.5 py-1 text-center border-b border-slate-200 dark:border-gray-700">
                               <div className="flex justify-center">
                                 <Checkbox
+                                  className="h-3.5 w-3.5"
                                   checked={
                                     rowState.indeterminate
                                       ? "indeterminate"
@@ -665,14 +663,20 @@ export default function AllItemMapping() {
                                 />
                               </div>
                             </TableCell>
-                            <TableCell className="font-medium">{sl}</TableCell>
-                            <TableCell className="font-medium">
+                            <TableCell className="px-1.5 py-1 text-xs tabular-nums text-muted-foreground border-b border-slate-200 dark:border-gray-700">
+                              {sl}
+                            </TableCell>
+                            <TableCell className="px-2 py-1 font-medium text-sm leading-snug border-b border-slate-200 dark:border-gray-700">
                               {item.name || item.display_name || "—"}
                             </TableCell>
                             {COLUMN_ORDER.map((colKey) => (
-                              <TableCell key={colKey} className="text-center">
+                              <TableCell
+                                key={colKey}
+                                className="px-1 py-1 text-center border-b border-slate-200 dark:border-gray-700"
+                              >
                                 <div className="flex justify-center">
                                   <Checkbox
+                                    className="h-3.5 w-3.5"
                                     checked={!!flags[colKey]}
                                     onCheckedChange={(c) =>
                                       toggleFlag(item, colKey, c === true)
@@ -690,34 +694,36 @@ export default function AllItemMapping() {
                 </table>
               </div>
 
-              <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-muted-foreground">
+              <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
                 <span>
                   {totalCount > 0
                     ? `Showing ${startSl}–${startSl + displayItems.length - 1} of ${totalCount}`
                     : "No results"}
                   {isFetching ? " · Updating…" : ""}
                 </span>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5">
                   <Button
                     variant="outline"
                     size="sm"
+                    className="h-7 text-xs px-2"
                     disabled={!hasPrevious || isFetching}
                     onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                   >
-                    <ChevronLeft className="h-4 w-4" />
-                    Previous
+                    <ChevronLeft className="h-3.5 w-3.5" />
+                    Prev
                   </Button>
                   <span className="text-foreground tabular-nums">
-                    Page {pagination.current_page ?? currentPage} / {totalPages}
+                    {pagination.current_page ?? currentPage} / {totalPages}
                   </span>
                   <Button
                     variant="outline"
                     size="sm"
+                    className="h-7 text-xs px-2"
                     disabled={!hasNext || isFetching}
                     onClick={() => setCurrentPage((p) => p + 1)}
                   >
                     Next
-                    <ChevronRight className="h-4 w-4" />
+                    <ChevronRight className="h-3.5 w-3.5" />
                   </Button>
                 </div>
               </div>

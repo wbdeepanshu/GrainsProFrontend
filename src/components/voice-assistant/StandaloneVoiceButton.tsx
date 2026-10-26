@@ -119,7 +119,7 @@ const StandaloneVoiceButton: React.FC = () => {
     { keywords: ['route management', 'routes'], action: () => setLocation('/route-management') },
     { keywords: ['assign route', 'route assignment'], action: () => setLocation('/route-assignment') },
     { keywords: ['create route', 'new route'], action: () => setLocation('/route-management') },
-    { keywords: ['margin settings', 'margin'], action: () => setLocation('/margin-settings/business-types') },
+    { keywords: ['margin settings', 'margin'], action: () => setLocation('/margin-settings/item-price-margin') },
     { keywords: ['recent activity', 'activity log'], action: () => setLocation('/recent-activity') },
     { keywords: ['voucher settings', 'voucher types'], action: getNav('/superadmin/voucher-types', '/voucher-settings') },
     { keywords: ['banners', 'banner', 'advertisements', 'ads'], action: () => setLocation('/banners') },
@@ -152,15 +152,10 @@ const StandaloneVoiceButton: React.FC = () => {
     { keywords: ['hamali type masters', 'hamali type master', 'hamali types'], action: () => setLocation('/hamali-type-masters') },
     { keywords: ['base price master', 'base price', 'item listing'], action: () => setLocation('/item-listing') },
 
-    // Margin settings submenu (branch settings after superadmin branches)
-    { keywords: ['business types', 'business type'], action: () => setLocation('/margin-settings/business-types') },
-    { keywords: ['credit types', 'credit type'], action: () => setLocation('/margin-settings/credit-types') },
-    { keywords: ['branch settings', 'branch configuration'], action: () => setLocation('/margin-settings/branch-settings') },
-    { keywords: ['states', 'state master'], action: () => setLocation('/margin-settings/states') },
-    { keywords: ['districts', 'district master'], action: () => setLocation('/margin-settings/districts') },
-    { keywords: ['cities', 'city master'], action: () => setLocation('/margin-settings/cities') },
-    { keywords: ['price rules', 'price rule'], action: () => setLocation('/margin-settings/price-rules') },
-    { keywords: ['stock item pricing', 'item pricing', 'stock pricing'], action: () => setLocation('/margin-settings/stock-item-pricing') },
+    // Margin settings submenu
+    { keywords: ['item price margin', 'price margin'], action: () => setLocation('/margin-settings/item-price-margin') },
+    { keywords: ['price master', 'price masters'], action: () => setLocation('/price-master') },
+    { keywords: ['branch settings', 'branch configuration'], action: () => setLocation('/branches') },
 
     // Short aliases (listed after specific phrases to avoid wrong matches)
     { keywords: ['items'], action: () => setLocation('/item-masters') },

@@ -63,6 +63,10 @@ import Loader from "../components/common/loader";
 import { useToast } from "../hooks/use-toast";
 import { useUserPermissions } from "../hooks/useUserPermissions";
 import { isAdminSettingEnabled } from "@/lib/adminSettings";
+import {
+  getLinePriceViolation,
+  getLinePriceViolationMessage,
+} from "@/lib/sales_order_item_helpers";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 
@@ -897,6 +901,8 @@ export default function CreateSalesOrder() {
       search: (searchTerm || "").trim(),
       page: pageParam,
       per_page: 50,
+      // Match Price Master: so-items-list defaults to total_selling_stock > 0
+      include_zero_selling_stock: true,
     });
 
     if (!response.ok) {
@@ -2097,6 +2103,21 @@ export default function CreateSalesOrder() {
       if (!item.price || item.price < 0) {
         newErrors[`item_${index}_price`] = "Price must be 0 or greater";
       }
+      // Same min/max rate gates as APMC Create SO (unless allow_price_changes).
+      if (
+        item.item_id &&
+        !isAdminSettingEnabled("allow_price_changes")
+      ) {
+        const stockItem = getStockItemById(item.item_id);
+        if (stockItem) {
+          const violation = getLinePriceViolation(item, stockItem);
+          if (violation) {
+            newErrors[`item_${index}_price`] =
+              getLinePriceViolationMessage(item, stockItem) ||
+              "Rate is outside allowed min/max for this item";
+          }
+        }
+      }
     });
 
     setErrors(newErrors);
@@ -2821,12 +2842,13 @@ export default function CreateSalesOrder() {
 
       <div className="flex-1 flex flex-col overflow-hidden min-w-0 h-full">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b bg-white flex-shrink-0">
-          <div className="flex items-center space-x-4">
+        <div className="flex items-center justify-between px-3 py-2 border-b border-zinc-200 bg-white flex-shrink-0">
+          <div className="flex items-center gap-2">
             {isMobile && (
               <Button
                 variant="outline"
                 size="sm"
+                className="h-8 w-8 p-0"
                 onClick={() => setIsMobileSidebarOpen(true)}
               >
                 <Menu className="h-4 w-4" />
@@ -2836,44 +2858,44 @@ export default function CreateSalesOrder() {
               variant="ghost"
               size="sm"
               onClick={() => setLocation('/reports/sales-order-list')}
-              className="mr-2"
+              className="h-8 w-8 p-0"
             >
               <ArrowLeft className="h-4 w-4" />
             </Button>
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">
+            <div className="min-w-0">
+              <h1 className="text-base sm:text-lg font-bold text-zinc-900 leading-tight">
                 {isEditMode ? `Edit Sales Order` : "Create Sales Order"}
               </h1>
-              <p className="text-gray-600">
+              <p className="text-[11px] text-zinc-500 leading-tight">
                 {isEditMode
                   ? `Update sales order ${editSoNumber}`
                   : "Create a new sales order"}
               </p>
             </div>
           </div>
-          <Badge variant="outline" className="text-sm">
-            <CalendarIcon className="h-4 w-4 mr-1" />
+          <Badge variant="outline" className="text-[11px] h-6 border-amber-300 text-amber-800 bg-amber-50">
+            <CalendarIcon className="h-3 w-3 mr-1 text-amber-700" />
             {new Date().toLocaleDateString('en-GB')}
           </Badge>
         </div>
 
         {/* Main Content */}
-        <main className="flex-1 overflow-y-auto bg-gray-50 p-4 sm:p-6 min-h-0">
-          <div className=" mx-auto">
-            <form onSubmit={handleSubmit} className="space-y-6">
+        <main className="flex-1 overflow-y-auto bg-zinc-50 p-2 sm:p-3 min-h-0">
+          <div className="mx-auto">
+            <form onSubmit={handleSubmit} className="space-y-2.5">
               {/* Basic Information - Compact */}
-              <div className="bg-white rounded-lg border p-4">
-                <div className="flex items-center justify-between gap-4 mb-4 min-w-0">
-                  <div className="flex items-center gap-2 shrink-0 min-w-[140px]">
-                    <ShoppingCart className="h-4 w-4 text-gray-600" />
-                    <Label className="text-2xl font-semibold">Basic Information</Label>
+              <div className="bg-white rounded-md border border-zinc-200 p-2.5">
+                <div className="flex items-center justify-between gap-3 mb-2 min-w-0">
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <ShoppingCart className="h-3.5 w-3.5 text-amber-600" />
+                    <Label className="text-sm font-semibold text-zinc-900">Basic Information</Label>
                   </div>
                   <div className="flex-1 min-w-0 max-w-xl">
-                    <div className="flex items-end gap-2">
+                    <div className="flex items-end gap-1.5">
                       <div className="shrink-0">
                         <Label
                           htmlFor="date"
-                          className="text-sm font-medium text-gray-700 mb-2 block"
+                          className="text-[11px] font-medium text-zinc-600 mb-0.5 block"
                         >
                           Order Date *
                         </Label>
@@ -2885,7 +2907,7 @@ export default function CreateSalesOrder() {
                           value={formData.date}
                           readOnly
                           onChange={(e) => handleInputChange("date", e.target.value)}
-                          className={`h-10 w-[140px] sm:w-[150px] ${
+                          className={`h-8 w-[130px] sm:w-[140px] text-sm ${
                             errors.date ? "border-red-500" : ""
                           } pointer-events-none`}
                         />
@@ -2896,7 +2918,7 @@ export default function CreateSalesOrder() {
                           tabIndex={-1}
                           variant={isRecordingVoice ? "destructive" : "outline"}
                           size="icon"
-                          className="h-10 w-10 shrink-0"
+                          className="h-8 w-8 shrink-0"
                           disabled={isUploadingVoice || isSubmitting}
                           onClick={handleVoiceMicClick}
                           title={
@@ -2911,18 +2933,18 @@ export default function CreateSalesOrder() {
                           }
                         >
                           {isUploadingVoice ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
                           ) : isRecordingVoice ? (
-                            <Square className="h-4 w-4 fill-current" />
+                            <Square className="h-3.5 w-3.5 fill-current" />
                           ) : (
-                            <Mic className="h-4 w-4" />
+                            <Mic className="h-3.5 w-3.5" />
                           )}
                         </Button>
                       )}
                       <div className="min-w-0 flex-1">
                         <Label
                           htmlFor="branch_id"
-                          className="text-sm font-medium text-gray-700 mb-2 block"
+                          className="text-[11px] font-medium text-zinc-600 mb-0.5 block"
                         >
                           Branch *
                         </Label>
@@ -2939,7 +2961,7 @@ export default function CreateSalesOrder() {
                               variant="outline"
                               role="combobox"
                               aria-expanded={branchDropdownOpen}
-                              className={`h-10 w-full min-w-0 justify-between gap-2 overflow-hidden ${errors.branch_id ? "border-red-500" : ""}`}
+                              className={`h-8 w-full min-w-0 justify-between gap-2 overflow-hidden text-sm ${errors.branch_id ? "border-red-500" : ""}`}
                               onKeyDown={(e) => handleHeaderComboboxTab("branch", e)}
                             >
                               <span
@@ -3056,12 +3078,12 @@ export default function CreateSalesOrder() {
                     )}
                   </div>
                 </div>
-                <div className="space-y-4">
+                <div className="space-y-2">
                   {/* Single Row: Ledger Groups, Customer, Broker, Due Date, Order Number */}
-                  <div className="flex flex-col sm:flex-row gap-4 items-end">
+                  <div className="flex flex-col sm:flex-row gap-2 items-end">
                     {/* Ledger Groups */}
-                    <div className="w-full sm:w-[200px]">
-                      <Label htmlFor="ledger_group_id" className="text-sm font-medium text-gray-700">Ledger Group</Label>
+                    <div className="w-full sm:w-[180px]">
+                      <Label htmlFor="ledger_group_id" className="text-[11px] font-medium text-zinc-600">Ledger Group</Label>
                       <Popover open={ledgerGroupDropdownOpen} onOpenChange={(open) => {
                         setLedgerGroupDropdownOpen(open);
                         if (open) headerFieldOpenedRef.current.ledger = true;
@@ -3072,7 +3094,7 @@ export default function CreateSalesOrder() {
                             variant="outline"
                             role="combobox"
                             aria-expanded={ledgerGroupDropdownOpen}
-                            className="w-full justify-between mt-2"
+                            className="w-full justify-between mt-0.5 h-8 text-sm"
                             onKeyDown={(e) => handleHeaderComboboxTab("ledger", e)}
                           >
                             {selectedLedgerGroupId
@@ -3178,8 +3200,8 @@ export default function CreateSalesOrder() {
                     </div>
 
                     {/* Customer */}
-                    <div className="flex-[1.4] min-w-0 sm:min-w-[280px]">
-                      <Label htmlFor="customer_id">Customer *</Label>
+                    <div className="flex-[1.4] min-w-0 sm:min-w-[260px]">
+                      <Label htmlFor="customer_id" className="text-[11px] font-medium text-zinc-600">Customer *</Label>
                       <Popover
                         open={customerDropdownOpen}
                         onOpenChange={(open) => {
@@ -3194,7 +3216,7 @@ export default function CreateSalesOrder() {
                             variant="outline"
                             role="combobox"
                             aria-expanded={customerDropdownOpen}
-                            className={`w-full justify-between text-left h-auto min-h-10 py-2 whitespace-normal ${errors.customer_id ? "border-red-500" : ""}`}
+                            className={`w-full justify-between text-left h-8 min-h-8 py-1 mt-0.5 text-sm whitespace-normal ${errors.customer_id ? "border-red-500" : ""}`}
                             onKeyDown={(e) => handleHeaderComboboxTab("customer", e)}
                           >
                             <span className="flex-1 min-w-0 break-words pr-2">
@@ -3298,8 +3320,8 @@ export default function CreateSalesOrder() {
                     </div>
 
                     {/* Broker */}
-                    <div className="w-full sm:w-[180px]">
-                      <Label htmlFor="broker">Broker</Label>
+                    <div className="w-full sm:w-[160px]">
+                      <Label htmlFor="broker" className="text-[11px] font-medium text-zinc-600">Broker</Label>
                       <Popover open={brokerDropdownOpen} onOpenChange={(open) => {
                         setBrokerDropdownOpen(open);
                         if (open) {
@@ -3312,7 +3334,7 @@ export default function CreateSalesOrder() {
                           <button
                             ref={brokerTriggerRef}
                             type="button"
-                            className="w-full border rounded px-3 py-2 text-left flex items-center justify-between"
+                            className="w-full border rounded px-2.5 h-8 mt-0.5 text-sm text-left flex items-center justify-between"
                             onKeyDown={(e) => handleHeaderComboboxTab("broker", e)}
                           >
                             <span>
@@ -3401,8 +3423,8 @@ export default function CreateSalesOrder() {
                     </div>
 
                     {/* Due Date */}
-                    <div className="w-full sm:w-[150px]">
-                      <Label htmlFor="due_date">Due Date</Label>
+                    <div className="w-full sm:w-[140px]">
+                      <Label htmlFor="due_date" className="text-[11px] font-medium text-zinc-600">Due Date</Label>
                       <Popover open={isDueDatePickerOpen} onOpenChange={setIsDueDatePickerOpen}>
                         <PopoverTrigger asChild>
                           <Button
@@ -3411,7 +3433,7 @@ export default function CreateSalesOrder() {
                             type="button"
                             variant="outline"
                             className={cn(
-                              "h-9 w-full justify-start text-left font-normal text-sm px-2.5",
+                              "h-8 w-full justify-start text-left font-normal text-sm px-2 mt-0.5",
                               errors.due_date ? "border-red-500" : ""
                             )}
                             onKeyDown={(e) => {
@@ -3478,14 +3500,14 @@ export default function CreateSalesOrder() {
                     </div>
 
                     {/* Order Number */}
-                    <div className="w-full sm:w-[150px]">
-                      <Label htmlFor="order_number">Order Number</Label>
+                    <div className="w-full sm:w-[140px]">
+                      <Label htmlFor="order_number" className="text-[11px] font-medium text-zinc-600">Order Number</Label>
                       <Input
                         id="order_number"
                         value={formData.order_number || ""}
                         maxLength={15}
                         placeholder="Order Number"
-                        className="h-9"
+                        className="h-8 mt-0.5 text-sm"
                         onChange={(e) =>
                           handleInputChange(
                             "order_number",
@@ -3497,21 +3519,21 @@ export default function CreateSalesOrder() {
                   </div>
 
                   {/* Second Row: Delivery Address */}
-                  <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
-                    <div className="md:col-span-6">
+                  <div className="grid grid-cols-1 gap-2">
+                    <div>
                       {isEditingAddress ? (
-                        <div className="space-y-2">
-                          <Label htmlFor="address">Delivery Address</Label>
-                          <div className="flex items-start gap-2">
+                        <div className="space-y-1">
+                          <Label htmlFor="address" className="text-[11px] font-medium text-zinc-600">Delivery Address</Label>
+                          <div className="flex items-start gap-1.5">
                             <Textarea
                               id="address"
                               value={tempAddress}
                               onChange={(e) => setTempAddress(e.target.value)}
                               placeholder="Enter delivery address"
-                              rows={3}
-                              className="flex-1"
+                              rows={2}
+                              className="flex-1 text-sm min-h-[56px]"
                             />
-                            <div className="flex flex-col gap-2 pt-0.5">
+                            <div className="flex flex-col gap-1 pt-0.5">
                               <Button
                                 type="button"
                                 size="sm"
@@ -3520,10 +3542,10 @@ export default function CreateSalesOrder() {
                                   handleInputChange('address', tempAddress);
                                   setIsEditingAddress(false);
                                 }}
-                                className="h-8 w-8 p-0"
+                                className="h-7 w-7 p-0"
                                 title="Save"
                               >
-                                <CheckCircle2 className="h-4 w-4 text-green-600" />
+                                <CheckCircle2 className="h-3.5 w-3.5 text-green-600" />
                               </Button>
                               <Button
                                 type="button"
@@ -3533,35 +3555,35 @@ export default function CreateSalesOrder() {
                                   setTempAddress(formData.address);
                                   setIsEditingAddress(false);
                                 }}
-                                className="h-8 w-8 p-0"
+                                className="h-7 w-7 p-0"
                                 title="Cancel"
                               >
-                                <X className="h-4 w-4 text-red-600" />
+                                <X className="h-3.5 w-3.5 text-red-600" />
                               </Button>
                             </div>
                           </div>
                         </div>
                       ) : (
-                        <div className="flex items-start gap-3">
-                          <Label className="text-sm font-medium text-gray-700 min-w-[140px] pt-2">Delivery Address:  {formData.address || <span className="text-gray-400 italic">No address available</span>}</Label>
-                          <div className="flex-1 flex items-start gap-2">
-                            <p className="text-sm text-gray-900 leading-relaxed flex-1">
-
-                            </p>
-                            <Button
-                              type="button"
-                              size="sm"
-                              variant="outline"
-                              onClick={() => {
-                                setTempAddress(formData.address);
-                                setIsEditingAddress(true);
-                              }}
-                              className="h-8 w-8 p-0 flex-shrink-0"
-                              title="Edit address"
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                          </div>
+                        <div className="flex items-center gap-2">
+                          <Label className="text-[11px] font-medium text-zinc-600 shrink-0">
+                            Delivery Address:{" "}
+                            <span className="text-sm font-normal text-zinc-900">
+                              {formData.address || <span className="text-zinc-400 italic">No address available</span>}
+                            </span>
+                          </Label>
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              setTempAddress(formData.address);
+                              setIsEditingAddress(true);
+                            }}
+                            className="h-7 w-7 p-0 flex-shrink-0 border-amber-200 hover:bg-amber-50"
+                            title="Edit address"
+                          >
+                            <Edit className="h-3.5 w-3.5 text-amber-700" />
+                          </Button>
                         </div>
                       )}
                     </div>
@@ -3570,11 +3592,11 @@ export default function CreateSalesOrder() {
               </div>
 
               {/* Order Items - Table Format */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                      <Package className="h-5 w-5" />
+              <Card className="border-zinc-200 shadow-none">
+                <CardHeader className="py-2 px-3">
+                  <CardTitle className="flex items-center justify-between text-sm">
+                    <div className="flex items-center gap-1.5">
+                      <Package className="h-3.5 w-3.5 text-amber-600" />
                       <span>Order Items ({formData.items.length})</span>
                     </div>
                     <Button
@@ -3582,9 +3604,9 @@ export default function CreateSalesOrder() {
                       variant="outline"
                       size="sm"
                       onClick={() => addItem()}
-                      className="flex items-center space-x-1"
+                      className="h-7 text-xs flex items-center gap-1 border-amber-200 hover:bg-amber-50"
                     >
-                      <Plus className="h-4 w-4" />
+                      <Plus className="h-3.5 w-3.5" />
                       <span>Add Item</span>
                     </Button>
                   </CardTitle>
@@ -3593,14 +3615,14 @@ export default function CreateSalesOrder() {
                   <div className="overflow-x-auto">
                     <Table>
                       <TableHeader>
-                        <TableRow>
-                          <TableHead className="w-[400px]">Item</TableHead>
-                          <TableHead className="min-w-[160px] w-[160px] text-center">Quantity</TableHead>
-                          <TableHead className="w-[120px] text-center">Price</TableHead>
-                          <TableHead className="w-[100px] text-center">UOM</TableHead>
-                          <TableHead className="w-[100px] text-center">GST %</TableHead>
-                          <TableHead className="w-[120px] text-right">Total</TableHead>
-                          <TableHead className="w-[80px] text-center">Action</TableHead>
+                        <TableRow className="border-b border-zinc-300">
+                          <TableHead className="h-8 px-2 py-1 w-[360px] text-xs">Item</TableHead>
+                          <TableHead className="h-8 px-2 py-1 min-w-[140px] w-[140px] text-center text-xs">Quantity</TableHead>
+                          <TableHead className="h-8 px-2 py-1 w-[100px] text-center text-xs">Price</TableHead>
+                          <TableHead className="h-8 px-2 py-1 w-[90px] text-center text-xs">UOM</TableHead>
+                          <TableHead className="h-8 px-2 py-1 w-[80px] text-center text-xs">GST %</TableHead>
+                          <TableHead className="h-8 px-2 py-1 w-[100px] text-right text-xs">Total</TableHead>
+                          <TableHead className="h-8 px-2 py-1 w-[64px] text-center text-xs">Action</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -3612,17 +3634,17 @@ export default function CreateSalesOrder() {
                             <TableRow
                               key={index}
                               data-item-row={index}
-                              className="hover:bg-gray-50"
+                              className="border-b border-zinc-200 hover:bg-amber-50/40"
                               onKeyDown={(e) => handleItemRowKeyDown(index, e)}
                               onBlur={(e) => handleItemRowBlur(index, e)}
                             >
-                              <TableCell className="p-2">
+                              <TableCell className="px-2 py-1 border-b border-zinc-200">
                                 <Popover open={isDropdownOpen(index)} onOpenChange={(open) => handleDropdownOpenChange(index, open)}>
                                   <PopoverTrigger asChild>
                                     <button
                                       type="button"
                                       data-item-trigger="true"
-                                      className={`w-full border rounded px-3 py-2 text-left flex items-center justify-between h-9 ${errors[`item_${index}_item_id`] ? "border-red-500" : ""}`}
+                                      className={`w-full border rounded px-2.5 text-left flex items-center justify-between h-8 text-sm ${errors[`item_${index}_item_id`] ? "border-red-500" : ""}`}
                                       onKeyDown={(e) => handleItemTriggerKeyDown(index, e)}
                                     >
                                       <span className="truncate text-sm">
@@ -3767,7 +3789,7 @@ export default function CreateSalesOrder() {
                                         <div className="p-2 text-center text-sm text-muted-foreground">
                                           {!formData.customer_id
                                             ? "Please select a customer first"
-                                            : "No stock items found"}
+                                            : "No SO Material items found. Map items under Item Mapping."}
                                         </div>
                                       )}
                                     </div>
@@ -3779,9 +3801,9 @@ export default function CreateSalesOrder() {
                                   </p>
                                 )}
                               </TableCell>
-                              <TableCell className="p-2">
-                                <div className="space-y-1">
-                                  <div className="flex items-center gap-1.5 min-w-0">
+                              <TableCell className="px-2 py-1 border-b border-zinc-200">
+                                <div className="space-y-0.5">
+                                  <div className="flex items-center gap-1 min-w-0">
                                     <Input
                                       type="text"
                                       inputMode="numeric"
@@ -3828,7 +3850,7 @@ export default function CreateSalesOrder() {
                                           tryApplyQuantityInput(index, pastedText);
                                         }
                                       }}
-                                      className={`h-9 flex-1 min-w-[3.5rem] px-3 text-left ${errors[`item_${index}_quantity`] ? "border-red-500" : ""}`}
+                                      className={`h-8 flex-1 min-w-[3.5rem] px-2 text-sm text-left ${errors[`item_${index}_quantity`] ? "border-red-500" : ""}`}
                                       placeholder="Qty"
                                     />
                                     {item.item_id && (() => {
@@ -3837,7 +3859,7 @@ export default function CreateSalesOrder() {
                                       const baseUnitName = selectedStockItem.base_unit.name;
                                       return (
                                         <span
-                                          className="shrink-0 px-1.5 py-1 bg-muted border border-input rounded text-xs font-medium text-muted-foreground whitespace-nowrap max-w-[4.5rem] truncate"
+                                          className="shrink-0 px-1 py-0.5 bg-muted border border-input rounded text-[10px] font-medium text-muted-foreground whitespace-nowrap max-w-[4.5rem] truncate"
                                           title={baseUnitName}
                                         >
                                           {baseUnitName}
@@ -3846,14 +3868,14 @@ export default function CreateSalesOrder() {
                                     })()}
                                   </div>
                                   {errors[`item_${index}_quantity`] && (
-                                    <p className="text-red-500 text-xs mt-1">
+                                    <p className="text-red-500 text-xs mt-0.5">
                                       {errors[`item_${index}_quantity`]}
                                     </p>
                                   )}
                                 </div>
                               </TableCell>
-                              <TableCell className="p-2">
-                                <div className="space-y-1">
+                              <TableCell className="px-2 py-1 border-b border-zinc-200">
+                                <div className="space-y-0.5">
                                   <Input
                                     type="number"
                                     min="0"
@@ -3866,7 +3888,7 @@ export default function CreateSalesOrder() {
                                       handleItemChange(index, 'price', newPrice);
                                     }}
                                     onKeyDown={(e) => handlePriceTab(index, e)}
-                                    className={`h-9 w-full ${errors[`item_${index}_price`] ? "border-red-500" : ""}`}
+                                    className={`h-8 w-full text-sm ${errors[`item_${index}_price`] ? "border-red-500" : ""}`}
                                     size="sm"
                                   />
                                   {item.item_id && (() => {
@@ -3887,7 +3909,7 @@ export default function CreateSalesOrder() {
                                   )}
                                 </div>
                               </TableCell>
-                              <TableCell className="p-2">
+                              <TableCell className="px-2 py-1 border-b border-zinc-200">
                                 {item.item_id ? (
                                   (() => {
                                     const selectedStockItem = getStockItemById(item.item_id);
@@ -3897,7 +3919,7 @@ export default function CreateSalesOrder() {
                                     // No alternate unit: show base unit only as static text (no dropdown)
                                     if (!hasAlternateUnit && baseUnitName) {
                                       return (
-                                        <div className="h-9 w-full flex items-center text-sm font-medium text-gray-900">
+                                        <div className="h-8 w-full flex items-center text-sm font-medium text-zinc-900">
                                           {baseUnitName}
                                         </div>
                                       );
@@ -3913,7 +3935,7 @@ export default function CreateSalesOrder() {
                                       units.push({ id: selectedStockItem.alternate_unit.id, name: selectedStockItem.alternate_unit.name });
                                     }
                                     return (
-                                      <div className="space-y-1">
+                                      <div className="space-y-0.5">
                                         <Select
                                           value={item.price_uom_id?.toString() || (selectedStockItem?.base_unit?.id?.toString() ?? "none")}
                                           onValueChange={(value) => {
@@ -3921,7 +3943,7 @@ export default function CreateSalesOrder() {
                                           }}
                                         >
                                           <SelectTrigger
-                                            className="h-9 w-full"
+                                            className="h-8 w-full text-sm"
                                             data-item-uom="true"
                                             onKeyDown={(e) => handleUomTabNext(index, e)}
                                           >
@@ -3943,12 +3965,12 @@ export default function CreateSalesOrder() {
                                     );
                                   })()
                                 ) : (
-                                  <div className="h-9 w-full flex items-center text-sm text-gray-400">
+                                  <div className="h-8 w-full flex items-center text-xs text-zinc-400">
                                     Select item first
                                   </div>
                                 )}
                               </TableCell>
-                              <TableCell className="p-2">
+                              <TableCell className="px-2 py-1 border-b border-zinc-200">
                                 <Input
                                   type="number"
                                   min="0"
@@ -3959,12 +3981,12 @@ export default function CreateSalesOrder() {
                                   onChange={(e) => handleItemChange(index, 'gst_percentage', e.target.value ? parseFloat(e.target.value) : 0)}
                                   placeholder="GST %"
                                   disabled={item.gst_auto_filled || item.item_id}
-                                  className={`h-9 w-full ${item.gst_auto_filled || item.item_id ? "bg-gray-100 cursor-not-allowed" : ""}`}
+                                  className={`h-8 w-full text-sm ${item.gst_auto_filled || item.item_id ? "bg-zinc-100 cursor-not-allowed" : ""}`}
                                   size="sm"
                                 />
                               </TableCell>
-                              <TableCell className="p-2 text-right">
-                                <div className="text-sm font-semibold text-green-600">
+                              <TableCell className="px-2 py-1 text-right border-b border-zinc-200">
+                                <div className="text-sm font-semibold text-amber-700 tabular-nums">
                                   ₹{formatINR(itemTotal)}
                                 </div>
                                 {/* Show calculation info */}
@@ -3979,17 +4001,17 @@ export default function CreateSalesOrder() {
 
                                 })()}
                               </TableCell>
-                              <TableCell className="p-2 text-center">
+                              <TableCell className="px-1 py-1 text-center border-b border-zinc-200">
                                 {formData.items.length > 1 && (
                                   <Button
                                     type="button"
                                     variant="ghost"
                                     size="sm"
                                     onClick={() => removeItem(index)}
-                                    className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                    className="h-7 w-7 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
                                     title="Delete row"
                                   >
-                                    <Trash2 className="h-4 w-4" />
+                                    <Trash2 className="h-3.5 w-3.5" />
                                   </Button>
                                 )}
                               </TableCell>
@@ -4011,46 +4033,49 @@ export default function CreateSalesOrder() {
               </Card>
 
               {/* Order Summary */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <IndianRupee className="h-5 w-5" />
+              <Card className="border-zinc-200 shadow-none">
+                <CardHeader className="py-2 px-3">
+                  <CardTitle className="flex items-center gap-1.5 text-sm">
+                    <IndianRupee className="h-3.5 w-3.5 text-amber-600" />
                     <span>Order Summary</span>
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="flex justify-between items-center text-lg font-semibold">
-                    <span>Total Amount:</span>
-                    <span className="text-green-600">
+                <CardContent className="px-3 pb-2.5 pt-0">
+                  <div className="flex justify-between items-center text-sm font-semibold">
+                    <span className="text-zinc-700">Total Amount:</span>
+                    <span className="text-amber-700 tabular-nums">
                       ₹{formatINR(calculateTotal())}
                     </span>
                   </div>
-                  <p className="text-xs text-gray-500 mt-2">Brokerage is calculated automatically on save.</p>
+                  <p className="text-[11px] text-zinc-500 mt-1">Brokerage is calculated automatically on save.</p>
                 </CardContent>
               </Card>
 
               {/* Submit Button */}
-              <div className="flex justify-end space-x-4">
+              <div className="flex justify-end gap-2 pb-1">
                 <Button
                   type="button"
                   variant="outline"
+                  size="sm"
+                  className="h-8 text-xs"
                   onClick={() => setLocation('/reports/sales-order-list')}
                 >
                   Cancel
                 </Button>
                 <Button
                   type="submit"
+                  size="sm"
                   disabled={isSubmitting}
-                  className="bg-black hover:bg-gray-800"
+                  className="h-8 text-xs bg-zinc-900 hover:bg-black text-white border border-amber-500/40"
                 >
                   {isSubmitting ? (
                     <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
                       {isEditMode ? "Updating..." : "Creating..."}
                     </>
                   ) : (
                     <>
-                      <Save className="h-4 w-4 mr-2" />
+                      <Save className="h-3.5 w-3.5 mr-1.5" />
                       {isEditMode ? "Update Sales Order" : "Create Sales Order"}
                     </>
                   )}

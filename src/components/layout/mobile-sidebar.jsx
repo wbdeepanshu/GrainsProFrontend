@@ -34,7 +34,6 @@ import {
   Building2,
   CreditCard,
   MapPin,
-  Settings2,
   Folder,
   Route,
   IndianRupee,
@@ -53,12 +52,8 @@ import {
   Image, // 👈 For Banners
   Truck, // 👈 For Hamali Type Masters
   Tag, // 👈 For Base Price Master
-  DollarSign as PriceTag, // 👈 For Stock Item Pricing
-  Map, // 👈 For States
-  MapPin as DistrictPin, // 👈 For Districts
-  Navigation, // 👈 For Cities
+  Navigation, // 👈 For Live Tracking
   Cog, // 👈 For Machine Params
-  Sliders, // 👈 For Price Rules
   Wallet, // 👈 For Outstanding Reports
   Video, // 👈 Help Videos
   GitCompare,
@@ -71,6 +66,7 @@ import {
   Send,
   LayoutTemplate,
   Target,
+  Smartphone,
 } from "lucide-react";
 
 const iconMap = {
@@ -97,7 +93,6 @@ const iconMap = {
   "building-2": Building2,
   "credit-card": CreditCard,
   "map-pin": MapPin,
-  "settings-2": Settings2,
   "clipboard-list": ClipboardList, // 👈 Inward menu
   "shopping-bag": ShoppingBag, // 👈 Purchase Orders (unique from Sales Orders)
   "file-check": FileCheck, // 👈 added for Receipt
@@ -302,15 +297,31 @@ const logisticsSubMenus = [
 ];
 
 // Margin Settings Submenus
-const marginSettingsSubMenus = [
-  { name: "Business Types", icon: Building2, path: "/margin-settings/business-types" },
-  { name: "Credit Types", icon: CreditCard, path: "/margin-settings/credit-types" },
-  { name: "States", icon: Map, path: "/margin-settings/states" },
-  { name: "Districts", icon: DistrictPin, path: "/margin-settings/districts" },
-  { name: "Cities", icon: Navigation, path: "/margin-settings/cities" },
-  { name: "Price Rules", icon: Sliders, path: "/margin-settings/price-rules" },
-  { name: "Stock Item Pricing", icon: PriceTag, path: "/margin-settings/stock-item-pricing" },
-];
+const getMarginSettingsSubMenus = (hasPermission) => {
+  const items = [
+    {
+      name: "Item Price Margin",
+      icon: Percent,
+      path: "/margin-settings/item-price-margin",
+      module: "item_price_margin",
+    },
+    {
+      name: "Price Master",
+      icon: IndianRupee,
+      path: "/price-master",
+      module: "price_master",
+    },
+  ];
+  return items.filter((menu) => {
+    if (menu.module === "item_price_margin") {
+      return hasPermission("margin_settings", "read");
+    }
+    if (menu.module === "price_master") {
+      return hasPermission("stock_items", "read");
+    }
+    return true;
+  });
+};
 
 
 const getSalesSubMenus = (hasPermission) => {
@@ -386,8 +397,10 @@ const getReceiptSubMenus = (hasPermission, isTallyEnabled) => {
 const getLedgerManagementSubMenus = (hasPermission) => {
   const items = [
     { name: "Ledger Masters", icon: BookOpen, path: "/ledger-masters", module: "ledger_masters" },
+    { name: "Ledgers Group", icon: Building2, path: "/ledgers-group", module: "ledger_masters" },
     { name: "Additional Ledgers", icon: Layers, path: "/additional-ledgers", module: "ledger_masters" },
     { name: "Ledgers Credit Settings", icon: CreditCard, path: "/ledger-credit-settings", module: "ledger_masters" },
+    { name: "Retailers Info", icon: Smartphone, path: "/retailers-info", module: "ledger_masters" },
     { name: "Area Listing", icon: MapPin, path: "/area-listing", module: "customer_management" },
     { name: "KYC Document Types", icon: FileText, path: "/kyc-document-type-masters", module: "customer_management" },
   ];
@@ -406,8 +419,10 @@ const getLedgerManagementSubMenus = (hasPermission) => {
 
 const isLedgerManagementPath = (location) =>
   location.includes("/ledger-masters") ||
+  location.includes("/ledgers-group") ||
   location.includes("/additional-ledgers") ||
   location.includes("/ledger-credit-settings") ||
+  location.includes("/retailers-info") ||
   location.includes("/area-listing") ||
   location.includes("/kyc-document-type-masters");
 
@@ -500,7 +515,8 @@ export default function MobileSidebar({ isOpen, onClose }) {
         location.includes("expense-type-masters") ||
         location.includes("labour-management") ||
         location.includes("item-listing") || location.includes("/branches") ||
-        location.includes("/voucher-settings") || location.includes("/margin-settings/brokerage-configuration")) {
+        location.includes("/voucher-settings") || location.includes("/margin-settings/brokerage-configuration") ||
+        location.includes("/margin-settings/item-price-margin") || location.includes("/price-master")) {
       setIsMastersOpen(true);
     }
   }, [location]);
@@ -577,9 +593,12 @@ export default function MobileSidebar({ isOpen, onClose }) {
     }
   }, [location]);
 
-  // Auto-open Margin Settings dropdown when on any margin-settings page
+  // Auto-open Margin Settings dropdown when on its pages
   useEffect(() => {
-    if (location.includes("margin-settings")) {
+    if (
+      location.includes("/margin-settings/item-price-margin") ||
+      location.includes("/price-master")
+    ) {
       setIsMarginSettingsOpen(true);
     }
   }, [location]);
@@ -681,11 +700,17 @@ export default function MobileSidebar({ isOpen, onClose }) {
                             (item.name === "Contact Us" && location === "/contact-us")||      
                             (item.name === "Purchase" && (location.includes("purchaseorders-reports") || location.includes("purchase-register") || location.includes("add-purchase-order") || location.includes("purchase-return-reports") || location.includes("add-purchase-return"))) ||
                             (item.name === "Reports" && location.startsWith("/reports") && !location.includes("inward-list") && !location.includes("purchase-invoices") && !location.includes("purchaseorders-reports") && !location.includes("purchase-register") && !location.includes("sales-order-list") && !location.includes("sales-register") && !location.includes("sales-return-reports") && !location.includes("expense-list") && !location.includes("outstanding-reports")) ||
-                            (item.name === "Masters" && (["/branches","/godown-masters","/stock-masters","/broker-masters","/item-masters","/all-item-mapping","/gst-masters","/lab-test-params","/machine-params","/voucher-settings","/margin-settings/brokerage-configuration","/labour-management"].includes(location) || location.includes("/labour-management"))) ||
+                            (item.name === "Masters" && (
+                              ["/branches","/godown-masters","/stock-masters","/broker-masters","/item-masters","/all-item-mapping","/gst-masters","/lab-test-params","/machine-params","/voucher-settings","/margin-settings/brokerage-configuration","/labour-management","/item-listing"].includes(location) ||
+                              location.includes("/labour-management")
+                            )) ||
                             (item.name === "Ledger Management" && isLedgerManagementPath(location)) ||
                             (item.name === "Route Management" && (location.startsWith("/route-management") || location.startsWith("/route-assignment") || location.startsWith("/route-activity") || location.startsWith("/route-activities"))) ||
                             (item.name === "Logistics" && (location.includes("/logistics/") || location.includes("/logistics-management"))) ||
-                            (item.name === "Margin Settings" && location.startsWith("/margin-settings") && location !== "/margin-settings/brokerage-configuration") ||
+                            (item.name === "Margin Settings" && (
+                              location.includes("/margin-settings/item-price-margin") ||
+                              location.includes("/price-master")
+                            )) ||
                             (item.name === "Recent Activity" && location === "/recent-activity") ||
                             (item.name === "Stock Auditing" && location === "/stock-auditing") ||
                             (item.name === "Notification Settings" && location === "/notification-settings") ||
@@ -787,7 +812,7 @@ export default function MobileSidebar({ isOpen, onClose }) {
                 return null;
               }
             } else if (item.name === "Margin Settings") {
-              if (!hasPermission("margin_settings", "read")) {
+              if (getMarginSettingsSubMenus(hasPermission).length === 0) {
                 return null;
               }
             } else if (item.name === "Recent Activity") {
@@ -1288,12 +1313,14 @@ export default function MobileSidebar({ isOpen, onClose }) {
                   </div>
                 )}
 
-                {/* Margin Settings Submenu - only Business Types, Credit Types, etc. (no Brokerage here) */}
-                {item.name === "Margin Settings" && isMarginSettingsOpen && hasPermission("margin_settings", "read") && (
+                {/* Margin Settings Submenu */}
+                {item.name === "Margin Settings" && isMarginSettingsOpen && (
                   <div className="bg-gray-800 border-l-4 border-gray-600 ml-6">
-                    {marginSettingsSubMenus.map((subItem, subIndex) => {
+                    {getMarginSettingsSubMenus(hasPermission).map((subItem, subIndex) => {
                       const SubIcon = subItem.icon;
-                      const isSubActive = location === subItem.path || location.includes(subItem.path);
+                      const isSubActive =
+                        location === subItem.path ||
+                        (subItem.path !== "/" && location.includes(subItem.path));
                       return (
                         <Link
                           key={subIndex}

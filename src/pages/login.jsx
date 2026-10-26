@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Card, CardContent } from "@/components/ui/card";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,16 +22,16 @@ import {
   InputOTPGroup,
   InputOTPSlot,
 } from "@/components/ui/input-otp";
-import { Eye, EyeOff, Shield, Lock, User, CheckCircle, Phone, AlertCircle } from "lucide-react";
+import { Eye, EyeOff, Shield, Lock, Phone, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { AuthService } from "@/lib/auth";
 import { queryClient } from "@/lib/queryClient";
-import logo from "../assets/gp_logo1.png"
+import logo from "../assets/new_logo.png";
+import loginBg from "../assets/login_bg.png";
 
 export default function Login() {
   const [, setLocation] = useLocation();
   const [showPassword, setShowPassword] = useState(false);
-  const [animatedElements, setAnimatedElements] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showForceLogoutDialog, setShowForceLogoutDialog] = useState(false);
   const [showOTPScreen, setShowOTPScreen] = useState(false);
@@ -42,14 +41,12 @@ export default function Login() {
   const [userMobile, setUserMobile] = useState("");
   const { toast } = useToast();
 
-  // Add login page class to body and html for proper scrolling
   useEffect(() => {
-    document.body.classList.add('login-page-active');
-    document.documentElement.classList.add('login-page-active');
-
+    document.body.classList.add("login-page-active");
+    document.documentElement.classList.add("login-page-active");
     return () => {
-      document.body.classList.remove('login-page-active');
-      document.documentElement.classList.remove('login-page-active');
+      document.body.classList.remove("login-page-active");
+      document.documentElement.classList.remove("login-page-active");
     };
   }, []);
 
@@ -62,69 +59,39 @@ export default function Login() {
     },
   });
 
-  // Floating animation elements
-  useEffect(() => {
-    const elements = Array.from({ length: 8 }, (_, i) => ({
-      id: i,
-      size: Math.random() * 60 + 20,
-      left: Math.random() * 100,
-      delay: Math.random() * 4,
-      duration: Math.random() * 10 + 10,
-    }));
-    setAnimatedElements(elements);
-  }, []);
-
   const handleRememberMeChange = (checked) => {
     if (checked) {
-      const mobile = form.getValues("mobile")
-      const password = form.getValues("password")
-      //alert(`Remember me is checked! Your credentials is  ${mobile + " " + password}.`);
-      localStorage.setItem(
-        "credentials",
-        JSON.stringify({ mobile, password })
-      )
-    }
-    else {
-      //alert("Remember me is unchecked! Your credentials will be saved.");
-      form.setValue("mobile", "") // keep empty if missing
-      form.setValue("password", "") // keep empty if missing
-      localStorage.removeItem("credentials")
+      const mobile = form.getValues("mobile");
+      const password = form.getValues("password");
+      localStorage.setItem("credentials", JSON.stringify({ mobile, password }));
+    } else {
+      form.setValue("mobile", "");
+      form.setValue("password", "");
+      localStorage.removeItem("credentials");
     }
   };
 
   useEffect(() => {
-    const savedCredentials = localStorage.getItem("credentials")
-
+    const savedCredentials = localStorage.getItem("credentials");
     if (savedCredentials) {
       try {
-        const { mobile } = JSON.parse(savedCredentials)
-        const { password } = JSON.parse(savedCredentials)
-
-        if (mobile) {
-          //alert(mobile)
-          form.setValue("rememberMe", true)
-          form.setValue("mobile", mobile) // bind to textbox
-        } else {
-          form.setValue("mobile", "") // keep empty if missing
-        }
-        if (password) {
-          form.setValue("password", password) // bind to textbox
-        } else {
-          form.setValue("password", "") // keep empty if missing
-        }
+        const { mobile, password } = JSON.parse(savedCredentials);
+        form.setValue("rememberMe", Boolean(mobile));
+        form.setValue("mobile", mobile || "");
+        form.setValue("password", password || "");
       } catch (error) {
-        console.error("Invalid credentials format in localStorage:", error)
-        form.setValue("mobile", "")
-        form.setValue("password", "")
-        form.setValue("rememberMe", false)
+        console.error("Invalid credentials format in localStorage:", error);
+        form.setValue("mobile", "");
+        form.setValue("password", "");
+        form.setValue("rememberMe", false);
       }
     } else {
-      form.setValue("mobile", "")
-      form.setValue("password", "")
-      form.setValue("rememberMe", false)
-      localStorage.removeItem("credentials")
+      form.setValue("mobile", "");
+      form.setValue("password", "");
+      form.setValue("rememberMe", false);
+      localStorage.removeItem("credentials");
     }
-  }, [form])
+  }, [form]);
 
   const handleContinueForceLogout = async () => {
     if (!userMobile) {
@@ -182,19 +149,15 @@ export default function Login() {
       const response = await AuthService.forceLogout(userMobile, otp);
 
       if (response.status === 200 && response.access_token) {
-        // Clear any existing cache to ensure fresh data for the new user
         queryClient.clear();
         queryClient.invalidateQueries();
         queryClient.resetQueries();
-
-        // Close dialogs and reset OTP
         setShowOTPScreen(false);
         setShowForceLogoutDialog(false);
         setOtp("");
-
         toast({
           title: "Login Successful",
-          description: `Welcome back, ${response.data?.name || 'User'}!`,
+          description: `Welcome back, ${response.data?.name || "User"}!`,
           variant: "success",
           duration: 800,
         });
@@ -220,20 +183,16 @@ export default function Login() {
   const onSubmit = async (data) => {
     try {
       setIsLoading(true);
-
       const response = await AuthService.login({
         mobile: data.mobile,
         password: data.password,
         source: "Portal",
       });
 
-      //console.log(response)
       if (response.status === 200) {
-        // Clear any existing cache to ensure fresh data for the new user
         queryClient.clear();
         queryClient.invalidateQueries();
         queryClient.resetQueries();
-
         toast({
           title: "Login Successful",
           description: `Welcome back, ${response.data.name}!`,
@@ -242,7 +201,6 @@ export default function Login() {
         });
         setLocation("/dashboard");
       } else if (response.status === 403 && response.message?.includes("already logged in")) {
-        // User is already logged in on another device
         setUserMobile(data.mobile);
         setShowForceLogoutDialog(true);
       } else {
@@ -254,7 +212,6 @@ export default function Login() {
         });
       }
     } catch (error) {
-      //alert("Login error:", error);
       toast({
         title: "Login Failed",
         description: error.message || "Unable to connect to server. Please try again.",
@@ -265,145 +222,130 @@ export default function Login() {
     }
   };
 
+  // Banner art is 2528×1696 (~1.49:1). Use contain so all four corners stay visible.
   return (
-    <div className="login-page login-container h-screen min-h-0 overflow-hidden bg-gradient-to-br from-gray-900 via-black to-gray-800 px-3 sm:px-6 lg:px-8 relative flex flex-col">
-      {/* Animated Background Elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {animatedElements.map((element) => (
-          <div
-            key={element.id}
-            className="absolute bg-white bg-opacity-5 rounded-full animate-float"
-            style={{
-              width: `${element.size}px`,
-              height: `${element.size}px`,
-              left: `${element.left}%`,
-              '--delay': `${element.delay}s`,
-              '--duration': `${element.duration}s`,
-            }}
+    <div className="login-page login-container relative h-screen min-h-0 w-full overflow-hidden bg-[#141414]">
+      <div className="flex h-full min-h-0 w-full flex-col lg:flex-row">
+        {/* Left: full image visible, corners not cropped */}
+        <section className="relative hidden h-full min-h-0 min-w-0 flex-1 bg-[#141414] lg:flex lg:items-center lg:justify-center">
+          <img
+            src={loginBg}
+            alt=""
+            width={2528}
+            height={1696}
+            className="max-h-full max-w-full h-auto w-auto object-contain object-center"
+            draggable={false}
           />
-        ))}
-      </div>
+        </section>
 
-      {/* Geometric shapes */}
-      <div className="absolute top-10 left-10 w-32 h-32 border border-white border-opacity-20 rotate-45 animate-spin-slow"></div>
-      <div className="absolute bottom-10 right-10 w-24 h-24 border border-white border-opacity-20 rotate-12 animate-pulse-gentle"></div>
+        {/* Right: wider white form with theme gold border */}
+        <section className="relative z-20 flex h-full min-h-0 w-full flex-col border-[#c9a227] bg-white lg:w-[420px] lg:shrink-0 lg:border-l-2 xl:w-[460px]">
+          {/* Mobile: image strip */}
+          <div className="relative flex h-40 w-full shrink-0 items-center justify-center overflow-hidden bg-[#141414] lg:hidden">
+            <img
+              src={loginBg}
+              alt=""
+              width={2528}
+              height={1696}
+              className="max-h-full max-w-full object-contain object-center"
+              draggable={false}
+            />
+          </div>
 
-      {/* Super admin login link moved below Sign In button inside card */}
-      <div className="absolute top-1/3 right-20 w-16 h-16 bg-white bg-opacity-10 rounded-full animate-bounce-gentle"></div>
-
-      <div className="flex-1 min-h-0 flex items-center justify-center py-4 sm:py-6">
-        <div className="w-full max-w-md relative z-10 px-2 sm:px-4 flex items-center justify-center">
-          <Card className="shadow-2xl border-0 backdrop-blur-sm bg-white bg-opacity-95 animate-slide-up w-full max-w-md">
-            <CardContent className="p-4 sm:p-6 md:p-8">
-              <div className="text-center mb-4 sm:mb-6">
-                <div className="flex justify-center mb-3 sm:mb-4">
-                  <div className="bg-gradient-to-r from-black to-gray-600 p-2 sm:p-3 rounded-full animate-bounce-gentle">
-                    <div className="bg-white p-3 sm:p-4 rounded-full">
-                      <img src={logo} alt="App Logo" className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24" />
-                    </div>
-                  </div>
-                </div>
-                <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 animate-fade-in">Sign In</h2>
+          <div className="flex min-h-0 flex-1 flex-col px-6 py-6 sm:px-8 sm:py-8 lg:px-8 lg:py-9">
+            <div className="mx-auto flex w-full max-w-[340px] flex-1 flex-col justify-center xl:max-w-[360px]">
+              <div className="mb-7 flex flex-col items-center text-center">
+                <img
+                  src={logo}
+                  alt="GrainsPro ERP"
+                  className="mb-5 h-28 w-28 object-contain sm:h-32 sm:w-32"
+                />
+                <h2 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">Sign In</h2>
+                <p className="mt-1.5 text-sm leading-relaxed text-slate-500">
+                  Mobile number and password for portal access.
+                </p>
               </div>
 
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3 sm:space-y-4">
-                <div className="animate-slide-in-left">
-                  <Label htmlFor="mobile" className="block text-sm font-medium text-gray-700 mb-2">
-                    <div className="flex items-center space-x-2">
-                      <Phone className="h-4 w-4" />
-                      <span>Mobile Number</span>
-                    </div>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3.5">
+                <div>
+                  <Label htmlFor="mobile" className="mb-1.5 block text-sm font-medium text-slate-700">
+                    Mobile Number
                   </Label>
-                  <Input
-                    id="mobile"
-                    type="tel"
-                    placeholder="Enter your 10-digit mobile number"
-                    {...form.register("mobile")}
-                    className="w-full px-3 sm:px-4 py-2 sm:py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent transition-all text-base"
-                    maxLength={10}
-                  />
+                  <div className="relative">
+                    <Phone className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#c9a227]" />
+                    <Input
+                      id="mobile"
+                      type="tel"
+                      placeholder="Enter 10-digit mobile number"
+                      {...form.register("mobile")}
+                      className="h-10 w-full rounded-lg border-slate-200 bg-slate-50 pl-10 pr-3 text-sm text-slate-900 placeholder:text-slate-400 focus-visible:border-[#c9a227] focus-visible:ring-[#c9a227]/35"
+                      maxLength={10}
+                    />
+                  </div>
                   {form.formState.errors.mobile && (
-                    <p className="text-red-500 text-sm mt-1 animate-shake">{form.formState.errors.mobile.message}</p>
+                    <p className="mt-1 text-sm text-red-500">{form.formState.errors.mobile.message}</p>
                   )}
                 </div>
 
-                <div className="animate-slide-in-right">
-                  <Label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                    <div className="flex items-center space-x-2">
-                      <Lock className="h-4 w-4" />
-                      <span>Password</span>
-                    </div>
+                <div>
+                  <Label htmlFor="password" className="mb-1.5 block text-sm font-medium text-slate-700">
+                    Password
                   </Label>
                   <div className="relative">
+                    <Lock className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#c9a227]" />
                     <Input
                       id="password"
                       type={showPassword ? "text" : "password"}
                       placeholder="Enter your password"
                       {...form.register("password")}
-                      className="w-full px-3 sm:px-4 py-2 sm:py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent transition-all text-base pr-10 sm:pr-12"
+                      className="h-10 w-full rounded-lg border-slate-200 bg-slate-50 pl-10 pr-11 text-sm text-slate-900 placeholder:text-slate-400 focus-visible:border-[#c9a227] focus-visible:ring-[#c9a227]/35"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 transition-colors hover:text-[#c9a227]"
+                      aria-label={showPassword ? "Hide password" : "Show password"}
                     >
-                      {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                     </button>
                   </div>
                   {form.formState.errors.password && (
-                    <p className="text-red-500 text-sm mt-1 animate-shake">{form.formState.errors.password.message}</p>
+                    <p className="mt-1 text-sm text-red-500">{form.formState.errors.password.message}</p>
                   )}
                 </div>
 
-                <div className="flex items-center justify-between animate-fade-in">
-                  <div className="flex items-center space-x-2">
+                <div className="flex items-center justify-between gap-2 pt-0.5">
+                  <div className="flex items-center gap-2">
                     <Checkbox
                       id="rememberMe"
                       checked={form.watch("rememberMe")}
-                      // {...form.register("rememberMe")}
-                      //onCheckedChange={handleRememberMeChange}
                       onCheckedChange={(checked) => {
-                        form.setValue("rememberMe", checked) // update RHF state
-                        handleRememberMeChange(checked)      // run your logic
+                        form.setValue("rememberMe", checked);
+                        handleRememberMeChange(checked);
                       }}
+                      className="border-[#c9a227]/60 data-[state=checked]:border-[#c9a227] data-[state=checked]:bg-[#c9a227] data-[state=checked]:text-[#141414]"
                     />
-                    <Label htmlFor="rememberMe" className="text-sm text-gray-600">
-                      <div className="flex items-center space-x-2">
-                        <CheckCircle className="h-4 w-4" />
-                        <span>Remember me</span>
-                      </div>
+                    <Label htmlFor="rememberMe" className="cursor-pointer text-sm text-slate-600">
+                      Remember me
                     </Label>
                   </div>
                   <button
                     type="button"
                     onClick={() => setLocation("/forgot-password")}
-                    className="text-sm text-black hover:underline transition-all transform hover:scale-105"
+                    className="shrink-0 text-sm font-medium text-[#c9a227] underline-offset-2 hover:underline"
                   >
                     Forgot password?
                   </button>
                 </div>
 
-                {/* <div className="text-center animate-fade-in">
-                  <p className="text-gray-600 text-sm">
-                    Don't have an account?{" "}
-                    <button
-                      type="button"
-                      onClick={() => setLocation("/signup")}
-                      className="text-black hover:underline font-medium transition-all transform hover:scale-105"
-                    >
-                      Sign Up
-                    </button>
-                  </p>
-                </div> */}
-
                 <Button
                   type="submit"
-                  className="w-full py-2 sm:py-2.5 px-4 bg-gradient-to-r from-gray-900 to-black text-white font-semibold rounded-lg hover:opacity-90 transition-all focus:ring-4 focus:ring-gray-300"
-                  disabled={form.formState.isSubmitting}
+                  className="mt-1 h-10 w-full rounded-lg border-2 border-[#c9a227] bg-[#141414] text-sm font-semibold text-white hover:bg-[#1f1f1f] hover:border-[#e8c547]"
+                  disabled={form.formState.isSubmitting || isLoading}
                 >
-                  {form.formState.isSubmitting ? (
-                    <div className="flex items-center justify-center space-x-2">
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  {form.formState.isSubmitting || isLoading ? (
+                    <div className="flex items-center justify-center gap-2">
+                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-[#c9a227] border-t-transparent" />
                       <span>Signing In...</span>
                     </div>
                   ) : (
@@ -411,74 +353,57 @@ export default function Login() {
                   )}
                 </Button>
 
-                {/* Super admin login link centered below Sign In button */}
-                <div className="flex justify-center" style={{ marginBottom: "-25px" }}>
+                <div className="flex justify-center pt-0.5">
                   <button
                     type="button"
                     onClick={() => setLocation("/superadmin/login")}
-                    className="text-xs sm:text-sm text-gray-900 hover:text-gray-600 underline transition-colors font-semibold"
-                    style={{
-                      marginTop: "-11px",
-                    }}
+                    className="text-xs font-semibold text-slate-500 underline underline-offset-2 transition-colors hover:text-[#c9a227] sm:text-sm"
                   >
                     Super Admin Login
                   </button>
                 </div>
-
               </form>
-            </CardContent>
-          </Card>
+            </div>
 
-          {/* <div className="text-center text-gray-300 text-xs sm:text-sm animate-fade-in-up">
-            <p className="bg-black bg-opacity-20 rounded-lg p-2 sm:p-3 backdrop-blur-sm">
-              Demo credentials: admin@cpmanager.com / admin123
-            </p>
-          </div> */}
-        </div>
+            <div className="mx-auto mt-5 w-full max-w-[340px] border-t border-[#c9a227]/30 pt-3 text-center xl:max-w-[360px]">
+              <p className="text-xs text-slate-400">All rights reserved, © {new Date().getFullYear()}</p>
+              <p className="mt-1 text-xs text-slate-400">A Premium Product by</p>
+              <p className="mt-0.5 text-sm font-semibold text-[#c9a227]">MWB Technologies India Pvt Ltd</p>
+            </div>
+          </div>
+        </section>
       </div>
 
       {/* Force Logout Confirmation Dialog */}
       <AlertDialog open={showForceLogoutDialog} onOpenChange={setShowForceLogoutDialog}>
-        <AlertDialogContent className="sm:max-w-lg border-2 border-orange-200 shadow-2xl">
+        <AlertDialogContent className="border-2 border-orange-200 shadow-2xl sm:max-w-lg">
           <div className="flex flex-col items-center space-y-4 py-2">
-            {/* Icon Container */}
-            <div className="flex items-center justify-center w-16 h-16 rounded-full bg-orange-100 dark:bg-orange-900/20">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-orange-100 dark:bg-orange-900/20">
               <AlertCircle className="h-8 w-8 text-orange-600 dark:text-orange-400" />
             </div>
-
-            <AlertDialogHeader className="text-center space-y-2">
-              <AlertDialogTitle className="text-2xl font-bold text-gray-900 dark:text-gray-100 text-center">
+            <AlertDialogHeader className="space-y-2 text-center">
+              <AlertDialogTitle className="text-center text-2xl font-bold text-gray-900 dark:text-gray-100">
                 Already Logged In
               </AlertDialogTitle>
-              <AlertDialogDescription className="text-base text-gray-600 dark:text-gray-400 leading-relaxed pt-2">
+              <AlertDialogDescription className="pt-2 text-base leading-relaxed text-gray-600 dark:text-gray-400">
                 Your account is currently active on another device.
-                {/* To continue here, you'll need to logout from the previous session. */}
               </AlertDialogDescription>
             </AlertDialogHeader>
-
-            {/* Info Box */}
-            {/* <div className="w-full p-4 bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800 rounded-lg">
-              <p className="text-sm text-blue-800 dark:text-blue-300 text-center">
-                <Shield className="h-4 w-4 inline-block mr-1.5" />
-                This action will securely logout your previous session
-              </p>
-            </div> */}
-
-            <AlertDialogFooter className="w-full flex-col sm:flex-row gap-2 sm:gap-0">
+            <AlertDialogFooter className="w-full flex-col gap-2 sm:flex-row sm:gap-0">
               <AlertDialogCancel
                 disabled={isSendingOTP}
-                className="w-full sm:w-auto order-2 sm:order-1 border-gray-300 hover:bg-gray-50 text-gray-700 font-medium"
+                className="order-2 w-full border-gray-300 font-medium text-gray-700 hover:bg-gray-50 sm:order-1 sm:w-auto"
               >
                 Cancel
               </AlertDialogCancel>
               <AlertDialogAction
                 onClick={handleContinueForceLogout}
                 disabled={isSendingOTP}
-                className="w-full sm:w-auto order-1 sm:order-2 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+                className="order-1 w-full bg-gradient-to-r from-orange-500 to-orange-600 font-semibold text-white shadow-lg transition-all duration-200 hover:from-orange-600 hover:to-orange-700 hover:shadow-xl sm:order-2 sm:w-auto"
               >
                 {isSendingOTP ? (
                   <div className="flex items-center justify-center gap-2">
-                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
                     <span>Sending OTP...</span>
                   </div>
                 ) : (
@@ -526,7 +451,7 @@ export default function Login() {
                   </InputOTPGroup>
                 </InputOTP>
               </div>
-              <p className="text-xs text-gray-500 text-center">
+              <p className="text-center text-xs text-gray-500">
                 Enter the 4-digit OTP sent to {userMobile}
               </p>
             </div>
@@ -541,7 +466,7 @@ export default function Login() {
               >
                 {isSendingOTP ? (
                   <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600 mr-2"></div>
+                    <div className="mr-2 h-4 w-4 animate-spin rounded-full border-b-2 border-gray-600" />
                     Sending...
                   </>
                 ) : (
@@ -552,9 +477,7 @@ export default function Login() {
           </div>
 
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isVerifyingOTP || isSendingOTP}>
-              Cancel
-            </AlertDialogCancel>
+            <AlertDialogCancel disabled={isVerifyingOTP || isSendingOTP}>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleForceLogout}
               disabled={isVerifyingOTP || isSendingOTP || otp.length !== 4}
@@ -562,7 +485,7 @@ export default function Login() {
             >
               {isVerifyingOTP ? (
                 <div className="flex items-center gap-2">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-white" />
                   Verifying...
                 </div>
               ) : (

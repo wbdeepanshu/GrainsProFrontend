@@ -148,7 +148,7 @@ const SimpleVoiceAssistant: React.FC<VoiceAssistantProps> = ({ isOpen, onClose, 
     },
     {
       command: 'go to margin settings',
-      action: () => setLocation('/margin-settings/business-types'),
+      action: () => setLocation('/margin-settings/item-price-margin'),
       description: 'Navigate to Margin Settings',
       keywords: ['margin', 'margin settings', 'pricing']
     },
